@@ -1,110 +1,111 @@
-# Kobo KOReader Migration
+<h1 align="center">📚 Kobo KOReader Migration</h1>
 
-Move KOReader, ebooks, reading data and custom fonts between two Kobo readers using a Mac. Books keep their original paths relative to the device root, so `Books/Comics/issue.cbz` on SOURCE becomes `Books/Comics/issue.cbz` on TARGET.
+<p align="center">
+  <strong>Your books. Your reading progress. Your next Kobo.</strong><br/>
+  Move KOReader, ebooks, reading data and custom fonts between Kobo readers using a Mac.<br/>
+  Keep the original folder paths, preview changes and verify copied files.
+</p>
 
-**Current version: 3.3.0-dev.1 — experimental, awaiting physical-device testing and human sign-off.** Automated tests use temporary device fixtures. Passing those tests is not evidence that a particular Kobo pair has been validated on hardware.
+<p align="center">
+  <a href="https://github.com/gh-slee/kobo-koreader-migrate/actions/workflows/tests.yml?query=branch%3Afeature%2Fpublic-release"><img alt="Review branch CI status" src="https://github.com/gh-slee/kobo-koreader-migrate/actions/workflows/tests.yml/badge.svg?branch=feature%2Fpublic-release&amp;event=push"/></a>
+  <a href="#tech-stack"><img alt="Python 3.9 or newer" src="https://img.shields.io/badge/Python-3.9%2B-3776AB?style=flat-square&amp;logo=python&amp;logoColor=white"/></a>
+  <a href="#requirements-and-compatibility"><img alt="Device migration requires macOS" src="https://img.shields.io/badge/macOS-USB_migration-111827?style=flat-square&amp;logo=apple&amp;logoColor=white"/></a>
+  <a href="#tech-stack"><img alt="Runtime dependencies: Python standard library" src="https://img.shields.io/badge/dependencies-standard_library-0F766E?style=flat-square"/></a>
+  <a href="LICENSE"><img alt="MIT license" src="https://img.shields.io/badge/license-MIT-2563EB?style=flat-square"/></a>
+  <a href="#project-status"><img alt="Experimental development build" src="https://img.shields.io/badge/status-experimental-D97706?style=flat-square"/></a>
+</p>
 
-The migration tool uses Python's standard library and macOS utilities. It works offline, has no telemetry, and requires no LLM, AI API key, model download or running agent. Existing plugin configurations are copied as files; plugins are not executed by the tool.
+<p align="center">
+  <a href="#quick-start">Quick start</a> ·
+  <a href="#choose-a-mode">Modes</a> ·
+  <a href="#tech-stack">Tech stack</a> ·
+  <a href="#language-support">Languages</a> ·
+  <a href="#documentation-and-contributing">Contribute</a> ·
+  <a href="https://github.com/gh-slee/kobo-koreader-migrate/issues">Report a bug</a>
+</p>
 
-## Contents
+> [!IMPORTANT]
+> **3.3.0-dev.1 is an experimental review build.** Automated fixture CI passes on macOS and Linux; physical-Kobo testing and human sign-off are still pending. Device migration requires **macOS**. Locale support currently covers help and static UI samples; migration/maintenance messages remain English.
 
-- [Requirements and compatibility](#requirements-and-compatibility)
-- [Quick start without a Kobo](#quick-start-without-a-kobo)
-- [Installation and first checks](#installation-and-first-checks)
-- [Language foundation preview](#language-foundation-preview)
+## Why use it?
+
+| | What you get |
+| --- | --- |
+| 📦 **Four migration modes** | Copy the entire supported setup, only KOReader, selected library content, or inspect without device writes. |
+| 📂 **Original book locations** | `Books/Comics/issue.cbz` on SOURCE stays `Books/Comics/issue.cbz` on TARGET. EPUB, PDF, CBZ and other recognised formats follow the same rule. |
+| 🔎 **A plan before changes** | Preview new, changed, identical and TARGET-only files. Size/SHA-256 comparisons skip identical payload files. |
+| 🛟 **Backups and recovery** | Capture SOURCE, back up TARGET, verify copied bytes and attempt rollback on caught failures. Reuse saved SOURCE archives or restore a recorded TARGET snapshot. |
+| 🧭 **Visible progress** | Phase timestamps, file/byte counts, transfer/hash speed, ETA and archive heartbeats show what the tool is doing. |
+| 🔒 **Offline operation** | Python standard library plus macOS tools. No runtime downloads, telemetry, AI keys or LLM service. Private artifacts stay in local run folders. |
+
+## Quick start
+
+The complete review build is published on [`feature/public-release`](https://github.com/gh-slee/kobo-koreader-migrate/tree/feature/public-release) in [PR #1](https://github.com/gh-slee/kobo-koreader-migrate/pull/1). `main` currently contains bootstrap documentation only.
+
+### 1. Get the review build
+
+```bash
+git clone --branch feature/public-release --single-branch https://github.com/gh-slee/kobo-koreader-migrate.git
+cd kobo-koreader-migrate
+python3 --version
+python3 scripts/check_locales.py
+python3 kobo-koreader-migrate.py --self-test
+```
+
+Python 3.9+ is required. No `pip install` is needed. You can also select the review branch on GitHub and choose **Code > Download ZIP**. Keep the complete `locales/` directory beside `kobo-koreader-migrate.py`; copying the script alone is not a complete installation, even for English.
+
+### 2. Explore without a Kobo
+
+```bash
+python3 kobo-koreader-migrate.py --help
+python3 kobo-koreader-migrate.py --list-locales
+python3 kobo-koreader-migrate.py --locale zh-Hant --preview-ui
+```
+
+These help/list/preview commands do not inspect devices or existing run data and do not create migration logs/backups. The UI preview is a static sample, separate from device inspection with `--dry-run`.
+
+### 3. Preview a migration
+
+Disconnect both Kobos first. Quit KOReader normally before connecting either device, then follow the SOURCE/TARGET prompts one device at a time:
+
+```bash
+python3 kobo-koreader-migrate.py --mode full --dry-run
+```
+
+A dry run reads both devices and creates local reports/locks, but changes no Kobo files and creates no ZIP backups. Review the plan. When ready to migrate, rerun without `--dry-run`; the tool recalculates the plan and asks for final confirmation:
+
+```bash
+python3 kobo-koreader-migrate.py --mode full
+```
+
+> [!NOTE]
+> FULL includes supported books, reading data and root fonts by default. It retains TARGET-only library files outside `.adds/koreader`, but replaces the **entire KOReader directory** after backup. See [mode behavior](#choose-a-mode) before approving writes.
+
+Do not run as `sudo`. Keep backups until you have checked the result on TARGET. After the implementation is merged, standard default-branch clones can omit the review-branch flags. There is no stable release or package-manager installation advertised for this development build.
+
+<details>
+<summary><strong>Browse the full guide</strong></summary>
+
 - [Choose a mode](#choose-a-mode)
-- [Step-by-step migration](#step-by-step-migration)
+- [How it works](#how-it-works)
+- [Requirements and compatibility](#requirements-and-compatibility)
+- [Language support](#language-support)
 - [Books, metadata and fonts](#books-metadata-and-fonts)
 - [Conflicts and target identity](#conflicts-and-target-identity)
 - [Saved source migration and target restoration](#saved-source-migration-and-target-restoration)
 - [Progress, reports and project layout](#progress-reports-and-project-layout)
 - [Backup cleanup](#backup-cleanup)
 - [Command-line reference](#command-line-reference)
+- [Tech stack](#tech-stack)
+- [Project status](#project-status)
+- [FAQ](#faq)
 - [Troubleshooting and recovery](#troubleshooting-and-recovery)
 - [Privacy and publication](#privacy-and-publication)
-- [Help and support](#help-and-support)
-- [Development and contributing](#development-and-contributing)
+- [Documentation and contributing](#documentation-and-contributing)
 - [Limitations and roadmap](#limitations-and-roadmap)
-- [License](#license)
+- [Acknowledgments and license](#acknowledgments-and-license)
 
-## Requirements and compatibility
-
-| Requirement | Details |
-| --- | --- |
-| Computer | macOS with `ditto`, `diskutil` and `sync` available. |
-| Python | Python 3.9 or newer. No `pip install` is needed for migration. Local validation is recorded in [TRACKER.md](TRACKER.md). CI is configured for Python 3.9/3.12/3.14 on macOS/Linux; hosted results must be checked after publication. Linux jobs validate fixtures, not device migration. |
-| Devices | Two Kobo readers mounted as USB storage, connected **one at a time**. A renamed volume is detected by its `.kobo/` directory. |
-| Identity | Both readers must have a readable `.kobo/version` file. The fingerprint prevents using the same device as both SOURCE and TARGET and guards subsequent writes. |
-| KOReader | FULL and KOREADER require an existing SOURCE installation with `reader.lua`, `frontend/` and `plugins/`. LIBRARY does not install KOReader. |
-| Space | Enough Mac space for source and target backups; enough target space for the planned replacement/copies. ZIP compression savings are not assumed. |
-
-SOURCE and TARGET are roles, not fixed model names. Each physical model must be confirmed by the operator. A model name found in KOReader logs is only a hint: a previous clone may have copied another device's log. Two different readers of the same model are allowed; identical fingerprints are refused.
-
-FULL and KOREADER copy the SOURCE runtime version and settings. The operator must confirm that this KOReader build is compatible with the TARGET hardware. The tool does not install a fresh model-specific build or automatically preserve hardware-specific settings. Support for entering a model label is not a claim that every Kobo model has been tested.
-
-Windows and Linux device migration are not supported. Linux CI runs fixture tests only. This tool does not migrate Kindle, Android, Nickel accounts, Kobo firmware, DRM licences or Kobo's internal database.
-
-## Quick start without a Kobo
-
-After obtaining the complete project using the installation steps below, run these from the repository root:
-
-```bash
-python3 --version
-python3 kobo-koreader-migrate.py --version
-python3 kobo-koreader-migrate.py --list-locales
-python3 kobo-koreader-migrate.py --locale zh-Hant --preview-ui
-python3 kobo-koreader-migrate.py --help
-```
-
-The version/help/locale-list/UI-preview commands do not connect to a Kobo, inspect private runs or create migration backups. The preview is a static sample; it is separate from `--dry-run`, which inspects devices.
-
-## Installation and first checks
-
-This is an experimental development build. During the initial public review, `main` contains bootstrap documentation only. **After the implementation branch is published**, obtain the review build with:
-
-```bash
-git clone --branch feature/public-release --single-branch https://github.com/gh-slee/kobo-koreader-migrate.git
-cd kobo-koreader-migrate
-python3 scripts/check_locales.py
-python3 kobo-koreader-migrate.py --self-test
-```
-
-If that branch has not been published yet, this clone command will fail; it is not an installation for the minimal bootstrap commit. Check the [pull requests](https://github.com/gh-slee/kobo-koreader-migrate/pulls) for the branch under review. Once the implementation is merged, normal default-branch clones can omit `--branch feature/public-release --single-branch`. Do not treat an unmerged development branch as a stable release.
-
-Alternatively, select the published implementation branch on GitHub, choose **Code > Download ZIP**, and extract it into a permanent project folder. Keep the complete `locales/` directory beside the script; version 3.3 development builds require these assets, even when running in English. Copying the script alone is no longer a complete installation. Keep the script's filename as `kobo-koreader-migrate.py`; versions appear in startup output, logs and JSON records.
-
-Start with a preview:
-
-```bash
-python3 kobo-koreader-migrate.py --mode full --dry-run
-```
-
-A dry run inspects SOURCE, ejects it, asks for TARGET and saves the plan. It changes no Kobo files and creates no ZIP backups. It still creates local logs/reports and uses execution locks. To perform that migration after reviewing the plan, run the command again without `--dry-run`; the plan is recalculated.
-
-Do not run as `sudo`. Quit KOReader normally on both devices before USB connection so reading state and databases are saved.
-
-## Language foundation preview
-
-Version 3.3.0-dev.1 implements KM-013 only. The three registered locale options are English (`en`), Traditional Chinese (`zh-Hant`) and Simplified Chinese (`zh-Hans`). Each currently contains 36 schema-validated foundation message entries. Translation wording and usability still require human review.
-
-**Help descriptions and read-only UI samples are translated. Actual migration, restore, cleanup, progress and diagnostic output remain English until KM-014/KM-015 are implemented.** Choosing a locale does not change what is copied, overwritten, backed up or retained.
-
-These commands need no Kobo and do not create runs/logs/backups or inspect existing run data:
-
-```bash
-python3 kobo-koreader-migrate.py --list-locales
-python3 kobo-koreader-migrate.py --locale zh-Hant --help
-python3 kobo-koreader-migrate.py --locale zh-Hans --preview-ui
-python3 scripts/check_locales.py
-```
-
-`--preview-ui` displays a static translated mode menu and confirmation examples, then exits. It never asks for approval or starts an operation. The actual interactive mode menu remains English. Python argparse headings/usage diagnostics can also remain English in this foundation release. `--preview-ui`/`--list-locales` cannot be combined with migration operations/settings.
-
-Locale priority is `--locale`, then `KOBO_MIGRATE_LOCALE`, then the first nonempty terminal variable among `LANGUAGE`, `LC_ALL`, `LC_MESSAGES`, `LANG`, then English. Ordered colon-separated language preferences are supported. Common aliases include `en_US.UTF-8` -> `en`, `zh_TW.UTF-8`/`zh-HK`/`zh-MO` -> `zh-Hant`, and `zh_CN.UTF-8`/`zh-SG` -> `zh-Hans`. An explicit script wins over a conflicting region. Bare `zh` is ambiguous and falls back to English with guidance to choose a script; an unsupported explicit `--locale` is a usage error before device/run access.
-
-Missing individual translations use English. Missing/invalid selected translations fall back to the whole English catalog with a warning. A missing/invalid canonical English catalog or registry stops startup safely. Catalog validation rejects duplicate keys, unsafe controls/format fields and invalid schema/placeholder/plural definitions. No code is evaluated from locale data. On non-UTF-8 streams, help and preview text uses escaped characters instead of failing on encoding.
-
-The locale validator requires complete foundation coverage for all registered languages. CI and the publication helper run it in addition to tests/privacy checks. Publication allows only the four exact initial locale JSON files; arbitrary JSON files, device reports and additional language files remain blocked until deliberately reviewed. Future migration-message coverage and new-language contribution instructions are tracked separately in TRACKER.md.
+</details>
 
 ## Choose a mode
 
@@ -138,7 +139,22 @@ FULL always includes supported books and reading data. `--no-books`, `--no-readi
 
 **FULL retains TARGET-only books outside KOReader.** It replaces SOURCE-matching files that differ, and skips identical payload files. It replaces the entire `.adds/koreader` tree, so TARGET-only files/settings/central reading metadata **inside that tree** are removed after backup. KOREADER has the same whole-directory behavior, including any books or fonts already stored inside that tree.
 
-## Step-by-step migration
+## How it works
+
+```mermaid
+flowchart LR
+    S["SOURCE Kobo<br/>Read only"] --> M["Mac<br/>Capture and verify"]
+    M --> T["TARGET Kobo<br/>Plan and back up"]
+    T --> C{"Confirm?"}
+    C -->|Yes| W["Copy and verify"]
+    C -->|No| X["Cancel before writes"]
+    W -->|Caught failure| R["Attempt rollback"]
+```
+
+Connect **one Kobo at a time**. SOURCE is ejected before TARGET is requested; the Mac holds the captured data between devices. A successful migration ends with safe eject. The tool never evaluates device Lua files or executes copied plugins.
+
+<details>
+<summary><strong>Expand the step-by-step device workflow</strong></summary>
 
 1. Disconnect both readers. Launch the tool and select the mode.
 2. Connect only **SOURCE**, choose USB connection on the Kobo and press Return when requested.
@@ -159,6 +175,57 @@ python3 kobo-koreader-migrate.py --mode full \
 ```
 
 Those names are examples, not a tested hardware pair. An incorrect or stale log hint can be overridden through physical-model confirmation. Identity guards still apply.
+
+</details>
+
+## Requirements and compatibility
+
+| Requirement | Details |
+| --- | --- |
+| Computer | macOS with `ditto`, `diskutil` and `sync` available. |
+| Python | Python 3.9 or newer. No `pip install` is needed for migration. The published review commit passed CI on Python 3.9/3.12/3.14 on macOS/Linux; see [project status](#project-status). Linux jobs validate fixtures, not device migration. |
+| Devices | Two Kobo readers mounted as USB storage, connected **one at a time**. A renamed volume is detected by its `.kobo/` directory. |
+| Identity | Both readers must have a readable `.kobo/version` file. The fingerprint prevents using the same device as both SOURCE and TARGET and guards subsequent writes. |
+| KOReader | FULL and KOREADER require an existing SOURCE installation with `reader.lua`, `frontend/` and `plugins/`. LIBRARY does not install KOReader. |
+| Space | Enough Mac space for source and target backups; enough target space for the planned replacement/copies. ZIP compression savings are not assumed. |
+
+SOURCE and TARGET are roles, not fixed model names. Each physical model must be confirmed by the operator. A model name found in KOReader logs is only a hint: a previous clone may have copied another device's log. Two different readers of the same model are allowed; identical fingerprints are refused.
+
+FULL and KOREADER copy the SOURCE runtime version and settings. The operator must confirm that this KOReader build is compatible with the TARGET hardware. The tool does not install a fresh model-specific build or automatically preserve hardware-specific settings. Support for entering a model label is not a claim that every Kobo model has been tested.
+
+Windows and Linux device migration are not supported. Linux CI runs fixture tests only. This tool does not migrate Kindle, Android, Nickel accounts, Kobo firmware, DRM licences or Kobo's internal database.
+
+## Language support
+
+| Language | CLI tag | Available now | Still pending |
+| --- | --- | --- | --- |
+| English | `en` | Complete current migration UI, help and samples | Review of future message extraction |
+| Traditional Chinese | `zh-Hant` | Help descriptions and static UI samples | Actual migration/maintenance interface |
+| Simplified Chinese | `zh-Hans` | Help descriptions and static UI samples | Actual migration/maintenance interface |
+
+Each locale contains 36 validated foundation messages. Translation wording still needs human review. Choosing a language changes no migration decisions. Diagnostic logs and machine-schema values stay English. Additional locales will follow the registry/catalog workflow after the initial foundation is accepted.
+
+These commands need no Kobo and do not create runs/logs/backups or inspect existing run data:
+
+```bash
+python3 kobo-koreader-migrate.py --list-locales
+python3 kobo-koreader-migrate.py --locale zh-Hant --help
+python3 kobo-koreader-migrate.py --locale zh-Hans --preview-ui
+python3 scripts/check_locales.py
+```
+
+`--preview-ui` displays a static translated mode menu and confirmation examples, then exits. It never asks for approval or starts an operation. The actual interactive mode menu remains English. Python argparse headings/usage diagnostics can also remain English in this foundation release. `--preview-ui`/`--list-locales` cannot be combined with migration operations/settings.
+
+<details>
+<summary><strong>Locale detection, aliases, fallback and catalog validation</strong></summary>
+
+Locale priority is `--locale`, then `KOBO_MIGRATE_LOCALE`, then the first nonempty terminal variable among `LANGUAGE`, `LC_ALL`, `LC_MESSAGES`, `LANG`, then English. Ordered colon-separated language preferences are supported. Common aliases include `en_US.UTF-8` -> `en`, `zh_TW.UTF-8`/`zh-HK`/`zh-MO` -> `zh-Hant`, and `zh_CN.UTF-8`/`zh-SG` -> `zh-Hans`. An explicit script wins over a conflicting region. Bare `zh` is ambiguous and falls back to English with guidance to choose a script; an unsupported explicit `--locale` is a usage error before device/run access.
+
+Missing individual translations use English. Missing/invalid selected translations fall back to the whole English catalog with a warning. A missing/invalid canonical English catalog or registry stops startup safely. Catalog validation rejects duplicate keys, unsafe controls/format fields and invalid schema/placeholder/plural definitions. No code is evaluated from locale data. On non-UTF-8 streams, help and preview text uses escaped characters instead of failing on encoding.
+
+The locale validator requires complete foundation coverage for all registered languages. CI and the publication helper run it in addition to tests/privacy checks. Publication allows only the four exact initial locale JSON files; arbitrary JSON files, device reports and additional language files remain blocked until deliberately reviewed. Future migration-message coverage and new-language contribution instructions are tracked separately in TRACKER.md.
+
+</details>
 
 ## Books, metadata and fonts
 
@@ -361,6 +428,9 @@ You must type the exact `DELETE ...` text shown by the tool. Multiple `--delete-
 
 ## Command-line reference
 
+<details>
+<summary><strong>Expand all command-line options</strong></summary>
+
 Use `--help` for the definitive help text.
 
 | Option | Purpose |
@@ -390,7 +460,68 @@ Use `--help` for the definitive help text.
 
 `--preview-ui`, `--list-locales`, `--from-run`, `--restore-run`, `--list-runs` and `--cleanup` are mutually exclusive operations. The main migration workflow is interactive; there is no unattended `--yes` switch.
 
+</details>
+
+## Tech stack
+
+The runtime is a Python CLI, with no third-party Python packages, hosted backend or model service.
+
+| Layer | Technology | Role |
+| --- | --- | --- |
+| 🐍 CLI and orchestration | Python 3.9+ · `argparse`, `pathlib`, `dataclasses` | Modes, paths, confirmations and operation plans. |
+| 📦 Archives and integrity | macOS `ditto` · `zipfile` · `hashlib` / SHA-256 | Capture/extract trees, inspect ZIP members and verify archived/copied bytes. |
+| 💾 Device and process control | macOS `diskutil`, `sync` · `subprocess` · `fcntl` | Safe eject, filesystem flush, subprocess progress and OS-backed locks. |
+| 🗂️ Records and diagnostics | UTF-8 JSON · Python `sqlite3` | Run state, snapshots, difference reports, manifests and read-only KOReader statistics checks. |
+| 🌐 Locale foundation | UTF-8 JSON catalogs · Python `string` / `unicodedata` | Reviewed locale selection, named placeholders and safe English fallback. |
+| 🧪 Tests and CI | `unittest` · temporary fixtures · GitHub Actions | Migration/recovery/privacy regressions across macOS/Linux and three Python versions. |
+| 🛠️ Maintainer tooling | Git · GitHub CLI (optional) | Reviewed feature-branch publication and PR creation; unnecessary for migration. |
+
+Reading metadata and plugins are transferred as files. Lua is not an execution dependency of this tool. GitHub and Shields.io serve README badges only; the migration CLI does not contact those services.
+
+## Project status
+
+| Area | Current state |
+| --- | --- |
+| Development version | `3.3.0-dev.1` — experimental; human acceptance pending. |
+| Published review | [PR #1](https://github.com/gh-slee/kobo-koreader-migrate/pull/1), branch `feature/public-release`. |
+| Verified CI baseline | Commit [`c0a7a1e`](https://github.com/gh-slee/kobo-koreader-migrate/commit/c0a7a1ee33b0bbac7e538439ab3084d979aa2dcc), checked 2026-10-15. Both [push](https://github.com/gh-slee/kobo-koreader-migrate/actions/runs/38820577620) and [PR](https://github.com/gh-slee/kobo-koreader-migrate/actions/runs/38820581374) workflows passed all six jobs each. |
+| CI matrix | macOS + Ubuntu, each on Python 3.9, 3.12 and 3.14. Linux is fixture validation only. |
+| Local automated evidence | 115 tests passed on Python 3.12.2/macOS, plus self-test and three-locale validation. |
+| Physical Kobo validation | Pending. Temporary devices and a real macOS `ditto` fixture do not prove hardware compatibility. |
+| Human acceptance | KM-011/KM-005/KM-001/KM-003/KM-013 remain **Ready for test**; use [ACCEPTANCE.md](ACCEPTANCE.md). |
+
+The CI badge tracks push results on the published review branch; it is not a release or hardware-compatibility badge. The linked baseline records completed runs, while later branch changes require their own checks.
+
+## FAQ
+
+### Will FULL erase all books on TARGET?
+
+It retains TARGET-only books outside `.adds/koreader`. Different SOURCE-matching payload files are backed up and replaced. The entire KOReader tree is replaced, including TARGET-only content inside it. [Review the mode table](#choose-a-mode).
+
+### Will it find every ebook?
+
+Discovery uses recognised filename extensions and your selected scope. Extensionless, unsupported or DRM-managed content is not guaranteed. [See formats and exclusions](#books-metadata-and-fonts).
+
+### Where do fonts go?
+
+Custom device fonts stay in root `fonts/`. KOReader's internal fonts stay inside `.adds/koreader/fonts/`; whole-runtime modes include that tree.
+
+### Does running it require ChatGPT, an LLM or an internet connection?
+
+No. Migration, validation, backups and cleanup use ordinary offline code. Obtaining the project and using optional GitHub publication tooling require network access. Copied plugin configurations are not executed.
+
+### Does cleanup delete backups immediately?
+
+`--cleanup` alone previews eligibility. Actual deletion needs explicit `--delete-run` selections and the exact typed confirmation. [See retention rules](#backup-cleanup).
+
+### Can I use only the Python script, or migrate from Windows/Linux?
+
+Keep `locales/` with the script, including for English. Device migration requires macOS. Linux CI validates synthetic fixtures only; Windows migration is unsupported.
+
 ## Troubleshooting and recovery
+
+<details>
+<summary><strong>Expand common symptoms, recovery guidance and exit codes</strong></summary>
 
 | Message or symptom | Action |
 | --- | --- |
@@ -409,6 +540,8 @@ Use `--help` for the definitive help text.
 Caught copy/restore/verification failures attempt automatic rollback while the original TARGET remains connected. Rollback cannot guarantee recovery after power loss, forced termination, hardware failure or disconnection. A checksum verifies the captured bytes, not the meaning or compatibility of settings.
 
 Exit codes: `0` means success, completed audit/preview or ordinary cancellation; consult `run.json` to distinguish them. `1` means an error (a target may need recovery if the run says so). `2` means failed operation with successful rollback, or an argument-parser usage error before a run. `3` means failed/incomplete rollback; recovery is needed. `130` means an uncaught user interruption. Interrupted copying caught inside a transaction may instead return the rollback code.
+
+</details>
 
 ## Privacy and publication
 
@@ -435,7 +568,19 @@ Use [GitHub Issues](https://github.com/gh-slee/kobo-koreader-migrate/issues) for
 
 For sensitive security findings, follow [SECURITY.md](SECURITY.md) instead of disclosing private data in a public issue. The repository is maintained by its [project contributors](https://github.com/gh-slee/kobo-koreader-migrate/graphs/contributors); contribution instructions are in [CONTRIBUTING.md](CONTRIBUTING.md).
 
-## Development and contributing
+## Documentation and contributing
+
+| Need | Start here |
+| --- | --- |
+| Use the CLI | This README and `python3 kobo-koreader-migrate.py --help`. |
+| Test and sign off | [ACCEPTANCE.md](ACCEPTANCE.md). |
+| Contribute code or docs | [CONTRIBUTING.md](CONTRIBUTING.md). |
+| Report a security concern | [SECURITY.md](SECURITY.md). |
+| Review changes | [CHANGELOG.md](CHANGELOG.md). |
+| Follow implementation status | [TRACKER.md](TRACKER.md). |
+| Continue development with an assistant | [AGENTS.md](AGENTS.md); runtime features still work without an assistant. |
+
+Contributions can include synthetic bug reproductions, clearer documentation, regression tests and feedback on the three locale previews. Check the tracker before starting a planned feature; full migration-interface translations remain queued. Open a focused PR with the problem, change and relevant verification. Human acceptance is required before experimental features are marked complete.
 
 Run tests without a Kobo:
 
@@ -446,7 +591,7 @@ python3 kobo-koreader-migrate.py --self-test
 python3 scripts/check_publication.py --worktree
 ```
 
-**Current local evidence:** 114 tests passed on Python 3.12.2/macOS, including the actual `ditto` fixture; self-test and the three-locale validator passed. This is local evidence, not a hosted CI success or physical-Kobo acceptance result. Check the [GitHub Actions runs](https://github.com/gh-slee/kobo-koreader-migrate/actions) after the implementation branch is pushed.
+See [project status](#project-status) for the verified 115-test baseline and successful hosted CI runs. New changes require their own checks.
 
 Tests use temporary synthetic devices and mock USB/eject operations. On macOS, an additional test uses real `ditto` to exercise FULL migration, saved-source reuse and exact TARGET restoration on temporary directories. It never reads a physical Kobo. On other supported test hosts, that fixture test is skipped.
 
@@ -467,6 +612,8 @@ Automated tests and privacy checks run before publication. Manual language/usabi
 
 Planned work includes interrupted-transfer recovery, optional exact library mirroring, content-assisted discovery, reading-data conflict reports, portable hardware settings, settings-only migration and a separate archive verifier. These remain backlog items until implemented/tested.
 
-## License
+## Acknowledgments and license
+
+Built for readers using [KOReader](https://github.com/koreader/koreader) on Kobo devices. Thanks to the KOReader community and this project's [contributors](https://github.com/gh-slee/kobo-koreader-migrate/graphs/contributors).
 
 This migration tool is released under the [MIT License](LICENSE). KOReader, Kobo software, plugins, fonts and ebooks copied from your devices retain their respective licences; this repository does not distribute those assets. This is an independent community tool, not an official Kobo or KOReader project.

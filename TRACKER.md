@@ -93,7 +93,7 @@ For the next authorized feature session:
 | PUB-001 | Ready for review | Expanded Git ignore policy, source allowlist, staged/history privacy gate and local pre-push hook. Human diff review remains required; heuristics cannot prove absence of all personal data. |
 | PUB-002 | Ready for test | Generic SOURCE/TARGET roles and confirmed labels, renamed-volume discovery, mandatory fingerprints, same-device rejection, explicit runtime compatibility confirmation; preserve FULL/KOREADER and legacy snapshots. |
 | PUB-003 | Ready for review | Detailed English README, MIT license, contribution/security/manual acceptance docs and fixture CI. |
-| PUB-004 | In progress | Approved implementation published on feature/public-release at 2e2daec3143ecabdd7ad88f275e790e710013fbe; PR #1 is open. Push CI passed all six jobs; PR CI rejected GitHub's public merge committer. A tested local guard fix awaits reviewed push approval. No merge or human acceptance. |
+| PUB-004 | Ready for test | Approved implementation and CI fix published on feature/public-release at c0a7a1e; PR #1 is open. Latest push and PR CI each passed all six jobs. No merge or human/physical acceptance. |
 | PUB-005 | Ready for review | Standalone feature-branch publication helper runs privacy/tests, pushes and creates/reuses a PR. Human approval before merge; no force push or automatic merge. |
 
 Public preparation does not complete physical acceptance of KM-011/KM-005/KM-001/KM-003. Local implementation/test evidence and remote bootstrap outcome must be recorded before handoff.
@@ -287,3 +287,12 @@ This entry supersedes earlier statements that publication or PR creation was pen
 - GitHub DNS/API access temporarily failed, then recovered. Failed logs and merge metadata were read successfully. Local follow-up permits the exact platform committer only on merge commits; all authors still need user noreply IDs. Personal emails, platform authors/non-merge committers and lookalike domains are rejected. File/blob/message/history checks remain intact.
 - Unpublished follow-up scope: scripts/check_publication.py, tests/test_public_release.py, README.md, CONTRIBUTING.md, CHANGELOG.md and TRACKER.md. Local validation: 115 tests passed (including seven real-Git identity cases), self-test and locale validation passed. No migration runtime or locale files changed. Obtain explicit approval for this reviewed follow-up before pushing; no bypass, force push or merge.
 - Manual/physical acceptance remains pending. Keep KM-011/KM-005/KM-001/KM-003/KM-013 Ready for test. Do not start KM-014 or merge without authorization/sign-off.
+
+
+## README presentation refresh (2026-10-15)
+
+- User requested a modern open-source README with tech stack, icons and fuller project information. Scope is documentation only: README.md and this tracker. No runtime, locale catalogs, CI configuration or publication guard changed.
+- Reworked the opening around an accessible title, linked badge row, compact navigation, feature overview and an install/preview/migrate quick start. Added a Mermaid workflow, implementation-backed tech stack, FAQ, documentation map and acknowledgments; kept advanced operational details in expandable sections.
+- Updated publication/validation facts: c0a7a1e is published; PR #1 remains open. Push run 38820577620 and PR run 38820581374 passed all six jobs each. Local baseline is 115 tests. Main still has bootstrap docs. Physical/manual acceptance and full migration-interface translations remain pending.
+- Badge assets are remote README decoration only (GitHub/Shields.io); the migration CLI remains offline. No invented coverage, download, hardware certification or community metrics.
+- Validation passed: 62 link targets, 36 heading anchors, 22 fenced blocks, five disclosure blocks, 33 flags checked against live CLI help and shell-example syntax. All six badge endpoints returned valid SVGs; the live CI badge reads passing. Worktree/history privacy checks and git diff --check passed. No runtime code changed, so the full migration fixture suite was not rerun for this documentation-only refresh. A new concrete review/approval is required before any push; the edit request is not publication approval.
