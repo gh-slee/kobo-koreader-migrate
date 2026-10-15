@@ -87,7 +87,7 @@ For the next authorized feature session:
 | PUB-001 | Ready for review | Expanded Git ignore policy, source allowlist, staged/history privacy gate and local pre-push hook. Human diff review remains required; heuristics cannot prove absence of all personal data. |
 | PUB-002 | Ready for test | Generic SOURCE/TARGET roles and confirmed labels, renamed-volume discovery, mandatory fingerprints, same-device rejection, explicit runtime compatibility confirmation; preserve FULL/KOREADER and legacy snapshots. |
 | PUB-003 | Ready for review | Detailed English README, MIT license, contribution/security/manual acceptance docs and fixture CI. |
-| PUB-004 | Ready for review | Clean Git history initialized with authenticated public alias/noreply identity; public origin created. Minimal main bootstrap is published; full tool/docs use feature/public-release for human review. Private run files are excluded. |
+| PUB-004 | In progress | Public origin and minimal main bootstrap exist with alias/noreply identity. Full feature/public-release is committed locally; GitHub rejected its push because OAuth workflow scope is missing. Additional browser authorization is pending; no PR exists yet. Private run files are excluded. |
 | PUB-005 | Ready for review | Standalone feature-branch publication helper runs privacy/tests, pushes and creates/reuses a PR. Human approval before merge; no force push or automatic merge. |
 
 Public preparation does not complete physical acceptance of KM-011/KM-005/KM-001/KM-003. Local implementation/test evidence and remote bootstrap outcome must be recorded before handoff.
@@ -95,3 +95,5 @@ Public preparation does not complete physical acceptance of KM-011/KM-005/KM-001
 - 2026-10-15: v3.2.0 public preparation — 95 local tests passed on Python 3.12.2/macOS, including the actual ditto fixture. Self-test and candidate publication check passed. Added generic-role/saved-source/restore regressions and Git blob/history/publish-helper tests. No physical Kobo was accessed, no real backups were deleted, and physical acceptance remains pending.
 
 - 2026-10-15: Public remote initialized. Git identity uses the authenticated GitHub alias/noreply address. Only README, MIT license and ignore policy were bootstrapped on main; the complete tool and detailed README are committed on feature/public-release. Index/history privacy checks passed. Hosted CI and PR review are pending.
+
+- Publication handoff: GitHub refused feature/public-release because its CI workflow needs additional OAuth workflow scope. `gh auth refresh --hostname github.com --scopes workflow` was started; complete browser authorization, verify it succeeded, then rerun scripts/publish.py with the reviewed PR body. Do not remove CI or bypass checks to work around the permission failure. No PR has been created or merged.
