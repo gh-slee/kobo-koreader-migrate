@@ -11,7 +11,8 @@
 - Do not introduce AI inference APIs, model downloads, local LLM servers, agent frameworks, or runtime dependence on Codex/ChatGPT.
 - LLMs may assist development only; runtime decisions must use explicit program logic and ordinary CLI confirmations.
 - Feature acceptance must verify operation without AI credentials or AI services; document complete CLI usage and keep the existing core offline workflow.
-- Follow the current user's requested conversation language. Public code, comments, CLI prompts, runtime logs and documentation stay English.
+- Follow the current user's requested conversation language. Public code, comments, identifiers and canonical developer documentation stay English. Owned CLI/report text may be localized through reviewed catalogs; tool-owned diagnostic log text and machine-schema values stay English.
+- Follow the i18n design in TRACKER.md: initial locales en/zh-Hant/zh-Hans, offline code-only catalogs, safe English fallback, stable flags/status/paths and unchanged destructive-confirmation semantics. KM-013 provides help/UI-sample locale support only; actual migration/maintenance output remains English until KM-014/KM-015. Preserve that boundary and do not claim full translation.
 - The canonical script is `kobo-koreader-migrate.py` in this project; do not put version tags in its filename.
 - Keep version information in `VERSION`, startup output, logs and JSON records.
 - Preserve FULL (entire KOReader + supported books + reading data + default root fonts).
@@ -28,7 +29,9 @@
 - The tool and fixture suite target Python 3.9+; record the Python versions actually validated.
 - Never claim real-Kobo validation based on mocked tests or local `ditto` fixtures.
 - Keep backups, books, device files, private notes and credentials out of Git. Stage explicit allowlisted files and review the index/history, not only the working tree.
-- Authorized future feature work may push a feature branch and create/update a PR after tests and privacy checks. Human sign-off is required before merge. No automatic merge, force push, remote deletion or release publishing.
+- Feature implementation authorization does not authorize publication. Before every push, present the concrete changes, exact file/commit scope, privacy findings, public metadata and remaining limitations; obtain explicit human approval for that reviewed scope.
+- Never run scripts/publish.py, git push or another upload route before that approval. GitHub login/scope consent, passing tests or approval of a plan is not push approval. Changed scope requires renewed approval.
+- After push approval, use a feature branch and PR. Human sign-off is separately required before merge. No automatic merge, force push, remote deletion or release publishing.
 - Verify the current origin/repository before publication. Use scripts/publish.py with the explicit OWNER/REPO, a committed clean feature branch and a reviewed English PR body.
 - Run scripts/check_publication.py --history before push; install .githooks via repo-local core.hooksPath. Do not bypass a failed guard or publish private history.
 - Keep Git author email private using the authenticated account's public alias/noreply identity. Never print tokens or request that users paste credentials into chat.

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-KOReader Kobo Migration Tool v3.2.0
+KOReader Kobo Migration Tool v3.3.0-dev.1
 macOS, standard library only.
 
 Supported workflow:
@@ -38,6 +38,7 @@ import uuid
 import zipfile
 import sqlite3
 import stat
+import string
 import tempfile
 import unicodedata
 from dataclasses import dataclass, asdict
@@ -45,7 +46,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, Iterable, List, Optional, Tuple
 
-VERSION = "3.2.0"
+VERSION = "3.3.0-dev.1"
 DEFAULT_BACKUP_DIR = Path(__file__).resolve().parent
 VOLUME_ROOT = Path("/Volumes")
 
@@ -89,6 +90,304 @@ class DeviceInfo:
     ai_assistant_config: bool
     file_count: int
     total_bytes: int
+
+
+# Locale assets are reviewed data. Locale names never select arbitrary files.
+LOCALE_ROOT = Path(__file__).resolve().parent / 'locales'
+LOCALE_MAX_BYTES = 256 * 1024
+LOCALE_TAG_RE = re.compile(r'[a-z]{2,3}(?:-[A-Z][a-z]{3})?(?:-(?:[A-Z]{2}|[0-9]{3}))?\Z')
+MESSAGE_ID_RE = re.compile(r'[a-z][a-z0-9_]*(?:\.[a-z][a-z0-9_]*)+\Z')
+LOCALE_REQUIRED_IDS = frozenset({
+    'cli.description',
+    'cli.foundation_notice',
+    'cli.locales_heading',
+    'help.backup_dir',
+    'help.books',
+    'help.cleanup',
+    'help.conflict',
+    'help.delete_run',
+    'help.dry_run',
+    'help.exclude_dir',
+    'help.extra_extension',
+    'help.fonts',
+    'help.from_run',
+    'help.help',
+    'help.include_dir',
+    'help.keep_successful',
+    'help.list_locales',
+    'help.list_runs',
+    'help.locale',
+    'help.mode',
+    'help.preview_ui',
+    'help.reading_data',
+    'help.restore_run',
+    'help.self_test',
+    'help.source_model',
+    'help.target_model',
+    'help.version',
+    'mode.audit',
+    'mode.full',
+    'mode.koreader',
+    'mode.library',
+    'preview.default_no',
+    'preview.delete',
+    'preview.file_count',
+    'preview.notice',
+    'preview.title',
+})
+PLURAL_RULES = {'one-other': {'one', 'other'}, 'other-only': {'other'}}
+
+
+class LocaleError(ValueError):
+    """English startup diagnostic that never includes catalog contents."""
+
+
+def _locale_text(value, limit=8192, multiline=True):
+    if not isinstance(value, str) or not value.strip() or len(value) > limit:
+        raise LocaleError('Locale text must be a nonempty bounded string.')
+    if any(unicodedata.category(ch) in {'Cc', 'Cf', 'Cs'} and
+           not (multiline and ch in '\n\t') for ch in value):
+        raise LocaleError('Locale text contains forbidden control characters.')
+    return value
+
+
+def _unique_locale_object(pairs):
+    result = {}
+    for key, value in pairs:
+        if key in result:
+            raise LocaleError('Duplicate key in locale JSON.')
+        result[key] = value
+    return result
+
+
+def _locale_json(root: Path, name: str) -> dict:
+    path = root / name
+    try:
+        if root.is_symlink() or not root.is_dir() or path.is_symlink() or not path.is_file():
+            raise LocaleError('Locale assets must be regular files in locales/.')
+        with path.open('rb') as stream:
+            raw = stream.read(LOCALE_MAX_BYTES + 1)
+        if len(raw) > LOCALE_MAX_BYTES:
+            raise LocaleError('Locale asset exceeds the size limit.')
+        result = json.loads(raw.decode('utf-8'), object_pairs_hook=_unique_locale_object)
+    except (OSError, UnicodeError, ValueError, RecursionError) as exc:
+        if isinstance(exc, LocaleError):
+            raise
+        raise LocaleError('Cannot read a valid UTF-8 locale asset.') from None
+    if not isinstance(result, dict) or type(result.get('schema_version')) is not int or result['schema_version'] != 1:
+        raise LocaleError('Unsupported locale asset schema.')
+    return result
+
+
+def _normalize_locale(value: str) -> Optional[str]:
+    if not isinstance(value, str) or len(value) > 80 or not re.fullmatch(r'[A-Za-z0-9_.@-]+', value.strip()):
+        return None
+    tag = value.strip().split('.', 1)[0].split('@', 1)[0].replace('_', '-')
+    if tag.casefold() in {'c', 'posix'}:
+        return 'en'
+    pieces = tag.split('-')
+    normalized = [pieces[0].lower()]
+    for piece in pieces[1:]:
+        normalized.append(piece.title() if len(piece) == 4 else piece.upper())
+    tag = '-'.join(normalized)
+    return tag if LOCALE_TAG_RE.fullmatch(tag) else None
+
+
+def load_locale_registry(root: Path) -> dict:
+    data = _locale_json(root, 'registry.json')
+    if set(data) != {'schema_version', 'locales'} or not isinstance(data['locales'], list) or not 1 <= len(data['locales']) <= 100:
+        raise LocaleError('Invalid locale registry.')
+    entries, aliases = {}, {}
+    for item in data['locales']:
+        if not isinstance(item, dict) or set(item) != {'tag', 'name', 'plural_rule', 'aliases'}:
+            raise LocaleError('Invalid locale registry entry.')
+        tag = item['tag']
+        if not isinstance(tag, str) or not LOCALE_TAG_RE.fullmatch(tag) or tag in entries:
+            raise LocaleError('Invalid or duplicate registered locale.')
+        _locale_text(item['name'], 80, multiline=False)
+        if not isinstance(item['plural_rule'], str) or item['plural_rule'] not in PLURAL_RULES:
+            raise LocaleError('Unsupported locale plural rule.')
+        if not isinstance(item['aliases'], list) or len(item['aliases']) > 100:
+            raise LocaleError('Invalid locale aliases.')
+        entries[tag] = dict(item)
+    if 'en' not in entries or entries['en']['plural_rule'] != 'one-other':
+        raise LocaleError('Registry must include English with the one-other rule.')
+    for tag, item in entries.items():
+        for alias in [tag] + item['aliases']:
+            normalized = _normalize_locale(alias)
+            if normalized is None or (normalized in aliases and aliases[normalized] != tag):
+                raise LocaleError('Invalid or conflicting locale alias.')
+            aliases[normalized] = tag
+    return {'entries': entries, 'aliases': aliases}
+
+
+def resolve_locale_tag(value: str, registry: dict) -> Optional[str]:
+    tag = _normalize_locale(value)
+    if tag is None or tag == 'zh':
+        return None
+    parts = tag.split('-')
+    # An explicit script must win over any region alias.
+    if len(parts) >= 2 and len(parts[1]) == 4:
+        return registry['entries'].get('-'.join(parts[:2]), {}).get('tag')
+    if tag in registry['aliases']:
+        return registry['aliases'][tag]
+    return parts[0] if parts[0] in registry['entries'] else None
+
+
+def select_locale(requested: Optional[str], environ: dict, registry: dict):
+    if requested is not None:
+        tag = resolve_locale_tag(requested, registry)
+        if tag is None:
+            raise LocaleError('Unsupported --locale. Use --list-locales to see supported tags.')
+        return tag, []
+    override = environ.get('KOBO_MIGRATE_LOCALE', '').strip()
+    if override:
+        tag = resolve_locale_tag(override, registry)
+        return (tag, []) if tag else ('en', ['Unsupported environment locale; using English.'])
+    preferences = next((environ.get(key, '').strip() for key in
+                        ('LANGUAGE', 'LC_ALL', 'LC_MESSAGES', 'LANG') if environ.get(key, '').strip()), '')
+    for preference in preferences.split(':'):
+        tag = resolve_locale_tag(preference, registry)
+        if tag:
+            return tag, []
+    notices = ['Chinese script is unspecified; use --locale zh-Hant or zh-Hans. Using English.'] if any(
+        _normalize_locale(p) == 'zh' for p in preferences.split(':')) else []
+    return 'en', notices
+
+
+def _template_fields(template: str) -> set:
+    _locale_text(template)
+    fields = set()
+    try:
+        for literal, field, spec, conversion in string.Formatter().parse(template):
+            if field is None:
+                continue
+            if not re.fullmatch(r'[a-z][a-z0-9_]*', field) or conversion is not None or spec not in {'', 'd', ',d', '.1f'}:
+                raise LocaleError('Unsafe or unsupported locale placeholder.')
+            fields.add(field)
+    except ValueError as exc:
+        if isinstance(exc, LocaleError):
+            raise
+        raise LocaleError('Malformed locale format string.') from None
+    return fields
+
+
+def load_locale_catalog(root: Path, tag: str, registry: dict, english: Optional[dict] = None, complete=False) -> dict:
+    if tag not in registry['entries']:
+        raise LocaleError('Unregistered locale catalog.')
+    data = _locale_json(root, tag + '.json')
+    if set(data) != {'schema_version', 'locale', 'messages'} or data['locale'] != tag or not isinstance(data['messages'], dict):
+        raise LocaleError('Invalid locale catalog schema or tag.')
+    messages = data['messages']
+    if not messages or len(messages) > 2000:
+        raise LocaleError('Locale catalog must contain a bounded message map.')
+    if tag == 'en' and not LOCALE_REQUIRED_IDS <= set(messages):
+        raise LocaleError('Canonical English catalog is missing required messages.')
+    if english is not None and (set(messages) - set(english) or (complete and set(messages) != set(english))):
+        raise LocaleError('Locale catalog message coverage does not match English.')
+    forms = PLURAL_RULES[registry['entries'][tag]['plural_rule']]
+    for key, value in messages.items():
+        if not MESSAGE_ID_RE.fullmatch(key):
+            raise LocaleError('Invalid locale message identifier.')
+        if isinstance(value, str):
+            fields = _template_fields(value)
+        elif isinstance(value, dict) and set(value) == forms:
+            variants = [_template_fields(text) for text in value.values()]
+            if 'count' not in variants[0] or any(fields != variants[0] for fields in variants):
+                raise LocaleError('Plural variants must use identical placeholders including count.')
+            fields = variants[0]
+        else:
+            raise LocaleError('Invalid locale message or plural variants.')
+        if tag == 'en' and key in LOCALE_REQUIRED_IDS:
+            plural = key == 'preview.file_count'
+            if fields != ({'count'} if plural else set()) or isinstance(value, dict) != plural:
+                raise LocaleError('Canonical message placeholders do not match the startup contract.')
+        if english is not None:
+            original = english[key]
+            reference = original if isinstance(original, str) else original['other']
+            if isinstance(value, str) != isinstance(original, str) or fields != _template_fields(reference):
+                raise LocaleError('Locale placeholders or message types do not match English.')
+    return messages
+
+
+@dataclass(frozen=True)
+class LocaleBundle:
+    tag: str
+    registry: dict
+    english: dict
+    messages: dict
+    notices: tuple
+
+    def render(self, key: str, **values) -> str:
+        if key not in self.english:
+            raise LocaleError('Unknown locale message identifier.')
+        original = self.english[key]
+        translated = self.messages.get(key, original)
+        if isinstance(original, dict):
+            count = values.get('count')
+            if type(count) is not int or count < 0:
+                raise LocaleError('Plural messages require a nonnegative integer count.')
+            rule = self.registry['entries'][self.tag]['plural_rule'] if key in self.messages else 'one-other'
+            form = 'one' if rule == 'one-other' and count == 1 else 'other'
+            translated = translated.get(form, original['one' if count == 1 else 'other'])
+            original = original['one' if count == 1 else 'other']
+        # The English field set is authoritative; mismatched callers are programmer errors.
+        if set(values) != _template_fields(original):
+            raise LocaleError('Message parameters do not match the English template.')
+        try:
+            return translated.format(**values)
+        except (ValueError, TypeError, KeyError, OverflowError):
+            try:
+                return original.format(**values)
+            except (ValueError, TypeError, KeyError, OverflowError):
+                raise LocaleError('Cannot format the English locale message.') from None
+
+
+def load_locale_bundle(requested=None, environ=None, root=None) -> LocaleBundle:
+    root = LOCALE_ROOT if root is None else Path(root)
+    registry = load_locale_registry(root)
+    english = load_locale_catalog(root, 'en', registry)
+    tag, notices = select_locale(requested, os.environ if environ is None else environ, registry)
+    messages = english
+    if tag != 'en':
+        try:
+            messages = load_locale_catalog(root, tag, registry, english)
+        except LocaleError:
+            tag, messages = 'en', english
+            notices.append('Requested translation is invalid or unavailable; using English.')
+    return LocaleBundle(tag, registry, english, messages, tuple(notices))
+
+
+def locale_console_write(text: str, stream=None) -> None:
+    """Write read-only startup output without triggering Unicode failures."""
+    stream = sys.stdout if stream is None else stream
+    encoding = getattr(stream, 'encoding', None) or 'utf-8'
+    stream.write(text.encode(encoding, errors='backslashreplace').decode(encoding))
+    stream.flush()
+
+
+class LocaleArgumentParser(argparse.ArgumentParser):
+    """Use public parser methods to handle non-UTF-8 help/error streams safely."""
+    def print_help(self, file=None):
+        locale_console_write(self.format_help(), sys.stdout if file is None else file)
+
+    def print_usage(self, file=None):
+        locale_console_write(self.format_usage(), sys.stdout if file is None else file)
+
+    def exit(self, status=0, message=None):
+        if message:
+            locale_console_write(message, sys.stderr)
+        raise SystemExit(status)
+
+
+def preview_locale_ui(bundle: LocaleBundle) -> None:
+    lines = [bundle.render('preview.title'), bundle.render('preview.notice'), '']
+    for number, token in enumerate(('full', 'koreader', 'library', 'audit'), 1):
+        lines.append(f"  {number}) {token.upper()}: {bundle.render('mode.' + token)}")
+    lines += ['', bundle.render('preview.default_no'), bundle.render('preview.delete'),
+              bundle.render('preview.file_count', count=2)]
+    locale_console_write('\n'.join(lines) + '\n')
+
 
 
 def now_stamp() -> str:
@@ -1283,28 +1582,42 @@ def self_test() -> None:
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description='Safely migrate KOReader, books, reading data and fonts between Kobos.')
-    parser.add_argument('--mode', choices=('full', 'koreader', 'library', 'audit'), help='FULL KOReader + books + reading data; KOREADER whole directory only; LIBRARY files only; AUDIT without writes.')
-    parser.add_argument('--source-model', help='Physical SOURCE model label; still requires confirmation. Logs are only a hint.')
-    parser.add_argument('--target-model', help='Physical TARGET model label; still requires confirmation.')
-    parser.add_argument('--dry-run', action='store_true', help='Inspect both devices and save a plan without modifying Kobo files.')
-    parser.add_argument('--books', action=argparse.BooleanOptionalAction, default=None, help='Include ebooks and their sidecars.')
-    parser.add_argument('--fonts', action=argparse.BooleanOptionalAction, default=None, help='Include custom fonts in the root fonts/ directory.')
-    parser.add_argument('--reading-data', action=argparse.BooleanOptionalAction, default=True, help='Include sidecars and central metadata when copying books.')
-    parser.add_argument('--conflict', choices=('overwrite', 'keep-target'), help='LIBRARY conflict policy (also usable for AUDIT planning). FULL always backs up and overwrites.')
-    parser.add_argument('--include-dir', action='append', default=[], help='Scan this source-relative book directory; repeat for multiple roots.')
-    parser.add_argument('--exclude-dir', action='append', default=[], help='Exclude this source-relative payload directory; repeat as needed.')
-    parser.add_argument('--extra-extension', action='append', default=[], help='Add a book extension, e.g. zip or png. Repeat as needed.')
-    parser.add_argument('--backup-dir', type=Path, default=DEFAULT_BACKUP_DIR, help='Project directory for runs (default: the folder containing this script).')
+    bootstrap = argparse.ArgumentParser(add_help=False, allow_abbrev=False)
+    bootstrap.add_argument('--locale')
+    initial, _ = bootstrap.parse_known_args()
+    try:
+        bundle = load_locale_bundle(initial.locale)
+    except LocaleError as exc:
+        bootstrap.error('Locale initialization failed; keep the complete locales/ folder beside the script. ' + str(exc))
+    for notice in bundle.notices:
+        locale_console_write('WARNING: ' + notice + '\n', sys.stderr)
+    parser = LocaleArgumentParser(description=bundle.render('cli.description'),
+        epilog=bundle.render('cli.foundation_notice'), allow_abbrev=False, add_help=False)
+    parser.add_argument('-h', '--help', action='help', help=bundle.render('help.help'))
+    parser.add_argument('--locale', metavar='TAG', help=bundle.render('help.locale'))
+    parser.add_argument('--mode', choices=('full', 'koreader', 'library', 'audit'), help=bundle.render('help.mode'))
+    parser.add_argument('--source-model', help=bundle.render('help.source_model'))
+    parser.add_argument('--target-model', help=bundle.render('help.target_model'))
+    parser.add_argument('--dry-run', action='store_true', help=bundle.render('help.dry_run'))
+    parser.add_argument('--books', action=argparse.BooleanOptionalAction, default=None, help=bundle.render('help.books'))
+    parser.add_argument('--fonts', action=argparse.BooleanOptionalAction, default=None, help=bundle.render('help.fonts'))
+    parser.add_argument('--reading-data', action=argparse.BooleanOptionalAction, default=True, help=bundle.render('help.reading_data'))
+    parser.add_argument('--conflict', choices=('overwrite', 'keep-target'), help=bundle.render('help.conflict'))
+    parser.add_argument('--include-dir', action='append', default=[], help=bundle.render('help.include_dir'))
+    parser.add_argument('--exclude-dir', action='append', default=[], help=bundle.render('help.exclude_dir'))
+    parser.add_argument('--extra-extension', action='append', default=[], help=bundle.render('help.extra_extension'))
+    parser.add_argument('--backup-dir', type=Path, default=DEFAULT_BACKUP_DIR, help=bundle.render('help.backup_dir'))
     operations = parser.add_mutually_exclusive_group()
-    operations.add_argument('--from-run', metavar='RUN_ID', help='Migrate a verified saved SOURCE snapshot; no source Kobo needed.')
-    operations.add_argument('--restore-run', metavar='RUN_ID', help='Restore the original TARGET snapshot from a previous v3.1+ run.')
-    operations.add_argument('--list-runs', action='store_true', help='List saved batches and status without connecting a Kobo.')
-    operations.add_argument('--cleanup', action='store_true', help='Preview safely eligible old batches; no deletion by default.')
-    parser.add_argument('--keep-successful', type=int, default=2, help='Retain this many newest successful batches (minimum 1).')
-    parser.add_argument('--delete-run', action='append', default=[], metavar='RUN_ID', help='With --cleanup, explicitly select eligible batches to delete; typed confirmation is required.')
-    parser.add_argument('--self-test', action='store_true', help='Run non-destructive tests and exit.')
-    parser.add_argument('--version', action='version', version=f'%(prog)s {VERSION}')
+    operations.add_argument('--preview-ui', action='store_true', help=bundle.render('help.preview_ui'))
+    operations.add_argument('--list-locales', action='store_true', help=bundle.render('help.list_locales'))
+    operations.add_argument('--from-run', metavar='RUN_ID', help=bundle.render('help.from_run'))
+    operations.add_argument('--restore-run', metavar='RUN_ID', help=bundle.render('help.restore_run'))
+    operations.add_argument('--list-runs', action='store_true', help=bundle.render('help.list_runs'))
+    operations.add_argument('--cleanup', action='store_true', help=bundle.render('help.cleanup'))
+    parser.add_argument('--keep-successful', type=int, default=2, help=bundle.render('help.keep_successful'))
+    parser.add_argument('--delete-run', action='append', default=[], metavar='RUN_ID', help=bundle.render('help.delete_run'))
+    parser.add_argument('--self-test', action='store_true', help=bundle.render('help.self_test'))
+    parser.add_argument('--version', action='version', version=f'%(prog)s {VERSION}', help=bundle.render('help.version'))
     args = parser.parse_args()
     if args.delete_run and not args.cleanup:
         parser.error('--delete-run requires --cleanup')
@@ -1313,6 +1626,12 @@ def parse_args() -> argparse.Namespace:
     if args.restore_run and (args.source_model or args.target_model or args.mode or args.books is not None or args.fonts is not None or args.conflict
                             or args.include_dir or args.exclude_dir or args.extra_extension or not args.reading_data):
         parser.error('--restore-run restores the recorded TARGET snapshot; only --dry-run and --backup-dir may customize it')
+    args.locale = bundle.tag
+    args.locale_bundle = bundle
+    if (args.preview_ui or args.list_locales) and (args.mode or args.self_test or args.books is not None or args.fonts is not None
+            or args.source_model or args.target_model or args.conflict or args.include_dir or args.exclude_dir
+            or args.extra_extension or not args.reading_data):
+        parser.error('Locale preview/list commands cannot be combined with migration settings')
     return args
 
 
@@ -1756,6 +2075,17 @@ def reconcile_interrupted_runs(project: Path):
 def main() -> int:
     global CURRENT_RUN, CURRENT_LOCKS
     args = parse_args()
+    if getattr(args, 'list_locales', False):
+        bundle = args.locale_bundle
+        lines = [bundle.render('cli.locales_heading')]
+        lines += [f"  {tag}: {entry['name']}" for tag, entry in bundle.registry['entries'].items()]
+        locale_console_write('\n'.join(lines) + '\n')
+        return 0
+    if getattr(args, 'preview_ui', False):
+        preview_locale_ui(args.locale_bundle)
+        return 0
+    if getattr(args, 'locale', 'en') != 'en':
+        locale_console_write('NOTE: Locale foundation only; migration and maintenance output remains English.\n', sys.stderr)
     if args.self_test:
         self_test()
         return 0

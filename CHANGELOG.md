@@ -1,5 +1,12 @@
 # Changelog
 
+## 3.3.0-dev.1 — 2026-10-15 — KM-013 foundation; ready for user testing
+
+- Added offline JSON locale registry/catalogs for en, zh-Hant and zh-Hans, explicit/environment selection, script-aware aliases and safe English fallback.
+- Added localized help descriptions, --list-locales and a read-only --preview-ui sample. Actual migration/maintenance UI and diagnostic logs remain English; full localization is pending KM-014/KM-015.
+- Added bounded UTF-8/schema/duplicate-key/placeholder/control-character/plural validation, exact locale-file publication allowlist, validator CLI and CI/publish-helper checks.
+- 114 tests passed locally, including existing archive/migration regressions and equivalent temporary FULL outcomes in all three locale choices. Standalone self-test passed. No real Kobo was accessed or migrated, no real backups were deleted, and no changes were pushed remotely.
+
 ## 3.2.0 — 2026-10-14 — Public preparation; physical acceptance pending
 
 - Replaced fixed model-pair direction with operator-confirmed SOURCE/TARGET roles; log model labels are hints, not hardware verification.

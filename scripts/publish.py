@@ -48,6 +48,7 @@ def main() -> int:
         if inspect_blob('README.md', args.body_file.read_bytes()) or inspect_blob('README.md', args.title.encode()):
             raise ValueError('PR title/body failed the publication content check; redact private values.')
         run(sys.executable, 'scripts/check_publication.py', '--history')
+        run(sys.executable, 'scripts/check_locales.py')
         run(sys.executable, '-m', 'unittest', 'discover', '-s', 'tests', '-p', 'test_*.py')
         run(sys.executable, 'kobo-koreader-migrate.py', '--self-test')
         run('gh', 'auth', 'status')

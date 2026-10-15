@@ -15,8 +15,9 @@ Preserve FULL, KOREADER, LIBRARY and AUDIT. SOURCE remains read-only, target-onl
 3. Run the fixture suite and self-test. Do not mark physical acceptance complete based on synthetic tests.
 4. Review the exact staged diff and author email. Use a public alias and a GitHub-provided `@users.noreply.github.com` address. This repository's history guard requires noreply author/committer emails.
 5. Run the publication guard. Stage explicit files; avoid indiscriminate `git add .` around device artifacts.
-6. Commit, push the feature branch and open a pull request with changes, validation and remaining limitations.
-7. Wait for human sign-off before merge. No automatic merge, force push, remote deletion or release publishing is implied by ordinary feature authorization.
+6. Commit locally and present the changes, exact outgoing file/commit scope, privacy-check results, public metadata and limitations to the project owner. Obtain explicit approval before pushing; implementation authorization, OAuth consent and passing tests do not constitute publication approval. If the scope changes, ask again.
+7. After approval, push the reviewed feature branch and open a pull request with changes, validation and remaining limitations.
+8. Wait for human sign-off before merge. No automatic merge, force push, remote deletion or release publishing is implied by ordinary feature authorization.
 
 ```bash
 git config --local core.hooksPath .githooks
@@ -32,7 +33,7 @@ The privacy guard checks the current index and every locally reachable commit, n
 
 Git and [GitHub CLI](https://cli.github.com/) are development tools only. Authenticate using `gh auth login` with its browser flow and operating-system credential store. Never paste tokens into issues, source files, logs or an AI chat. Do not use `gh auth status --show-token` or `--insecure-storage`.
 
-After committing reviewed changes on a feature branch, prepare an English PR body outside the repository or in ignored `.local/`. Include the concrete problem/result, meaningful tests and hardware acceptance status. Then run:
+After obtaining explicit human approval to push the reviewed changes on a committed feature branch, prepare an English PR body outside the repository or in ignored `.local/`. Include the concrete problem/result, meaningful tests and hardware acceptance status. Then run:
 
 ```bash
 python3 scripts/publish.py --repository OWNER/REPO \

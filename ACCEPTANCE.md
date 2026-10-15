@@ -1,6 +1,6 @@
 # Manual acceptance and sign-off
 
-Version 3.2.0 is ready for controlled testing, not signed off on physical devices. KM-011, KM-005, KM-001 and KM-003 remain Ready for test. Public-release changes also require review. Automated tests use synthetic fixtures and do not replace this checklist.
+Current development version 3.3.0-dev.1 is ready for controlled testing, not signed off on physical devices. The base migration acceptance work from 3.2.0 remains pending. KM-011, KM-005, KM-001 and KM-003 remain Ready for test. Public-release changes also require review. Automated tests use synthetic fixtures and do not replace this checklist.
 
 Run commands from the repository root, or pass `--backup-dir` consistently if using a separate private output root. Stop any older migration worker first. Use disposable test books and retain all recovery snapshots until acceptance is complete.
 
@@ -75,3 +75,22 @@ After reviewing the restore preview, a controlled restore should return the affe
 ## Sign-off record
 
 Record version, tested macOS/Python versions, hardware model pair, modes tested, ticket IDs, result and remaining problems. Keep serial numbers, book names and private reports out of public records. Leave each ticket Ready for test until explicit human acceptance is recorded.
+
+
+## KM-013: locale foundation (3.3.0-dev.1)
+
+Status: Ready for test. This is partial i18n support, not complete migration-interface translation. No Kobo is needed for these checks. Keep locales/ beside the script.
+
+```bash
+python3 kobo-koreader-migrate.py --list-locales
+python3 kobo-koreader-migrate.py --locale en --preview-ui
+python3 kobo-koreader-migrate.py --locale zh-Hant --preview-ui
+python3 kobo-koreader-migrate.py --locale zh-Hans --help
+python3 scripts/check_locales.py
+```
+
+- Check all three options, translation wording, FULL/KOREADER distinctions, default-No examples and exact DELETE RUN_ID text. Previews must not request an answer, connect devices, inspect run data or create runs/logs/backups.
+- Use a known terminal locale alias or KOBO_MIGRATE_LOCALE to confirm preference selection. Explicit --locale must win. Bare zh must not silently guess a Chinese script.
+- An unsupported explicit locale must fail before device activity. Do not damage production catalogs to test fallback; malformed/missing assets are covered by synthetic automated tests.
+- Actual migration/maintenance messages and logs remain English. Do not sign off KM-014/KM-015 based on this preview.
+- Automated evidence: 114 fixture tests, including language-independent FULL outcomes and the actual macOS ditto fixture; this is not hardware acceptance. Record explicit human feedback before marking KM-013 Done.
