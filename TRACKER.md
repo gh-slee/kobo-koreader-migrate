@@ -87,9 +87,11 @@ For the next authorized feature session:
 | PUB-001 | Ready for review | Expanded Git ignore policy, source allowlist, staged/history privacy gate and local pre-push hook. Human diff review remains required; heuristics cannot prove absence of all personal data. |
 | PUB-002 | Ready for test | Generic SOURCE/TARGET roles and confirmed labels, renamed-volume discovery, mandatory fingerprints, same-device rejection, explicit runtime compatibility confirmation; preserve FULL/KOREADER and legacy snapshots. |
 | PUB-003 | Ready for review | Detailed English README, MIT license, contribution/security/manual acceptance docs and fixture CI. |
-| PUB-004 | In progress | Clean Git history, public alias/noreply identity, authenticated remote bootstrap. No private run files may be included. |
+| PUB-004 | Ready for review | Clean Git history initialized with authenticated public alias/noreply identity; public origin created. Minimal main bootstrap is published; full tool/docs use feature/public-release for human review. Private run files are excluded. |
 | PUB-005 | Ready for review | Standalone feature-branch publication helper runs privacy/tests, pushes and creates/reuses a PR. Human approval before merge; no force push or automatic merge. |
 
 Public preparation does not complete physical acceptance of KM-011/KM-005/KM-001/KM-003. Local implementation/test evidence and remote bootstrap outcome must be recorded before handoff.
 
 - 2026-10-15: v3.2.0 public preparation — 95 local tests passed on Python 3.12.2/macOS, including the actual ditto fixture. Self-test and candidate publication check passed. Added generic-role/saved-source/restore regressions and Git blob/history/publish-helper tests. No physical Kobo was accessed, no real backups were deleted, and physical acceptance remains pending.
+
+- 2026-10-15: Public remote initialized. Git identity uses the authenticated GitHub alias/noreply address. Only README, MIT license and ignore policy were bootstrapped on main; the complete tool and detailed README are committed on feature/public-release. Index/history privacy checks passed. Hosted CI and PR review are pending.
