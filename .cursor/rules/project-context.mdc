@@ -1,0 +1,11 @@
+---
+description: Persistent KOReader migration project context and tracker workflow
+alwaysApply: true
+---
+
+Read and follow `AGENTS.md` at the project root before editing.
+Read `TRACKER.md` for current status, ticket acceptance criteria and handoff notes.
+Update the tracker when authorized work starts, changes scope, or completes.
+Do not treat queued tickets as permission to migrate devices or remove backups.
+
+All current and future runtime features must work as standalone code without an LLM, AI API, model server or active Codex/ChatGPT session. LLMs may assist development only.

@@ -1,0 +1,37 @@
+# Project guidance
+
+- Start by reading `TRACKER.md` and `README.md`, then inspect the current script.
+- Treat the tracker as a backlog, not permission to operate devices or delete backups.
+- When feature work is authorized, use ticket IDs and the recommended implementation order.
+- Set a ticket to `In progress` only when work actually starts; leave handoff notes if unfinished.
+- A completed ticket needs its acceptance criteria, meaningful tests, and validation evidence.
+- This release requires user testing/sign-off: Ready for test is not Done; consult ACCEPTANCE.md.
+- Update `TRACKER.md` and relevant documentation in the same change as implementation.
+- All current and future features must be standalone code features usable directly from Terminal without an LLM session.
+- Do not introduce AI inference APIs, model downloads, local LLM servers, agent frameworks, or runtime dependence on Codex/ChatGPT.
+- LLMs may assist development only; runtime decisions must use explicit program logic and ordinary CLI confirmations.
+- Feature acceptance must verify operation without AI credentials or AI services; document complete CLI usage and keep the existing core offline workflow.
+- Follow the current user's requested conversation language. Public code, comments, CLI prompts, runtime logs and documentation stay English.
+- The canonical script is `kobo-koreader-migrate.py` in this project; do not put version tags in its filename.
+- Keep version information in `VERSION`, startup output, logs and JSON records.
+- Preserve FULL (entire KOReader + supported books + reading data + default root fonts).
+- Preserve KOREADER (entire `.adds/koreader` only), LIBRARY and AUDIT/dry-run.
+- FULL backs up and overwrites matching paths; only LIBRARY prompts for conflict policy.
+- Target-only books are retained unless the user explicitly selects a future mirror option.
+- Source Kobo files must remain read-only; back up target data before modifying it.
+- Generated data belongs in `runs/<run-id>/` beside the script; `--backup-dir` changes the project root.
+- Never evaluate device Lua files as executable code. Do not log API keys or actual device IDs.
+- Normal user cancellation is not a MigrationError. Keep real failure and rollback errors distinct.
+- Use temporary directories and mocked devices for tests. Real-device migration requires authorization.
+- Do not move active run artifacts or delete backup batches as part of routine development.
+- Run `python3 -m unittest discover -s tests -p 'test_*.py'` and the script's `--self-test` after relevant changes.
+- The tool and fixture suite target Python 3.9+; record the Python versions actually validated.
+- Never claim real-Kobo validation based on mocked tests or local `ditto` fixtures.
+- Keep backups, books, device files, private notes and credentials out of Git. Stage explicit allowlisted files and review the index/history, not only the working tree.
+- Authorized future feature work may push a feature branch and create/update a PR after tests and privacy checks. Human sign-off is required before merge. No automatic merge, force push, remote deletion or release publishing.
+- Verify the current origin/repository before publication. Use scripts/publish.py with the explicit OWNER/REPO, a committed clean feature branch and a reviewed English PR body.
+- Run scripts/check_publication.py --history before push; install .githooks via repo-local core.hooksPath. Do not bypass a failed guard or publish private history.
+- Keep Git author email private using the authenticated account's public alias/noreply identity. Never print tokens or request that users paste credentials into chat.
+- Authenticate through GitHub CLI's browser/OS credential-store flow. Publication helpers are ordinary code too; no LLM runtime dependency.
+- SOURCE/TARGET labels are operator-confirmed. KOReader logs are only hints, possibly cloned from another device; do not treat them as verified hardware identity.
+- Require readable device fingerprints and same-device rejection. Never infer the opposite TARGET model from SOURCE. Whole-runtime copying requires operator confirmation of hardware compatibility.
