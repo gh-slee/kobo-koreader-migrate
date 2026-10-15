@@ -76,7 +76,15 @@ def check_history() -> list[str]:
     issues, seen = [], set()
     for commit in git('rev-list', '--all').decode().splitlines():
         emails = git('show', '-s', '--format=%ae%n%ce', commit).decode().splitlines()
-        if any(not email.lower().endswith('@users.noreply.github.com') for email in emails):
+        author, committer = emails
+        author_private = author.lower().endswith('@users.noreply.github.com')
+        committer_private = committer.lower().endswith('@users.noreply.github.com')
+        # GitHub's PR test merge uses this public platform committer address.
+        # Accept it only for merge commits; authors still need user noreply IDs.
+        if committer == 'noreply@github.com':
+            parents = git('rev-list', '--parents', '-n', '1', commit).decode().split()[1:]
+            committer_private = len(parents) >= 2
+        if not author_private or not committer_private:
             issues.append(f'commit {commit[:12]}: author/committer email is not a GitHub noreply address')
         message = git('show', '-s', '--format=%B', commit)
         issues.extend(inspect_blob('CHANGELOG.md', message))

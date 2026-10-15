@@ -13,7 +13,7 @@ Preserve FULL, KOREADER, LIBRARY and AUDIT. SOURCE remains read-only, target-onl
 1. Create a feature branch from an up-to-date `main` (for example `feature/progress-report`).
 2. Implement the requested scope. Update tracker status, acceptance criteria, version/changelog and documentation together.
 3. Run the fixture suite and self-test. Do not mark physical acceptance complete based on synthetic tests.
-4. Review the exact staged diff and author email. Use a public alias and a GitHub-provided `@users.noreply.github.com` address. This repository's history guard requires noreply author/committer emails.
+4. Review the exact staged diff and author email. Use a public alias and a GitHub-provided `@users.noreply.github.com` address. This repository's history guard requires user noreply author/committer emails. For merge commits, the exact public platform committer address `noreply@github.com` used by GitHub PR test merges is also accepted; this does not permit platform authors, non-merge platform committers, personal emails or lookalike domains.
 5. Run the publication guard. Stage explicit files; avoid indiscriminate `git add .` around device artifacts.
 6. Commit locally and present the changes, exact outgoing file/commit scope, privacy-check results, public metadata and limitations to the project owner. Obtain explicit approval before pushing; implementation authorization, OAuth consent and passing tests do not constitute publication approval. If the scope changes, ask again.
 7. After approval, push the reviewed feature branch and open a pull request with changes, validation and remaining limitations.

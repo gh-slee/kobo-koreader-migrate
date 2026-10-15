@@ -169,6 +169,45 @@ class PublicationTests(unittest.TestCase):
                 self.assertFalse(guard.check_index())
                 self.assertTrue(guard.check_history())
 
+    def test_history_allows_platform_merge_committer_without_allowing_personal_emails(self):
+        user = 'fixture@users.noreply.github.com'
+        cases = [
+            ('normal user', user, user, False, False),
+            ('platform merge', user, 'noreply@github.com', True, False),
+            ('platform nonmerge', user, 'noreply@github.com', False, True),
+            ('platform author', 'noreply@github.com', user, True, True),
+            ('personal author', 'fixture@example.invalid', 'noreply@github.com', True, True),
+            ('personal committer', user, 'fixture@example.invalid', True, True),
+            ('lookalike platform', user, 'noreply@github.com.example.invalid', True, True),
+        ]
+        for label, author, committer, merge, blocked in cases:
+            with self.subTest(label=label), tempfile.TemporaryDirectory() as td:
+                root = Path(td)
+                env = dict(os.environ, GIT_AUTHOR_NAME='Fixture', GIT_COMMITTER_NAME='Fixture',
+                           GIT_AUTHOR_EMAIL=user, GIT_COMMITTER_EMAIL=user)
+                def git(*args, identity=None):
+                    return subprocess.run(['git', '-C', td, *args], env=identity or env,
+                                          check=True, capture_output=True).stdout.decode().strip()
+                git('init', '-b', 'main')
+                (root / 'README.md').write_text('Synthetic public fixture.\n')
+                git('add', 'README.md')
+                git('commit', '-m', 'Initial fixture')
+                first = git('rev-parse', 'HEAD')
+                git('commit', '--allow-empty', '-m', 'Second fixture')
+                second = git('rev-parse', 'HEAD')
+                parents = ['-p', second]
+                if merge:
+                    parents += ['-p', first]
+                identity = dict(env, GIT_AUTHOR_EMAIL=author, GIT_COMMITTER_EMAIL=committer)
+                candidate = git('commit-tree', git('write-tree'), *parents,
+                                '-m', 'Candidate fixture', identity=identity)
+                git('update-ref', 'refs/heads/candidate', candidate)
+                with mock.patch.object(guard, 'ROOT', root):
+                    issues = guard.check_history()
+                self.assertEqual(bool(issues), blocked)
+                if blocked:
+                    self.assertTrue(any('author/committer email' in issue for issue in issues))
+
     def test_publish_origin_must_be_exact_github_without_credentials(self):
         self.assertEqual(publish.repository_from_url('https://github.com/example/tool.git'),'example/tool')
         self.assertEqual(publish.repository_from_url('git@github.com:example/tool.git'),'example/tool')

@@ -93,7 +93,7 @@ For the next authorized feature session:
 | PUB-001 | Ready for review | Expanded Git ignore policy, source allowlist, staged/history privacy gate and local pre-push hook. Human diff review remains required; heuristics cannot prove absence of all personal data. |
 | PUB-002 | Ready for test | Generic SOURCE/TARGET roles and confirmed labels, renamed-volume discovery, mandatory fingerprints, same-device rejection, explicit runtime compatibility confirmation; preserve FULL/KOREADER and legacy snapshots. |
 | PUB-003 | Ready for review | Detailed English README, MIT license, contribution/security/manual acceptance docs and fixture CI. |
-| PUB-004 | In progress | Public origin/minimal main bootstrap exist. GitHub CLI subsequently confirmed OAuth refresh completion; verify effective scope before approved publication rather than requesting another device code automatically. Complete implementation remains local with additional uncommitted changes; no feature PR exists. Explicit change/privacy review and push approval are pending. |
+| PUB-004 | In progress | Approved implementation published on feature/public-release at 2e2daec3143ecabdd7ad88f275e790e710013fbe; PR #1 is open. Push CI passed all six jobs; PR CI rejected GitHub's public merge committer. A tested local guard fix awaits reviewed push approval. No merge or human acceptance. |
 | PUB-005 | Ready for review | Standalone feature-branch publication helper runs privacy/tests, pushes and creates/reuses a PR. Human approval before merge; no force push or automatic merge. |
 
 Public preparation does not complete physical acceptance of KM-011/KM-005/KM-001/KM-003. Local implementation/test evidence and remote bootstrap outcome must be recorded before handoff.
@@ -102,9 +102,9 @@ Public preparation does not complete physical acceptance of KM-011/KM-005/KM-001
 
 - 2026-10-15: Public remote initialized. Git identity uses the authenticated GitHub alias/noreply address. Only README, MIT license and ignore policy were bootstrapped on main; the complete tool and detailed README are committed on feature/public-release. Index/history privacy checks passed. Hosted CI and PR review are pending.
 
-- Publication history: GitHub refused feature/public-release because its CI workflow needed OAuth workflow scope. A subsequent `gh auth refresh --hostname github.com --scopes workflow` reported Authentication complete. This is not push approval. Verify effective credentials only when needed; retain CI and all checks. No feature PR has been created or merged.
+- Publication history: an earlier feature push was refused because CI required OAuth workflow scope. Workflow scope was verified on 2026-10-15; after explicit owner approval, commit 2e2daec3143ecabdd7ad88f275e790e710013fbe was pushed and [PR #1](https://github.com/gh-slee/kobo-koreader-migrate/pull/1) was created. It remains unmerged.
 
-- Publication approval override: the owner now requires a concrete change/privacy review and explicit approval before every remote push, in addition to approval before merge. Do not resume publication after OAuth workflow consent alone. Current feature branch publication is on hold pending that review; no new remote writes are authorized. This supersedes earlier automatic-push instructions.
+- Publication approval policy: the owner requires a concrete change/privacy review and explicit approval before every remote push, in addition to approval before merge. The owner approved the 25-file publication batch pushed as 2e2daec. Changed scope still requires a fresh review/approval. OAuth consent alone is not push approval. This supersedes earlier automatic-push instructions.
 
 
 ## Internationalization design and implementation status
@@ -274,3 +274,16 @@ Publication scope note: the i18n plan and updated guidance change the previously
 - README now distinguishes local test evidence (114 tests on Python 3.12.2/macOS) from configured but not yet confirmed hosted CI and pending physical acceptance. No fabricated CI badge or production-readiness claim was added.
 - The initial review branch installation command is explicitly conditional on branch publication, because main currently holds bootstrap docs. Later default-branch installation follows implementation merge.
 - No runtime code changed for this documentation pass. No remote writes were performed. Outgoing scope/privacy review must be regenerated after these changes and explicitly approved before any push.
+
+
+## Published review branch handoff (2026-10-15)
+
+This entry supersedes earlier statements that publication or PR creation was pending.
+
+- Explicit owner approval covered the prepared 25-file batch. Local 114-test suite, self-test, three-locale validation and index/history publication checks passed before upload.
+- Published commit: `2e2daec3143ecabdd7ad88f275e790e710013fbe` on `feature/public-release`. [PR #1](https://github.com/gh-slee/kobo-koreader-migrate/pull/1) is open and attached to the development chat. No merge was performed.
+- Complete README and implementation are on the review branch; `main` still contains bootstrap documentation.
+- [Push CI run 38812366823](https://github.com/gh-slee/kobo-koreader-migrate/actions/runs/38812366823) passed all six macOS/Linux Python 3.9/3.12/3.14 jobs. [PR CI run 38812368025](https://github.com/gh-slee/kobo-koreader-migrate/actions/runs/38812368025) failed all six jobs at the publication guard, before tests, because GitHub's generated merge uses platform committer noreply@github.com. API metadata confirmed a user noreply author and the exact platform committer; no personal email was reported.
+- GitHub DNS/API access temporarily failed, then recovered. Failed logs and merge metadata were read successfully. Local follow-up permits the exact platform committer only on merge commits; all authors still need user noreply IDs. Personal emails, platform authors/non-merge committers and lookalike domains are rejected. File/blob/message/history checks remain intact.
+- Unpublished follow-up scope: scripts/check_publication.py, tests/test_public_release.py, README.md, CONTRIBUTING.md, CHANGELOG.md and TRACKER.md. Local validation: 115 tests passed (including seven real-Git identity cases), self-test and locale validation passed. No migration runtime or locale files changed. Obtain explicit approval for this reviewed follow-up before pushing; no bypass, force push or merge.
+- Manual/physical acceptance remains pending. Keep KM-011/KM-005/KM-001/KM-003/KM-013 Ready for test. Do not start KM-014 or merge without authorization/sign-off.
