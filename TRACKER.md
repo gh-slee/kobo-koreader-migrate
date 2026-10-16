@@ -1,6 +1,6 @@
 # Development tracker
 
-Last reconciled: **2026-10-15**. Tool version: **3.3.0-dev.1** (experimental; physical acceptance pending).
+Last reconciled: **2026-10-16**. Tool version: **3.3.0-dev.1** (experimental; physical acceptance pending).
 
 Status vocabulary: `Queued`, `In progress`, `Ready for test`, `Blocked`, `Done`, `Deferred`. KM-011, KM-005, KM-001 and KM-003 are implemented and ready for user testing; no human sign-off has been recorded. Entries represent planned work, not permission to operate physical devices or delete backups.
 
@@ -71,7 +71,7 @@ The development build is 3.3.0-dev.1. KM-011/KM-005/KM-001/KM-003/KM-013 remain 
 
 Target restoration needs a modern target-snapshot.json and target-changes.json plus verified archive pairs. A FULL source snapshot can serve FULL/KOREADER, not LIBRARY; central metadata belongs to the runtime archive. See README.md for compatibility and recovery details.
 
-Published baseline 48ac339 passed the 116-test local suite, self-test and locale validation. Its [push CI](https://github.com/gh-slee/kobo-koreader-migrate/actions/runs/38830387604) and [PR CI](https://github.com/gh-slee/kobo-koreader-migrate/actions/runs/38830394737) passed all six macOS/Linux Python matrix jobs each. This is automated evidence, not hardware validation. [PR #1](https://github.com/gh-slee/kobo-koreader-migrate/pull/1) is under review and unmerged.
+[PR #1](https://github.com/gh-slee/kobo-koreader-migrate/pull/1) merged into main on 2026-10-16 as [564234e](https://github.com/gh-slee/kobo-koreader-migrate/commit/564234e2256bb6a64085cc10a4d3c5535322313e). Its [main CI](https://github.com/gh-slee/kobo-koreader-migrate/actions/runs/38918881111) passed all six macOS/Linux Python matrix jobs. The pre-merge dedc884 baseline passed 117 local tests, self-test, locale validation and all twelve push/PR CI checks. This is automated evidence; merge does not record physical/manual acceptance.
 
 ## Agent-assisted development
 
@@ -233,3 +233,8 @@ These references inform the design; this plan chooses source-reviewable JSON cat
 README.md is the concise entry point for installation, essential mode/data behavior, supported platforms, partial locale status and document navigation. Complete user, recovery, troubleshooting, developer and maintainer details now live in five topic guides under docs/. Shared AGENTS.md remains the agent entry point; this organization introduces no new agent-memory convention or migration runtime behavior.
 
 The publication allowlist adds only the five exact reviewed Markdown paths; other docs/data paths remain blocked and all guide content still receives secret/path scanning. A regression covers both allowed paths and rejection of unknown/private paths or private content. Local validation passed: 117 tests, self-test, three-locale validation, 99 documentation link targets and 27 shell examples, plus worktree/history privacy and whitespace checks. Migration runtime and locale assets are unchanged. These results cover the local documentation batch; hosted CI for it requires publication. Physical/manual acceptance status is unchanged.
+
+
+## Post-merge documentation
+
+Following PR #1, the default main checkout contains the complete implementation. Installation, CI badge scope, contributor base-branch instructions and release-preparation guidance now target main. This is a documentation-only correction; runtime/catalog behavior and all pending human acceptance tickets remain unchanged. Local checks passed: 100 document link targets, 27 shell examples, live main CI badge, publication privacy/history and whitespace. Runtime, catalogs, scripts and tests are unchanged; the full fixture suite was not repeated for this documentation-only correction.

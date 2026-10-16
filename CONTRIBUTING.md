@@ -11,7 +11,7 @@ Preserve the existing mode semantics and data protections described in AGENTS.md
 ## Development workflow
 
 1. Check existing issues and the tracker before a substantial change. Keep PRs focused and describe the problem and intended behavior.
-2. Create a feature branch from the intended review base. During initial review, the complete implementation is on feature/public-release in PR #1; main contains bootstrap documentation only.
+2. Create a feature branch from an up-to-date main and target main with your PR. The complete development implementation is available on main.
 3. Implement the change and add meaningful regressions for changed behavior or safety boundaries. Update relevant documentation and feature/acceptance status; update version/changelog when runtime behavior changes.
 4. Run checks appropriate to the change. For runtime, catalog, test or guard changes, use the commands below. Documentation-only changes need link/example/privacy checks.
 5. Inspect the exact staged diff and reachable history. Keep credentials, private instructions and device artifacts out of Git; use explicit file paths when staging.

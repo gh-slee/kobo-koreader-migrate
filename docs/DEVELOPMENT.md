@@ -59,9 +59,9 @@ Run scripts/check_locales.py after any catalog/registry change. The three initia
 
 The development build is **3.3.0-dev.1**. Physical-Kobo testing and human sign-off remain pending; the release is experimental.
 
-Published agent-guidance commit [48ac339](https://github.com/gh-slee/kobo-koreader-migrate/commit/48ac3399962f9c938ef0929063eb95140532eac1) passed all twelve push/PR CI checks on 2026-10-15. CI covers macOS and Ubuntu on Python 3.9, 3.12 and 3.14. Linux checks fixtures only. The local baseline for that commit was 116 tests plus self-test and locale validation.
+[PR #1](https://github.com/gh-slee/kobo-koreader-migrate/pull/1) merged into main on 2026-10-16 as [564234e](https://github.com/gh-slee/kobo-koreader-migrate/commit/564234e2256bb6a64085cc10a4d3c5535322313e). Its [main-branch CI run](https://github.com/gh-slee/kobo-koreader-migrate/actions/runs/38918881111) passed all six macOS/Ubuntu Python 3.9, 3.12 and 3.14 jobs. Linux checks fixtures only. The pre-merge documentation commit dedc884 passed 117 local tests plus self-test and locale validation, and all twelve push/PR CI jobs.
 
-New changes require fresh validation. Temporary fixtures and the real macOS ditto round trip do not establish hardware compatibility. KM-011/KM-005/KM-001/KM-003/KM-013 remain Ready for test; see [manual acceptance](../ACCEPTANCE.md). KM-014/KM-015 actual migration-interface localization remains queued. Follow the current [CI runs](https://github.com/gh-slee/kobo-koreader-migrate/actions) and [PR #1](https://github.com/gh-slee/kobo-koreader-migrate/pull/1) for review status.
+New changes require fresh validation. Temporary fixtures and the real macOS ditto round trip do not establish hardware compatibility. KM-011/KM-005/KM-001/KM-003/KM-013 remain Ready for test; see [manual acceptance](../ACCEPTANCE.md). KM-014/KM-015 actual migration-interface localization remains queued. Follow the current [CI runs](https://github.com/gh-slee/kobo-koreader-migrate/actions) and [open pull requests](https://github.com/gh-slee/kobo-koreader-migrate/pulls) for subsequent changes.
 
 ## Coding agents
 
@@ -71,7 +71,43 @@ For personal Codex defaults, use its documented user-level AGENTS.md. For privat
 
 Codex's local managed worktrees automatically copy an ignored AGENTS.override.md. Other ignored files require deliberate .worktreeinclude configuration; ordinary clones, manual Git worktrees and remote environments do not gain this behavior. See [official worktree documentation](https://learn.chatgpt.com/docs/environments/git-worktrees). This project needs no extra private Markdown loader or worktree include file for its local override. Private instructions and credentials must never be added to a public commit.
 
-Validate setup from a fresh session started in the repository: ask the tool which instructions it loaded and verify that shared rules remain active. Other assistants have their own discovery and subagent inheritance rules. Give delegated agents the applicable guidance and task context; do not assume automatic inheritance. Development guidance never changes the migration tool's offline runtime requirements.
+Create private guidance only after confirming that both root and nested AGENTS.override.md paths are ignored and untracked. The local override must begin with this exact line:
+
+```text
+Before working, explicitly read ./AGENTS.md.
+```
+
+Keep personal preferences, operator authorization boundaries and concise current state in that private file. Replace stale branch/check/pending-work facts rather than appending transcripts. Never store credentials there or copy its contents into public guidance. Do not create custom OWNER.md/HANDOFF.md memory files. Keep shared rules in AGENTS.md; consolidate duplicate vendor instructions into references while preserving useful tool-specific activation and settings. No global Codex configuration change is required.
+
+Other assistants have their own discovery and subagent inheritance rules. Delegate only when requested, and give each agent a bounded task and the applicable guidance; do not assume conversation inheritance. Development guidance never changes the migration tool's offline runtime requirements.
+
+### Fresh-session verification
+
+Start a new session with this repository as its working directory. Paste the following verification prompt; it does not authorize edits, device operations or publication:
+
+```text
+Verify this repository's agent setup without modifying files or publishing anything.
+1. Identify instruction files supplied through startup discovery, separating them
+   from files you explicitly read during this verification. If discovery provenance
+   is unavailable, say so; do not infer discovery merely from a file's existence.
+2. Follow any local override's instruction to read ./AGENTS.md explicitly.
+   Summarize the shared stack, relevant validation commands and safety boundaries.
+3. If private guidance is active, report only its effective response-language and
+   publication-approval requirements. Do not quote private text, session notes,
+   credentials or personal paths. Report missing guidance without inventing it.
+4. Report the current branch, HEAD commit and working-tree status. Identify pending
+   work without treating old approvals or checks as permission or fresh evidence.
+5. State whether this is an actual fresh-session check or only a static file audit.
+   If this is a worktree, verify destination guidance and branch/state separately.
+```
+
+After creating a local managed worktree, verify its ignored guidance and current branch/state at the destination. Ordinary clones, remote environments and manual worktrees need deliberate local setup; do not assume private files transferred. A successful file/ignore test does not prove startup discovery, precedence, agent compliance or worktree copying. Record a fresh-session or managed-worktree result only after actually performing that check.
+
+### Public language policy
+
+Canonical documentation, owned public code, comments and docstrings use English. Preserve original license terms, attribution and quoted source/user text. Locale catalogs, multilingual regression fixtures and necessary compatibility strings are intentional exceptions. Do not change stored application data or remove supported languages to eliminate non-English characters. Review translated heading anchors and executable examples when translating documentation.
+
+There is no automated English-language guard. A CJK search can help review canonical prose, but cannot prove English grammar or translation accuracy; blanket non-ASCII bans would also reject valid names, symbols and localization fixtures.
 
 ## Feature and locale work
 

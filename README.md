@@ -7,7 +7,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/gh-slee/kobo-koreader-migrate/actions/workflows/tests.yml?query=branch%3Afeature%2Fpublic-release"><img alt="Review branch CI status" src="https://github.com/gh-slee/kobo-koreader-migrate/actions/workflows/tests.yml/badge.svg?branch=feature%2Fpublic-release&amp;event=push"/></a>
+  <a href="https://github.com/gh-slee/kobo-koreader-migrate/actions/workflows/tests.yml?query=branch%3Amain"><img alt="Main branch CI status" src="https://github.com/gh-slee/kobo-koreader-migrate/actions/workflows/tests.yml/badge.svg?branch=main&amp;event=push"/></a>
   <a href="#tech-stack"><img alt="Python 3.9 or newer" src="https://img.shields.io/badge/Python-3.9%2B-3776AB?style=flat-square&amp;logo=python&amp;logoColor=white"/></a>
   <a href="#requirements"><img alt="Device migration requires macOS" src="https://img.shields.io/badge/macOS-USB_migration-111827?style=flat-square&amp;logo=apple&amp;logoColor=white"/></a>
   <a href="#tech-stack"><img alt="Runtime dependencies: Python standard library" src="https://img.shields.io/badge/dependencies-standard_library-0F766E?style=flat-square"/></a>
@@ -25,7 +25,7 @@
 </p>
 
 > [!IMPORTANT]
-> **3.3.0-dev.1 is an experimental review build.** Automated fixture CI passes on macOS and Linux; physical-Kobo testing and human sign-off are still pending. Device migration requires **macOS**. Locale support currently covers help and static UI samples; migration/maintenance messages remain English.
+> **3.3.0-dev.1 is an experimental development build.** Automated fixture CI passes on macOS and Linux; physical-Kobo testing and human sign-off are still pending. Device migration requires **macOS**. Locale support currently covers help and static UI samples; migration/maintenance messages remain English.
 
 ## Why use it?
 
@@ -40,19 +40,19 @@
 
 ## Quick start
 
-The complete review build is published on [`feature/public-release`](https://github.com/gh-slee/kobo-koreader-migrate/tree/feature/public-release) in [PR #1](https://github.com/gh-slee/kobo-koreader-migrate/pull/1). `main` currently contains bootstrap documentation only.
+The complete development source is available on [`main`](https://github.com/gh-slee/kobo-koreader-migrate/tree/main). This is an experimental build; start with the offline checks and a dry run.
 
-### 1. Get the review build
+### 1. Get the project
 
 ```bash
-git clone --branch feature/public-release --single-branch https://github.com/gh-slee/kobo-koreader-migrate.git
+git clone https://github.com/gh-slee/kobo-koreader-migrate.git
 cd kobo-koreader-migrate
 python3 --version
 python3 scripts/check_locales.py
 python3 kobo-koreader-migrate.py --self-test
 ```
 
-Python 3.9+ is required. No `pip install` is needed. You can also select the review branch on GitHub and choose **Code > Download ZIP**. Keep the complete `locales/` directory beside `kobo-koreader-migrate.py`; copying the script alone is not a complete installation, even for English.
+Python 3.9+ is required. No `pip install` is needed. You can also select `main` on GitHub and choose **Code > Download ZIP**. Keep the complete `locales/` directory beside `kobo-koreader-migrate.py`; copying the script alone is not a complete installation, even for English.
 
 ### 2. Explore without a Kobo
 
@@ -81,7 +81,7 @@ python3 kobo-koreader-migrate.py --mode full
 > [!NOTE]
 > FULL includes supported books, reading data and root fonts by default. It retains TARGET-only library files outside `.adds/koreader`, but replaces the **entire KOReader directory** after backup. See [complete mode behavior](docs/USAGE.md#choose-a-mode) before approving writes.
 
-Do not run as `sudo`. Keep backups until you have checked the result on TARGET. After the implementation is merged, standard default-branch clones can omit the review-branch flags. There is no stable release or package-manager installation advertised for this development build.
+Do not run as `sudo`. Keep backups until you have checked the result on TARGET. Cloning main obtains current development source, not a version-pinned release. Release publication and physical-device acceptance remain separate steps.
 
 ## Requirements
 
@@ -158,7 +158,7 @@ English (`en`), Traditional Chinese (`zh-Hant`) and Simplified Chinese (`zh-Hans
 
 ## Project status and roadmap
 
-**3.3.0-dev.1 is experimental.** CI uses temporary fixtures; successful checks do not prove physical-device compatibility. Human testing/sign-off remains pending. The badge tracks push CI on the review branch.
+**3.3.0-dev.1 is experimental.** CI uses temporary fixtures; successful checks do not prove physical-device compatibility. Human testing/sign-off remains pending. The badge tracks push CI on main.
 
 Interrupted-transfer resume, exact library mirroring, content-assisted discovery, portable hardware settings and full migration-interface translations remain planned work. [Current status and criteria](TRACKER.md) · [Automated evidence](docs/DEVELOPMENT.md#validation-and-release-status).
 
