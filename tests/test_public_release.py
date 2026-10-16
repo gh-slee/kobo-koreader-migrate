@@ -136,6 +136,23 @@ class PublicationTests(unittest.TestCase):
                      'example.sdr/metadata.epub.lua','source-snapshot.json','id_ed25519'):
             self.assertTrue(guard.inspect_blob(path,b'synthetic'))
 
+    def test_private_agent_instructions_are_ignored_and_blocked_from_publication(self):
+        paths = ('AGENTS.override.md', 'nested/AGENTS.override.md', '.local/notes.md')
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            (root / '.gitignore').write_bytes((guard.ROOT / '.gitignore').read_bytes())
+            subprocess.run(['git', '-C', td, 'init', '-b', 'main'], check=True, capture_output=True)
+            for path in paths:
+                with self.subTest(path=path):
+                    fixture = root / path
+                    fixture.parent.mkdir(parents=True, exist_ok=True)
+                    fixture.write_text('Synthetic local-only instructions.\n')
+                    result = subprocess.run(['git', '-C', td, 'check-ignore', '-q', '--', path],
+                                            capture_output=True)
+                    self.assertEqual(result.returncode, 0)
+                    self.assertTrue(guard.inspect_blob(path, fixture.read_bytes()))
+        self.assertFalse(guard.inspect_blob('AGENTS.md', b'Synthetic shared guidance.'))
+
     def test_detection_never_echoes_secret_values(self):
         secret = 'gh' + 'p_' + 'a' * 32
         issues = guard.inspect_blob('README.md', ('token: ' + secret).encode())

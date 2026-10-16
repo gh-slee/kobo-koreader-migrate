@@ -17,7 +17,7 @@ Acceptance for every ticket must include standalone CLI operation without AI API
 3. **KM-001**: migrate/restore from verified saved archives.
 4. **KM-003**: backup management and cleanup preview.
 
-These four tickets are awaiting user testing/sign-off, not additional autonomous implementation. Read ACCEPTANCE.md. KM-013 is implemented and Ready for test for locale selection, localized help and read-only UI samples. KM-014 through KM-017 remain Queued; actual migration/maintenance localization has not started. Other Queued work is not authorized by this release.
+These four tickets await human testing/sign-off. See ACCEPTANCE.md. KM-013 is implemented and Ready for test for locale selection, localized help and read-only UI samples. KM-014 through KM-017 remain Queued; actual migration/maintenance localization has not started. Other Queued work is not authorized by this release.
 
 ## Backlog
 
@@ -34,7 +34,7 @@ These four tickets are awaiting user testing/sign-off, not additional autonomous
 | KM-009 | P2 | Queued | Settings-only migration | Preserve destination KOReader runtime/version, transfer compatible settings/custom plugins/resources, validate version compatibility and rollback; decide interaction with portable hardware policy KM-008. Avoid copying source core plugins blindly. |
 | KM-010 | P2 | Queued | Standalone backup verification | CLI to verify existing archive SHA-256 and member content against manifest, unsafe paths/duplicates, corruption and missing pairs; read-only and usable without any Kobo. Reusable by KM-001/KM-003. |
 | KM-011 | P1 | Ready for test | Execution lock and run status | Prevent concurrent runs targeting the same project/device; recover stale lock safely; durable status transitions (running, success, cancelled, failed, rolled-back, needs-recovery), distinguish interruption from success, update on every exit. Logs alone are insufficient for status. |
-| KM-012 | P2 | Queued | Maintainable project structure and Git hygiene | Tracker, agent instructions, README and portable tests are now present. Git ignore policy, changelog and project-owned macOS fixture test were added with 3.1.0. Public-release privacy guard, documentation, CI and PR helper are implemented. Remote bootstrap/authentication status is recorded under public preparation below. |
+| KM-012 | P2 | Queued | Maintainable project structure and Git hygiene | Tracker, agent instructions, README and portable tests are now present. Git ignore policy, changelog and project-owned macOS fixture test were added with 3.1.0. Public-release privacy guard, documentation, CI and PR helper are implemented. Shared AGENTS.md guidance and native ignored Codex override now separate public project rules from private maintainer context. |
 
 | KM-013 | P1 | Ready for test | i18n locale foundation | en, zh-Hant, zh-Hans; explicit/env locale resolution, reviewed aliases, JSON catalogs, safe named placeholders/plurals and English fallback; no runtime LLM or network. |
 | KM-014 | P1 | Queued | Localized CLI and English diagnostic output | Separate console/log rendering, localize owned help/prompts/progress/errors and human report labels, stable English machine schemas and additive ui_locale metadata; preserve all migration safety. |
@@ -65,51 +65,25 @@ These four tickets are awaiting user testing/sign-off, not additional autonomous
 - Standard-library tool and fixture tests target Python 3.9+. Record actual local/CI versions separately.
 - Credentials can exist in archives; do not print, commit or upload them. Tests must not read physical Kobo contents.
 
-## Session handoff
+## Development and validation status
 
-Current release: **3.3.0-dev.1**, KM-011/KM-005/KM-001/KM-003 implementation complete and **Ready for test**. User explicitly requested to test and sign off. Do not mark these tickets Done without their approval. No physical Kobo was accessed and no real backups were deleted during development.
+The development build is 3.3.0-dev.1. KM-011/KM-005/KM-001/KM-003/KM-013 remain Ready for test; no human or physical acceptance is recorded. Use ACCEPTANCE.md for verification. A public roadmap describes product work, not authority to access devices or publish changes.
 
-See ACCEPTANCE.md for test commands and sign-off checklist. Target snapshot restoration needs a v3.1+ run with target-snapshot.json and target-changes.json; legacy full-source snapshots can be reused when verified. FULL snapshots cannot be reused as LIBRARY because central metadata is inside the runtime archive. Libraries should use a LIBRARY-captured snapshot.
+Target restoration needs a modern target-snapshot.json and target-changes.json plus verified archive pairs. A FULL source snapshot can serve FULL/KOREADER, not LIBRARY; central metadata belongs to the runtime archive. See README.md for compatibility and recovery details.
 
-For the next authorized feature session:
+Published baseline 9dce9b2 passed the 115-test local suite, self-test and locale validation. Its [push CI](https://github.com/gh-slee/kobo-koreader-migrate/actions/runs/38824365753) and [PR CI](https://github.com/gh-slee/kobo-koreader-migrate/actions/runs/38824370032) passed all six macOS/Linux Python matrix jobs each. This is automated evidence, not hardware validation. [PR #1](https://github.com/gh-slee/kobo-koreader-migrate/pull/1) is under review and unmerged.
 
-1. Read this tracker, `AGENTS.md`, `README.md` and current CLI/code; reconcile facts with files.
-2. Pick the requested ticket (or the next P1 when broad feature development is authorized).
-3. Record scope, status, compatibility decisions and test plan before edits.
-4. Implement without weakening existing FULL/KOREADER semantics; run meaningful regressions.
-5. Update version, tracker evidence, documentation and unfinished-work notes together.
+## Agent-assisted development
 
-## Validation ledger
+Shared project guidance uses the AGENTS.md open format. The public file covers code conventions, safety and checks; it does not store personal preferences, authentication history, individual approvals or session transcripts. Codex supports a Git-ignored local AGENTS.override.md; it must explicitly read the shared AGENTS.md because same-directory discovery selects only one of them. Contributor setup is documented in CONTRIBUTING.md.
 
-- 2026-10-09: v3.0.4 portable regression suite **45 passed** in development workspace; actual macOS `ditto` round trip and simulated FULL workflow passed earlier. These were fixture tests, not a physical migration.
-- 2026-10-12: tracker/context installed; project-owned portable regression suite **45 passed**, and script `--self-test` **passed**. No production script behavior was changed and no physical Kobo was accessed.
+The duplicate Cursor rule has been removed; tools that support AGENTS.md can use the shared file. No custom private agent-memory filenames, agent runtime dependency, global configuration change or new migration feature is introduced. Existing public Git history is unchanged. Private instructions remain excluded by both Git ignore rules and the publication allowlist.
 
-- 2026-10-12: v3.1.0 — **78 tests passed**, including actual macOS ditto FULL → saved-source reuse → exact TARGET restore using temporary fixtures; --self-test passed. Added live-process lock, dependency/retention, corruption, source-mode, rollback and dry-run regressions. Human/physical Kobo tests pending.
-
-## Public preparation (authorized)
-
-| ID | Status | Scope / acceptance |
-| --- | --- | --- |
-| PUB-001 | Ready for review | Expanded Git ignore policy, source allowlist, staged/history privacy gate and local pre-push hook. Human diff review remains required; heuristics cannot prove absence of all personal data. |
-| PUB-002 | Ready for test | Generic SOURCE/TARGET roles and confirmed labels, renamed-volume discovery, mandatory fingerprints, same-device rejection, explicit runtime compatibility confirmation; preserve FULL/KOREADER and legacy snapshots. |
-| PUB-003 | Ready for review | Detailed English README, MIT license, contribution/security/manual acceptance docs and fixture CI. |
-| PUB-004 | Ready for test | Approved implementation and CI fix published on feature/public-release at c0a7a1e; PR #1 is open. Latest push and PR CI each passed all six jobs. No merge or human/physical acceptance. |
-| PUB-005 | Ready for review | Standalone feature-branch publication helper runs privacy/tests, pushes and creates/reuses a PR. Human approval before merge; no force push or automatic merge. |
-
-Public preparation does not complete physical acceptance of KM-011/KM-005/KM-001/KM-003. Local implementation/test evidence and remote bootstrap outcome must be recorded before handoff.
-
-- 2026-10-15: v3.2.0 public preparation — 95 local tests passed on Python 3.12.2/macOS, including the actual ditto fixture. Self-test and candidate publication check passed. Added generic-role/saved-source/restore regressions and Git blob/history/publish-helper tests. No physical Kobo was accessed, no real backups were deleted, and physical acceptance remains pending.
-
-- 2026-10-15: Public remote initialized. Git identity uses the authenticated GitHub alias/noreply address. Only README, MIT license and ignore policy were bootstrapped on main; the complete tool and detailed README are committed on feature/public-release. Index/history privacy checks passed. Hosted CI and PR review are pending.
-
-- Publication history: an earlier feature push was refused because CI required OAuth workflow scope. Workflow scope was verified on 2026-10-15; after explicit owner approval, commit 2e2daec3143ecabdd7ad88f275e790e710013fbe was pushed and [PR #1](https://github.com/gh-slee/kobo-koreader-migrate/pull/1) was created. It remains unmerged.
-
-- Publication approval policy: the owner requires a concrete change/privacy review and explicit approval before every remote push, in addition to approval before merge. The owner approved the 25-file publication batch pushed as 2e2daec. Changed scope still requires a fresh review/approval. OAuth consent alone is not push approval. This supersedes earlier automatic-push instructions.
-
+Local guidance validation passed: 116 fixture tests, self-test, three-locale validation, 71 documentation link targets plus shell examples, Git-ignore/private-file checks and worktree/history publication checks. No migration runtime or catalog code changed. Native discovery follows the official protocol; no additional LLM session was launched to test startup. Runtime/manual acceptance tickets retain their existing status. The detailed i18n design below describes planned product behavior beyond the implemented help/sample foundation.
 
 ## Internationalization design and implementation status
 
-Status: KM-013 locale foundation is implemented in 3.3.0-dev.1 and Ready for test. Help descriptions and static UI samples support en/zh-Hant/zh-Hans; actual migration/maintenance output remains English. The rest of this design describes the target full i18n scope, not completed runtime behavior. Remote publication remains subject to separate explicit approval.
+Status: KM-013 locale foundation is implemented in 3.3.0-dev.1 and Ready for test. Help descriptions and static UI samples support en/zh-Hant/zh-Hans; actual migration/maintenance output remains English. The rest of this design describes the target full i18n scope, not completed runtime behavior.
 
 ### Initial language scope
 
@@ -121,7 +95,7 @@ Status: KM-013 locale foundation is implemented in 3.3.0-dev.1 and Ready for tes
 
 This is a proposed initial product scope, not a claim about market popularity. Use script tags rather than equating a script with a single country. Traditional and Simplified Chinese require independent wording review; do not publish an automatic character-conversion output as an accepted translation.
 
-Code, comments, identifiers and canonical developer documentation stay English. The latest i18n request authorizes translated user-facing terminal text; it supersedes the earlier English-only CLI policy. Tool-owned diagnostic log messages stay English. The conversation language remains the user's preference.
+Code, comments, identifiers and canonical developer documentation use English. Reviewed catalogs can localize owned user-facing text. Tool-owned diagnostic log messages remain English.
 
 ### First-release behavior
 
@@ -252,47 +226,3 @@ Do not auto-enable every JSON file found in locales/. Additional languages, righ
 - Python format-string syntax informs the deliberately restricted named-placeholder validator: https://docs.python.org/3.12/library/string.html#format-string-syntax
 
 These references inform the design; this plan chooses source-reviewable JSON catalogs rather than requiring compiled gettext .mo files.
-
-Publication scope note: the i18n plan and updated guidance change the previously reviewed candidate content. Any later push requires a fresh concrete file/commit scope and privacy review followed by explicit owner approval. No i18n runtime code or remote publication is authorized by this planning record alone.
-
-
-## KM-013 implementation evidence and handoff
-
-- Version 3.3.0-dev.1. Complete foundation catalogs: 3 locales, 36 message IDs each. English source, independent Chinese wording, one/other vs other-only plural rules.
-- --locale, --list-locales and --preview-ui are available. Help descriptions and static samples translate; migration/maintenance output, raw argparse diagnostics and machine schemas stay English. Console/log event separation and ui_locale run metadata remain KM-014 work.
-- Missing selected translations use English; corrupt selected catalogs warn/fall back. Invalid English/registry assets stop startup before run/device activity. The complete locales/ directory is now required beside the script.
-- Added scripts/check_locales.py, exact four-file locale publication allowlist, CI and publish-helper validation. This does not authorize any remote push or PR creation.
-- Local evidence on Python 3.12.2/macOS: 114 tests passed (95 existing + 19 locale tests), including actual ditto fixtures and equivalent synthetic FULL outcomes for en/zh-Hant/zh-Hans. Self-test, catalog validation and candidate privacy checks passed. No physical Kobo was accessed and no real backups were deleted.
-- Human translation/usability acceptance is pending. See ACCEPTANCE.md; keep KM-013 Ready for test until explicit sign-off. Proceed to KM-014 only within authorized feature scope and preserve the current safety behavior.
-- Prior publication-review hashes/file counts are obsolete after these changes. Before any push, regenerate the exact outgoing scope/privacy report and obtain explicit approval. Do not infer push consent from implementation approval or GitHub OAuth consent.
-
-
-## Publication documentation review and acceptance timing
-
-- The owner will perform manual testing after an approved feature-branch push. This does not waive pre-push automated tests, locale validation, privacy review or the need for explicit push approval. Keep manual acceptance tickets Ready for test and require sign-off before merge.
-- README was reviewed against common public CLI/GitHub documentation practices, not an industry certification. It covers purpose, prerequisites/platform scope, safe quick start, initial-review branch installation, commands/modes, data behavior, recovery, partial i18n, support, validation limits, contribution and license.
-- README now distinguishes local test evidence (114 tests on Python 3.12.2/macOS) from configured but not yet confirmed hosted CI and pending physical acceptance. No fabricated CI badge or production-readiness claim was added.
-- The initial review branch installation command is explicitly conditional on branch publication, because main currently holds bootstrap docs. Later default-branch installation follows implementation merge.
-- No runtime code changed for this documentation pass. No remote writes were performed. Outgoing scope/privacy review must be regenerated after these changes and explicitly approved before any push.
-
-
-## Published review branch handoff (2026-10-15)
-
-This entry supersedes earlier statements that publication or PR creation was pending.
-
-- Explicit owner approval covered the prepared 25-file batch. Local 114-test suite, self-test, three-locale validation and index/history publication checks passed before upload.
-- Published commit: `2e2daec3143ecabdd7ad88f275e790e710013fbe` on `feature/public-release`. [PR #1](https://github.com/gh-slee/kobo-koreader-migrate/pull/1) is open and attached to the development chat. No merge was performed.
-- Complete README and implementation are on the review branch; `main` still contains bootstrap documentation.
-- [Push CI run 38812366823](https://github.com/gh-slee/kobo-koreader-migrate/actions/runs/38812366823) passed all six macOS/Linux Python 3.9/3.12/3.14 jobs. [PR CI run 38812368025](https://github.com/gh-slee/kobo-koreader-migrate/actions/runs/38812368025) failed all six jobs at the publication guard, before tests, because GitHub's generated merge uses platform committer noreply@github.com. API metadata confirmed a user noreply author and the exact platform committer; no personal email was reported.
-- GitHub DNS/API access temporarily failed, then recovered. Failed logs and merge metadata were read successfully. Local follow-up permits the exact platform committer only on merge commits; all authors still need user noreply IDs. Personal emails, platform authors/non-merge committers and lookalike domains are rejected. File/blob/message/history checks remain intact.
-- Unpublished follow-up scope: scripts/check_publication.py, tests/test_public_release.py, README.md, CONTRIBUTING.md, CHANGELOG.md and TRACKER.md. Local validation: 115 tests passed (including seven real-Git identity cases), self-test and locale validation passed. No migration runtime or locale files changed. Obtain explicit approval for this reviewed follow-up before pushing; no bypass, force push or merge.
-- Manual/physical acceptance remains pending. Keep KM-011/KM-005/KM-001/KM-003/KM-013 Ready for test. Do not start KM-014 or merge without authorization/sign-off.
-
-
-## README presentation refresh (2026-10-15)
-
-- User requested a modern open-source README with tech stack, icons and fuller project information. Scope is documentation only: README.md and this tracker. No runtime, locale catalogs, CI configuration or publication guard changed.
-- Reworked the opening around an accessible title, linked badge row, compact navigation, feature overview and an install/preview/migrate quick start. Added a Mermaid workflow, implementation-backed tech stack, FAQ, documentation map and acknowledgments; kept advanced operational details in expandable sections.
-- Updated publication/validation facts: c0a7a1e is published; PR #1 remains open. Push run 38820577620 and PR run 38820581374 passed all six jobs each. Local baseline is 115 tests. Main still has bootstrap docs. Physical/manual acceptance and full migration-interface translations remain pending.
-- Badge assets are remote README decoration only (GitHub/Shields.io); the migration CLI remains offline. No invented coverage, download, hardware certification or community metrics.
-- Validation passed: 62 link targets, 36 heading anchors, 22 fenced blocks, five disclosure blocks, 33 flags checked against live CLI help and shell-example syntax. All six badge endpoints returned valid SVGs; the live CI badge reads passing. Worktree/history privacy checks and git diff --check passed. No runtime code changed, so the full migration fixture suite was not rerun for this documentation-only refresh. A new concrete review/approval is required before any push; the edit request is not publication approval.

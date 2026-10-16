@@ -1,53 +1,72 @@
 # Contributing
 
-Start with README.md, TRACKER.md and AGENTS.md. Use English for public code, comments, CLI messages and documentation. Communicate with contributors in their requested language.
+Start with README.md for usage and AGENTS.md for shared development guidance. Use TRACKER.md when planning features and ACCEPTANCE.md for manual verification. Public code, comments and canonical developer documentation use English; owned user-facing translations belong in reviewed locale catalogs.
 
 ## Runtime requirements
 
-Every feature must work as ordinary standalone code from Terminal. Do not add inference APIs, downloaded models, local model servers, agent frameworks or dependence on an active AI development session. Development assistance is allowed; runtime decisions must be explicit code and ordinary confirmations.
+All features must run as standalone offline code. AI-assisted development is welcome, but the released tool must not depend on inference APIs, downloaded models, model servers, agent frameworks or an active assistant session.
 
-Preserve FULL, KOREADER, LIBRARY and AUDIT. SOURCE remains read-only, target-only books remain by default, and target writes require backups, identity checks and explicit final confirmation. Never execute device Lua. Use synthetic fixtures; accessing real devices or deleting real backups requires the user's authorization.
+Preserve the existing mode semantics and data protections described in AGENTS.md. Use disposable synthetic devices and never execute device Lua. Fixture tests do not authorize physical-device operations or real backup deletion.
 
 ## Development workflow
 
-1. Create a feature branch from an up-to-date `main` (for example `feature/progress-report`).
-2. Implement the requested scope. Update tracker status, acceptance criteria, version/changelog and documentation together.
-3. Run the fixture suite and self-test. Do not mark physical acceptance complete based on synthetic tests.
-4. Review the exact staged diff and author email. Use a public alias and a GitHub-provided `@users.noreply.github.com` address. This repository's history guard requires user noreply author/committer emails. For merge commits, the exact public platform committer address `noreply@github.com` used by GitHub PR test merges is also accepted; this does not permit platform authors, non-merge platform committers, personal emails or lookalike domains.
-5. Run the publication guard. Stage explicit files; avoid indiscriminate `git add .` around device artifacts.
-6. Commit locally and present the changes, exact outgoing file/commit scope, privacy-check results, public metadata and limitations to the project owner. Obtain explicit approval before pushing; implementation authorization, OAuth consent and passing tests do not constitute publication approval. If the scope changes, ask again.
-7. After approval, push the reviewed feature branch and open a pull request with changes, validation and remaining limitations.
-8. Wait for human sign-off before merge. No automatic merge, force push, remote deletion or release publishing is implied by ordinary feature authorization.
+1. Check existing issues and the tracker before a substantial change. Keep PRs focused and describe the problem and intended behavior.
+2. Create a feature branch from the intended review base. During initial review, the complete implementation is on feature/public-release in PR #1; main contains bootstrap documentation only.
+3. Implement the change and add meaningful regressions for changed behavior or safety boundaries. Update relevant documentation and feature/acceptance status; update version/changelog when runtime behavior changes.
+4. Run checks appropriate to the change. For runtime, catalog, test or guard changes, use the commands below. Documentation-only changes need link/example/privacy checks.
+5. Inspect the exact staged diff and reachable history. Keep credentials, private instructions and device artifacts out of Git; use explicit file paths when staging.
+6. Publish your reviewed branch to the appropriate fork or repository and submit a PR with changes, validation and limitations. Agents acting on someone's behalf must follow that person's publication authorization; these instructions grant no upload or merge permission.
+7. Wait for maintainer review and required human acceptance. Do not infer release or hardware readiness from CI alone.
+
+```bash
+python3 scripts/check_locales.py
+python3 -m unittest discover -s tests -p 'test_*.py'
+python3 kobo-koreader-migrate.py --self-test
+python3 scripts/check_publication.py --worktree --history
+git diff --cached
+```
+
+Tests use temporary fixtures. On macOS, the actual ditto fixture exercises archive/restore behavior without reading a physical Kobo. Run it when changing those workflows. Linux CI validates fixtures, not Linux device migration.
+
+## Working with coding agents
+
+The root [AGENTS.md](AGENTS.md) is the shared source of agent guidance using the [AGENTS.md open format](https://agents.md/). Keep it concise and link task-specific documentation rather than duplicating it in multiple vendor rule files. Contributors remain responsible for understanding, testing and reviewing AI-assisted changes.
+
+For personal Codex defaults, use its documented user-level AGENTS.md. For private project-specific instructions, Codex supports a Git-ignored AGENTS.override.md. At one directory level, Codex selects the override instead of AGENTS.md; a local override must explicitly read the public AGENTS.md to retain this project's shared rules. This is a Codex feature, not a universal private-file standard. See [official instruction discovery](https://learn.chatgpt.com/docs/agent-configuration/agents-md).
+
+Codex's local managed worktrees automatically copy an ignored AGENTS.override.md. Other ignored files require deliberate .worktreeinclude configuration; ordinary clones, manual Git worktrees and remote environments do not gain this behavior. See [official worktree documentation](https://learn.chatgpt.com/docs/environments/git-worktrees). This project needs no extra private Markdown loader or worktree include file for its local override. Private instructions and credentials must never be added to a public commit.
+
+Validate setup from a fresh session started in the repository: ask the tool which instructions it loaded and verify that shared rules remain active. Other assistants have their own discovery and subagent inheritance rules. Give delegated agents the applicable guidance and task context; do not assume automatic inheritance. Development guidance never changes the migration tool's offline runtime requirements.
+
+## Publication privacy
+
+Use a GitHub user noreply author/committer email. The history guard also accepts the exact public platform committer noreply@github.com on merge commits; authors still require user noreply IDs. Personal emails, platform authors/non-merge committers and lookalike domains are rejected.
+
+The privacy guard inspects actual staged blobs and every locally reachable commit. .gitignore does not untrack existing files or remove their history. Moving internal notes out of current public docs does not erase older commits. Retain allowlist entries needed to inspect historical public paths even after deleting those paths from the current tree. Handle any history remediation separately; do not bypass the guard.
+
+Install the local pre-push hook:
 
 ```bash
 git config --local core.hooksPath .githooks
-python3 -m unittest discover -s tests -p 'test_*.py'
-python3 kobo-koreader-migrate.py --self-test
-git diff --cached
-python3 scripts/check_publication.py --history
 ```
 
-The privacy guard checks the current index and every locally reachable commit, not just the working tree. An ignored file already committed remains in history. Do not push a repository with private history; prepare a clean public history. If a secret was already public, revoke/rotate it and handle history remediation separately.
+The guard uses a public-path allowlist and secret/path heuristics. Human review remains necessary. Hooks can be bypassed, and hosted CI runs after upload. Branch protection and repository permissions are separate controls.
 
-## PR helper
+## Maintainer PR helper
 
-Git and [GitHub CLI](https://cli.github.com/) are development tools only. Authenticate using `gh auth login` with its browser flow and operating-system credential store. Never paste tokens into issues, source files, logs or an AI chat. Do not use `gh auth status --show-token` or `--insecure-storage`.
+GitHub CLI is optional maintainer tooling, unnecessary for migration. Authenticate with its browser/OS credential-store flow. Never print tokens or paste credentials into source, logs, issues or an AI chat.
 
-After obtaining explicit human approval to push the reviewed changes on a committed feature branch, prepare an English PR body outside the repository or in ignored `.local/`. Include the concrete problem/result, meaningful tests and hardware acceptance status. Then run:
+When authorized to publish a committed, clean feature branch, prepare a reviewed English PR body and run:
 
 ```bash
 python3 scripts/publish.py --repository OWNER/REPO \
   --title "Explain the change" --body-file /tmp/pr-body.md
 ```
 
-Replace `OWNER/REPO` with the exact repository identity shown by `origin`. The helper refuses default/base branches, a dirty working tree, missing CLI/authentication and mismatched/multiple push URLs. It runs tests, self-test and privacy checks, uses an ordinary non-force push, then creates or reports an existing open PR. It never merges. Re-running after a partial success is safe: already-pushed commits are retained and an existing PR is reused.
+Use the exact repository identity shown by origin. The helper checks the destination, branch, clean tree, PR content, privacy, locales, tests and self-test. It performs an ordinary push and creates/reuses an open PR. It never merges, force-pushes or publishes releases. Publication helpers do not replace the operator's authorization requirements.
 
-The pre-push hook also checks publication data, but hooks are local and can be bypassed. Hosted CI runs the fixture checks and privacy guard after push. Repository branch rules must separately enforce review requirements if maintainers enable them. CI is not proof of hardware compatibility or a substitute for human review.
+## Reporting and licensing
 
-## Reports and tests
+Report the tool/macOS/Python versions, mode, expected behavior and a minimal synthetic reproduction or redacted message. Do not attach actual books, serials, settings, databases, raw logs, manifests or archives. Follow SECURITY.md for sensitive findings.
 
-Use minimal synthetic examples instead of actual ebooks, device serials, reading history or settings. Do not attach ZIPs, Lua sidecars, databases, logs or unredacted manifests. Report the tool version, macOS/Python version, mode, redacted message, expected behaviour and a safe reproduction.
-
-Add meaningful tests for safety boundaries, failure/rollback handling and observable behavior. Avoid tests that simply repeat implementation details. Run the actual `ditto` fixture test on macOS when changing archive/restore workflows; Linux fixture success is not macOS runtime validation.
-
-All contributions to this tool are under the MIT License. Do not add copied KOReader/device assets or third-party books/fonts/plugins to this repository.
+Contributions are under the MIT License. Do not add copied KOReader/device assets or third-party books/fonts/plugins.

@@ -1,40 +1,44 @@
-# Project guidance
+# Agent instructions
 
-- Start by reading `TRACKER.md` and `README.md`, then inspect the current script.
-- Treat the tracker as a backlog, not permission to operate devices or delete backups.
-- When feature work is authorized, use ticket IDs and the recommended implementation order.
-- Set a ticket to `In progress` only when work actually starts; leave handoff notes if unfinished.
-- A completed ticket needs its acceptance criteria, meaningful tests, and validation evidence.
-- This release requires user testing/sign-off: Ready for test is not Done; consult ACCEPTANCE.md.
-- Update `TRACKER.md` and relevant documentation in the same change as implementation.
-- All current and future features must be standalone code features usable directly from Terminal without an LLM session.
-- Do not introduce AI inference APIs, model downloads, local LLM servers, agent frameworks, or runtime dependence on Codex/ChatGPT.
-- LLMs may assist development only; runtime decisions must use explicit program logic and ordinary CLI confirmations.
-- Feature acceptance must verify operation without AI credentials or AI services; document complete CLI usage and keep the existing core offline workflow.
-- Follow the current user's requested conversation language. Public code, comments, identifiers and canonical developer documentation stay English. Owned CLI/report text may be localized through reviewed catalogs; tool-owned diagnostic log text and machine-schema values stay English.
-- Follow the i18n design in TRACKER.md: initial locales en/zh-Hant/zh-Hans, offline code-only catalogs, safe English fallback, stable flags/status/paths and unchanged destructive-confirmation semantics. KM-013 provides help/UI-sample locale support only; actual migration/maintenance output remains English until KM-014/KM-015. Preserve that boundary and do not claim full translation.
-- The canonical script is `kobo-koreader-migrate.py` in this project; do not put version tags in its filename.
-- Keep version information in `VERSION`, startup output, logs and JSON records.
-- Preserve FULL (entire KOReader + supported books + reading data + default root fonts).
-- Preserve KOREADER (entire `.adds/koreader` only), LIBRARY and AUDIT/dry-run.
-- FULL backs up and overwrites matching paths; only LIBRARY prompts for conflict policy.
-- Target-only books are retained unless the user explicitly selects a future mirror option.
-- Source Kobo files must remain read-only; back up target data before modifying it.
-- Generated data belongs in `runs/<run-id>/` beside the script; `--backup-dir` changes the project root.
-- Never evaluate device Lua files as executable code. Do not log API keys or actual device IDs.
-- Normal user cancellation is not a MigrationError. Keep real failure and rollback errors distinct.
-- Use temporary directories and mocked devices for tests. Real-device migration requires authorization.
-- Do not move active run artifacts or delete backup batches as part of routine development.
-- Run `python3 -m unittest discover -s tests -p 'test_*.py'` and the script's `--self-test` after relevant changes.
-- The tool and fixture suite target Python 3.9+; record the Python versions actually validated.
-- Never claim real-Kobo validation based on mocked tests or local `ditto` fixtures.
-- Keep backups, books, device files, private notes and credentials out of Git. Stage explicit allowlisted files and review the index/history, not only the working tree.
-- Feature implementation authorization does not authorize publication. Before every push, present the concrete changes, exact file/commit scope, privacy findings, public metadata and remaining limitations; obtain explicit human approval for that reviewed scope.
-- Never run scripts/publish.py, git push or another upload route before that approval. GitHub login/scope consent, passing tests or approval of a plan is not push approval. Changed scope requires renewed approval.
-- After push approval, use a feature branch and PR. Human sign-off is separately required before merge. No automatic merge, force push, remote deletion or release publishing.
-- Verify the current origin/repository before publication. Use scripts/publish.py with the explicit OWNER/REPO, a committed clean feature branch and a reviewed English PR body.
-- Run scripts/check_publication.py --history before push; install .githooks via repo-local core.hooksPath. Do not bypass a failed guard or publish private history.
-- Keep Git author email private using the authenticated account's public alias/noreply identity. Never print tokens or request that users paste credentials into chat.
-- Authenticate through GitHub CLI's browser/OS credential-store flow. Publication helpers are ordinary code too; no LLM runtime dependency.
-- SOURCE/TARGET labels are operator-confirmed. KOReader logs are only hints, possibly cloned from another device; do not treat them as verified hardware identity.
-- Require readable device fingerprints and same-device rejection. Never infer the opposite TARGET model from SOURCE. Whole-runtime copying requires operator confirmation of hardware compatibility.
+This is the shared project guidance for coding agents. Human usage belongs in README.md; contribution workflow belongs in CONTRIBUTING.md.
+
+## Find task context
+
+- Read the current code and the documentation relevant to the requested change. Use TRACKER.md for feature planning/status, ACCEPTANCE.md for manual acceptance and README.md for observable CLI behavior.
+- Work only within the requested scope. A backlog entry is not authorization to operate devices, delete backups or start another feature.
+- Public code, identifiers, comments and canonical developer docs use English. Translate owned UI text only through reviewed locale catalogs; diagnostic logs and machine schemas stay English.
+
+## Runtime and data safety
+
+- Every feature must run offline as ordinary code without an LLM, AI API, model download, agent framework or active development session. AI assistance is for development only.
+- Preserve FULL, KOREADER, LIBRARY, AUDIT and dry-run. FULL includes supported books, reading data and default root fonts; KOREADER copies only the entire KOReader tree.
+- FULL/KOREADER replace the whole runtime after backup. Retain TARGET-only library files outside that tree. FULL rejects selective library scopes and keep-target conflicts.
+- Keep SOURCE read-only. Before TARGET writes, require identity checks, compatibility/role confirmations, sufficient space, verified source archives and TARGET rollback backups.
+- Device model logs are hints, not hardware proof. Require readable fingerprints and reject the same device in both roles.
+- Never evaluate device Lua or execute copied plugins. Keep path, ZIP, symlink, integrity, lock and rollback protections intact.
+- Keep normal cancellation distinct from migration and recovery errors. Do not selectively preserve hardware settings or merge reading metadata without an implemented, tested policy.
+- Keep the stable filename kobo-koreader-migrate.py; record versions in code/logs/JSON. Generated data stays in runs/<run-id>/ under the selected project root.
+- KM-013 localizes help/static samples only. Actual migration/maintenance output remains English until the corresponding implementation and acceptance work is complete.
+
+## Verify changes
+
+For runtime, catalog, test or publication-guard changes, run the relevant checks:
+
+```bash
+python3 scripts/check_locales.py
+python3 -m unittest discover -s tests -p 'test_*.py'
+python3 kobo-koreader-migrate.py --self-test
+python3 scripts/check_publication.py --worktree --history
+```
+
+- Use disposable temporary fixtures. Tests have no authorization to access physical Kobos or delete real recovery data. Run the macOS ditto fixture when changing archive/restore behavior.
+- Match validation to the change. For documentation-only work, check links, CLI examples and privacy; do not repeat unrelated runtime tests without a reason.
+- Report observed evidence and remaining limits. Fixture/CI success is not physical-device validation. Keep acceptance tickets Ready for test until human sign-off.
+
+## Deliver and publish
+
+- Keep the public tracker, acceptance status and relevant docs current. Update the version/changelog when runtime behavior changes.
+- Keep credentials, books, device data, runs and local instructions out of Git. Stage explicit public paths; inspect staged blobs and reachable history with the publication guard.
+- Obtain appropriate user authorization before external publication or other consequential actions. Use a feature branch and PR; no automatic merge, force push, remote deletion or release publishing.
+- Before a permitted push, verify origin and use scripts/publish.py with the exact OWNER/REPO and a reviewed English PR body. Never bypass a failing publication guard.
+- If delegation is requested, give each agent a bounded task and the applicable instructions/context; do not assume every tool inherits the parent's full conversation. Delegation does not broaden permissions.

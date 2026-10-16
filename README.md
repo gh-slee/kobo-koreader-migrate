@@ -578,7 +578,7 @@ For sensitive security findings, follow [SECURITY.md](SECURITY.md) instead of di
 | Report a security concern | [SECURITY.md](SECURITY.md). |
 | Review changes | [CHANGELOG.md](CHANGELOG.md). |
 | Follow implementation status | [TRACKER.md](TRACKER.md). |
-| Continue development with an assistant | [AGENTS.md](AGENTS.md); runtime features still work without an assistant. |
+| Use a coding agent | Shared [AGENTS.md](AGENTS.md) and [agent contribution guidance](CONTRIBUTING.md#working-with-coding-agents); runtime features remain standalone. |
 
 Contributions can include synthetic bug reproductions, clearer documentation, regression tests and feedback on the three locale previews. Check the tracker before starting a planned feature; full migration-interface translations remain queued. Open a focused PR with the problem, change and relevant verification. Human acceptance is required before experimental features are marked complete.
 
@@ -595,7 +595,7 @@ See [project status](#project-status) for the verified 115-test baseline and suc
 
 Tests use temporary synthetic devices and mock USB/eject operations. On macOS, an additional test uses real `ditto` to exercise FULL migration, saved-source reuse and exact TARGET restoration on temporary directories. It never reads a physical Kobo. On other supported test hosts, that fixture test is skipped.
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for the feature-branch/PR workflow and publish helper. The helper runs tests/privacy checks, pushes a committed feature branch and creates or reuses a PR; it never merges. GitHub CLI is needed only for repository publishing, not for migration. Publication requires a concrete change/privacy review and explicit owner approval before push; OAuth consent and passing tests do not count as push approval. Human approval is separately required before merge. [AGENTS.md](AGENTS.md) carries the same requirements for future development sessions.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the feature-branch/PR workflow and publish helper. The helper runs tests/privacy checks, pushes a committed feature branch and creates or reuses a PR; it never merges. GitHub CLI is needed only for repository publishing, not for migration. Follow the applicable publication authorization and maintainer review requirements. [AGENTS.md](AGENTS.md) contains shared agent guidance; [CONTRIBUTING.md](CONTRIBUTING.md#working-with-coding-agents) explains the open format, optional native Codex local instructions and contributor responsibility. AI assistance is a development choice and adds no runtime dependency.
 
 Automated tests and privacy checks run before publication. Manual language/usability and physical-device acceptance can be performed from the approved published feature branch, after push. Until that acceptance is recorded, tickets remain Ready for test and the development build must not be described as hardware-validated.
 
