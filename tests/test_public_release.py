@@ -153,6 +153,35 @@ class PublicationTests(unittest.TestCase):
                     self.assertTrue(guard.inspect_blob(path, fixture.read_bytes()))
         self.assertFalse(guard.inspect_blob('AGENTS.md', b'Synthetic shared guidance.'))
 
+    def test_force_added_private_guidance_is_blocked_in_index_and_deleted_history(self):
+        paths = ('AGENTS.override.md', 'nested/AGENTS.override.md', '.local/notes.md')
+        for path in paths:
+            with self.subTest(path=path), tempfile.TemporaryDirectory() as td:
+                root = Path(td)
+                env = dict(os.environ, GIT_AUTHOR_NAME='Fixture', GIT_COMMITTER_NAME='Fixture',
+                           GIT_AUTHOR_EMAIL='fixture@users.noreply.github.com',
+                           GIT_COMMITTER_EMAIL='fixture@users.noreply.github.com')
+                def git(*args):
+                    return subprocess.run(['git', '-C', td, *args], env=env,
+                                          check=True, capture_output=True)
+                git('init', '-b', 'main')
+                (root / '.gitignore').write_bytes((guard.ROOT / '.gitignore').read_bytes())
+                fixture = root / path
+                fixture.parent.mkdir(parents=True, exist_ok=True)
+                fixture.write_text('Synthetic private instructions; no owner data.\n')
+                git('add', '.gitignore')
+                git('add', '--force', '--', path)
+                with mock.patch.object(guard, 'ROOT', root):
+                    self.assertIn(path + ': file is outside the publication allowlist',
+                                  guard.check_index())
+                git('commit', '-m', 'Synthetic force-added private file')
+                git('rm', '--', path)
+                git('commit', '-m', 'Remove synthetic private file from latest tree')
+                with mock.patch.object(guard, 'ROOT', root):
+                    self.assertFalse(guard.check_index())
+                    self.assertIn(path + ': file is outside the publication allowlist',
+                                  guard.check_history())
+
     def test_documentation_allowlist_is_exact_and_still_scans_content(self):
         for name in ('USAGE', 'RECOVERY', 'TROUBLESHOOTING', 'DEVELOPMENT', 'MAINTAINING'):
             with self.subTest(name=name):

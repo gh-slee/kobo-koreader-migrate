@@ -23,17 +23,9 @@ git config --local core.hooksPath .githooks
 
 The guard allows only reviewed source/docs/test paths and detects common secrets/personal absolute paths without printing matching values. It is a heuristic defence, not a guarantee that all personal data can be detected. Review staged diffs and commit author identity. The history guard requires GitHub user noreply author/committer emails, with one exception: merge commits may use the exact public platform committer address `noreply@github.com` used by GitHub PR test merges. Authors still need user noreply addresses; personal and lookalike emails remain blocked. Commit messages are scanned too. New public file paths require an intentional allowlist update. CI checks after upload; the local hook is the guard before upload. Hooks can be bypassed, so maintainers must also follow [CONTRIBUTING.md](../CONTRIBUTING.md).
 
-Use a GitHub user noreply author/committer email. The history guard also accepts the exact public platform committer noreply@github.com on merge commits; authors still require user noreply IDs. Personal emails, platform authors/non-merge committers and lookalike domains are rejected.
+Private instructions remain prohibited even if force-added: the guard checks index blobs and each locally reachable commit, including files deleted from the latest tree. Isolated Git regression fixtures cover root/nested AGENTS.override.md and local notes. Retain allowlist entries needed to inspect historical public paths after removing those paths from the current tree. History remediation requires separate review; moving or deleting a current file does not erase earlier commits.
 
-The privacy guard inspects actual staged blobs and every locally reachable commit. .gitignore does not untrack existing files or remove their history. Moving internal notes out of current public docs does not erase older commits. Retain allowlist entries needed to inspect historical public paths even after deleting those paths from the current tree. Handle any history remediation separately; do not bypass the guard.
-
-Install the local pre-push hook:
-
-```bash
-git config --local core.hooksPath .githooks
-```
-
-The guard uses a public-path allowlist and secret/path heuristics. Human review remains necessary. Hooks can be bypassed, and hosted CI runs after upload. Branch protection and repository permissions are separate controls.
+Before each publication, review the exact staged diff, commit range, destination and public PR text, report current validation/privacy findings, and obtain the applicable operator's approval. Changed scope needs renewed approval; credentials, helper flags and earlier approvals are not consent for another push. Stage only explicit reviewed public paths. Never upload private instruction contents as evidence. The guard does not detect every secret, personal fact or sensitive semantic detail; human review remains necessary.
 
 ## PR helper
 

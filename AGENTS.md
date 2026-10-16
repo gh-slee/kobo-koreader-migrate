@@ -1,11 +1,12 @@
 # Agent instructions
 
-This is the shared project guidance for coding agents. Human usage belongs in README.md; contribution workflow belongs in CONTRIBUTING.md.
+This is the shared project guidance for coding agents. Human usage belongs in README.md; contribution workflow belongs in CONTRIBUTING.md. The product is a macOS Python 3.9+ CLI using only the standard library, JSON locale catalogs and unittest; Linux CI checks fixtures only.
 
 ## Find task context
 
 - Read the current code and the documentation relevant to the requested change. Use README.md for quick start, docs/USAGE.md for CLI behavior, docs/RECOVERY.md for backup/restore, docs/DEVELOPMENT.md for implementation/testing, docs/MAINTAINING.md for publication, TRACKER.md for feature criteria and ACCEPTANCE.md for manual acceptance.
 - Work only within the requested scope. A backlog entry is not authorization to operate devices, delete backups or start another feature.
+- Follow existing standard-library patterns: pathlib for paths, argparse for CLI options and unittest with temporary fixtures. Keep machine schemas and stable CLI tokens compatible.
 - Public code, identifiers, comments and canonical developer docs use English. Translate owned UI text only through reviewed locale catalogs; diagnostic logs and machine schemas stay English.
 
 ## Runtime and data safety
@@ -41,4 +42,5 @@ python3 scripts/check_publication.py --worktree --history
 - Keep credentials, books, device data, runs and local instructions out of Git. Stage explicit public paths; inspect staged blobs and reachable history with the publication guard.
 - Obtain appropriate user authorization before external publication or other consequential actions. Use a feature branch and PR; no automatic merge, force push, remote deletion or release publishing.
 - Before a permitted push, verify origin and use scripts/publish.py with the exact OWNER/REPO and a reviewed English PR body. Never bypass a failing publication guard.
+- Start fresh sessions in the repository. Use the [session verification prompt](docs/DEVELOPMENT.md#fresh-session-verification); distinguish discovered instructions from explicit reads and static checks from actual session/worktree tests. Verify destination branch and guidance after a worktree transfer.
 - If delegation is requested, give each agent a bounded task and the applicable instructions/context; do not assume every tool inherits the parent's full conversation. Delegation does not broaden permissions.
