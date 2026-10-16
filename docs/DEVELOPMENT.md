@@ -59,9 +59,9 @@ Run scripts/check_locales.py after any catalog/registry change. The three initia
 
 The development build is **3.3.0-dev.1**. Physical-Kobo testing and human sign-off remain pending; the release is experimental.
 
-Published agent-guidance commit [48ac339](https://github.com/gh-slee/kobo-koreader-migrate/commit/48ac3399962f9c938ef0929063eb95140532eac1) passed all twelve push/PR CI checks on 2026-10-15. CI covers macOS and Ubuntu on Python 3.9, 3.12 and 3.14. Linux checks fixtures only. The local baseline for that commit was 116 tests plus self-test and locale validation.
+[PR #1](https://github.com/gh-slee/kobo-koreader-migrate/pull/1) merged into main on 2026-10-16 as [564234e](https://github.com/gh-slee/kobo-koreader-migrate/commit/564234e2256bb6a64085cc10a4d3c5535322313e). Its [main-branch CI run](https://github.com/gh-slee/kobo-koreader-migrate/actions/runs/38918881111) passed all six macOS/Ubuntu Python 3.9, 3.12 and 3.14 jobs. Linux checks fixtures only. The pre-merge documentation commit dedc884 passed 117 local tests plus self-test and locale validation, and all twelve push/PR CI jobs.
 
-New changes require fresh validation. Temporary fixtures and the real macOS ditto round trip do not establish hardware compatibility. KM-011/KM-005/KM-001/KM-003/KM-013 remain Ready for test; see [manual acceptance](../ACCEPTANCE.md). KM-014/KM-015 actual migration-interface localization remains queued. Follow the current [CI runs](https://github.com/gh-slee/kobo-koreader-migrate/actions) and [PR #1](https://github.com/gh-slee/kobo-koreader-migrate/pull/1) for review status.
+New changes require fresh validation. Temporary fixtures and the real macOS ditto round trip do not establish hardware compatibility. KM-011/KM-005/KM-001/KM-003/KM-013 remain Ready for test; see [manual acceptance](../ACCEPTANCE.md). KM-014/KM-015 actual migration-interface localization remains queued. Follow the current [CI runs](https://github.com/gh-slee/kobo-koreader-migrate/actions) and [open pull requests](https://github.com/gh-slee/kobo-koreader-migrate/pulls) for subsequent changes.
 
 ## Coding agents
 

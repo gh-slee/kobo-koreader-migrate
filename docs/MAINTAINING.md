@@ -52,6 +52,6 @@ Use the exact repository identity shown by origin. The helper checks the destina
 
 Before a release, verify the intended commit, version/changelog, complete source distribution and required human acceptance. Include locales/ even for English; do not advertise a single downloaded Python file as a complete installation.
 
-The complete implementation is currently under review in PR #1 on feature/public-release. Main contains bootstrap documentation only. The README clone command and CI badge intentionally point to the review branch. After an approved implementation merge, update installation instructions and badge scope to the intended default/release branch. Do not advertise nonexistent binaries, package-manager packages or hardware certification.
+The complete development implementation is on main following the merge of PR #1. The README clone command and CI badge target main. Keep installation instructions and badge scope aligned with the actual default/release branch when release policy changes. Do not advertise nonexistent binaries, package-manager packages or hardware certification.
 
 Confirm that user/developer links work in a clone and an extracted source archive. Keep public instructions generic, and keep personal preferences, credentials and session histories local. Existing public Git history is not erased by reorganizing current files. Release publication, merge and remote deletion are separate authorized actions; the helper does not perform them.
