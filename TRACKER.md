@@ -71,7 +71,7 @@ The development build is 3.3.0-dev.1. KM-011/KM-005/KM-001/KM-003/KM-013 remain 
 
 Target restoration needs a modern target-snapshot.json and target-changes.json plus verified archive pairs. A FULL source snapshot can serve FULL/KOREADER, not LIBRARY; central metadata belongs to the runtime archive. See README.md for compatibility and recovery details.
 
-Published baseline 9dce9b2 passed the 115-test local suite, self-test and locale validation. Its [push CI](https://github.com/gh-slee/kobo-koreader-migrate/actions/runs/38824365753) and [PR CI](https://github.com/gh-slee/kobo-koreader-migrate/actions/runs/38824370032) passed all six macOS/Linux Python matrix jobs each. This is automated evidence, not hardware validation. [PR #1](https://github.com/gh-slee/kobo-koreader-migrate/pull/1) is under review and unmerged.
+Published baseline 48ac339 passed the 116-test local suite, self-test and locale validation. Its [push CI](https://github.com/gh-slee/kobo-koreader-migrate/actions/runs/38830387604) and [PR CI](https://github.com/gh-slee/kobo-koreader-migrate/actions/runs/38830394737) passed all six macOS/Linux Python matrix jobs each. This is automated evidence, not hardware validation. [PR #1](https://github.com/gh-slee/kobo-koreader-migrate/pull/1) is under review and unmerged.
 
 ## Agent-assisted development
 
@@ -226,3 +226,10 @@ Do not auto-enable every JSON file found in locales/. Additional languages, righ
 - Python format-string syntax informs the deliberately restricted named-placeholder validator: https://docs.python.org/3.12/library/string.html#format-string-syntax
 
 These references inform the design; this plan chooses source-reviewable JSON catalogs rather than requiring compiled gettext .mo files.
+
+
+## Documentation organization
+
+README.md is the concise entry point for installation, essential mode/data behavior, supported platforms, partial locale status and document navigation. Complete user, recovery, troubleshooting, developer and maintainer details now live in five topic guides under docs/. Shared AGENTS.md remains the agent entry point; this organization introduces no new agent-memory convention or migration runtime behavior.
+
+The publication allowlist adds only the five exact reviewed Markdown paths; other docs/data paths remain blocked and all guide content still receives secret/path scanning. A regression covers both allowed paths and rejection of unknown/private paths or private content. Local validation passed: 117 tests, self-test, three-locale validation, 99 documentation link targets and 27 shell examples, plus worktree/history privacy and whitespace checks. Migration runtime and locale assets are unchanged. These results cover the local documentation batch; hosted CI for it requires publication. Physical/manual acceptance status is unchanged.

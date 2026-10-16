@@ -13,7 +13,9 @@ EXACT = {'kobo-koreader-migrate.py', 'README.md', 'LICENSE', 'AGENTS.md',
          'SECURITY.md', '.gitignore', '.githooks/pre-push',
          '.cursor/rules/project-context.mdc', '.github/workflows/tests.yml',
          'scripts/check_publication.py', 'scripts/publish.py', 'scripts/check_locales.py',
-         'locales/registry.json', 'locales/en.json', 'locales/zh-Hant.json', 'locales/zh-Hans.json'}
+         'locales/registry.json', 'locales/en.json', 'locales/zh-Hant.json', 'locales/zh-Hans.json',
+         'docs/USAGE.md', 'docs/RECOVERY.md', 'docs/TROUBLESHOOTING.md',
+         'docs/DEVELOPMENT.md', 'docs/MAINTAINING.md'}
 MAX_BYTES = 1024 * 1024
 # Heuristics supplement the file allowlist and human review; not a proof of privacy.
 RULES = [

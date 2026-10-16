@@ -153,6 +153,17 @@ class PublicationTests(unittest.TestCase):
                     self.assertTrue(guard.inspect_blob(path, fixture.read_bytes()))
         self.assertFalse(guard.inspect_blob('AGENTS.md', b'Synthetic shared guidance.'))
 
+    def test_documentation_allowlist_is_exact_and_still_scans_content(self):
+        for name in ('USAGE', 'RECOVERY', 'TROUBLESHOOTING', 'DEVELOPMENT', 'MAINTAINING'):
+            with self.subTest(name=name):
+                path = 'docs/' + name + '.md'
+                self.assertFalse(guard.inspect_blob(path, b'Synthetic public guide.'))
+                private_path = '/' + 'Users' + '/example/private-data'
+                self.assertTrue(guard.inspect_blob(path, private_path.encode()))
+        for path in ('docs/notes.md', 'docs/secrets.json', 'docs/private/USAGE.md',
+                     'docs/../AGENTS.override.md'):
+            self.assertTrue(guard.inspect_blob(path, b'Synthetic private data.'))
+
     def test_detection_never_echoes_secret_values(self):
         secret = 'gh' + 'p_' + 'a' * 32
         issues = guard.inspect_blob('README.md', ('token: ' + secret).encode())

@@ -4,7 +4,7 @@ This is the shared project guidance for coding agents. Human usage belongs in RE
 
 ## Find task context
 
-- Read the current code and the documentation relevant to the requested change. Use TRACKER.md for feature planning/status, ACCEPTANCE.md for manual acceptance and README.md for observable CLI behavior.
+- Read the current code and the documentation relevant to the requested change. Use README.md for quick start, docs/USAGE.md for CLI behavior, docs/RECOVERY.md for backup/restore, docs/DEVELOPMENT.md for implementation/testing, docs/MAINTAINING.md for publication, TRACKER.md for feature criteria and ACCEPTANCE.md for manual acceptance.
 - Work only within the requested scope. A backlog entry is not authorization to operate devices, delete backups or start another feature.
 - Public code, identifiers, comments and canonical developer docs use English. Translate owned UI text only through reviewed locale catalogs; diagnostic logs and machine schemas stay English.
 

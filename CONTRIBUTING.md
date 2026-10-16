@@ -30,40 +30,11 @@ Tests use temporary fixtures. On macOS, the actual ditto fixture exercises archi
 
 ## Working with coding agents
 
-The root [AGENTS.md](AGENTS.md) is the shared source of agent guidance using the [AGENTS.md open format](https://agents.md/). Keep it concise and link task-specific documentation rather than duplicating it in multiple vendor rule files. Contributors remain responsible for understanding, testing and reviewing AI-assisted changes.
+Use the shared [AGENTS.md](AGENTS.md) and [coding-agent setup guide](docs/DEVELOPMENT.md#coding-agents). The latter explains optional official Codex local instructions and worktree behavior. Contributors remain responsible for reviewing and validating AI-assisted changes.
 
-For personal Codex defaults, use its documented user-level AGENTS.md. For private project-specific instructions, Codex supports a Git-ignored AGENTS.override.md. At one directory level, Codex selects the override instead of AGENTS.md; a local override must explicitly read the public AGENTS.md to retain this project's shared rules. This is a Codex feature, not a universal private-file standard. See [official instruction discovery](https://learn.chatgpt.com/docs/agent-configuration/agents-md).
+## Publication privacy and maintainer tooling
 
-Codex's local managed worktrees automatically copy an ignored AGENTS.override.md. Other ignored files require deliberate .worktreeinclude configuration; ordinary clones, manual Git worktrees and remote environments do not gain this behavior. See [official worktree documentation](https://learn.chatgpt.com/docs/environments/git-worktrees). This project needs no extra private Markdown loader or worktree include file for its local override. Private instructions and credentials must never be added to a public commit.
-
-Validate setup from a fresh session started in the repository: ask the tool which instructions it loaded and verify that shared rules remain active. Other assistants have their own discovery and subagent inheritance rules. Give delegated agents the applicable guidance and task context; do not assume automatic inheritance. Development guidance never changes the migration tool's offline runtime requirements.
-
-## Publication privacy
-
-Use a GitHub user noreply author/committer email. The history guard also accepts the exact public platform committer noreply@github.com on merge commits; authors still require user noreply IDs. Personal emails, platform authors/non-merge committers and lookalike domains are rejected.
-
-The privacy guard inspects actual staged blobs and every locally reachable commit. .gitignore does not untrack existing files or remove their history. Moving internal notes out of current public docs does not erase older commits. Retain allowlist entries needed to inspect historical public paths even after deleting those paths from the current tree. Handle any history remediation separately; do not bypass the guard.
-
-Install the local pre-push hook:
-
-```bash
-git config --local core.hooksPath .githooks
-```
-
-The guard uses a public-path allowlist and secret/path heuristics. Human review remains necessary. Hooks can be bypassed, and hosted CI runs after upload. Branch protection and repository permissions are separate controls.
-
-## Maintainer PR helper
-
-GitHub CLI is optional maintainer tooling, unnecessary for migration. Authenticate with its browser/OS credential-store flow. Never print tokens or paste credentials into source, logs, issues or an AI chat.
-
-When authorized to publish a committed, clean feature branch, prepare a reviewed English PR body and run:
-
-```bash
-python3 scripts/publish.py --repository OWNER/REPO \
-  --title "Explain the change" --body-file /tmp/pr-body.md
-```
-
-Use the exact repository identity shown by origin. The helper checks the destination, branch, clean tree, PR content, privacy, locales, tests and self-test. It performs an ordinary push and creates/reuses an open PR. It never merges, force-pushes or publishes releases. Publication helpers do not replace the operator's authorization requirements.
+Keep private data and local instructions out of Git. Review staged content and reachable history with the publication guard before uploading. See the [maintainer guide](docs/MAINTAINING.md) for the exact email/allowlist policy, local pre-push hook, PR helper and release preparation. Publication still requires the applicable operator authorization.
 
 ## Reporting and licensing
 
