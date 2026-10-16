@@ -1,4 +1,5 @@
 # Private runtime and development data (any depth).
+AGENTS.override.md
 runs/
 .previous/
 .local/

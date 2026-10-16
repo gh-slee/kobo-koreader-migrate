@@ -1,0 +1,262 @@
+# User guide
+
+[Home](../README.md) · [Usage](USAGE.md) · [Recovery](RECOVERY.md) · [Troubleshooting](TROUBLESHOOTING.md) · [Development](DEVELOPMENT.md) · [Maintaining](MAINTAINING.md)
+
+Complete operating instructions for the experimental macOS CLI. Start with the README quick start; review the mode and data behavior before approving device writes.
+
+## Requirements and compatibility
+
+| Requirement | Details |
+| --- | --- |
+| Computer | macOS with `ditto`, `diskutil` and `sync` available. |
+| Python | Python 3.9 or newer. No `pip install` is needed for migration. The published review commit passed CI on Python 3.9/3.12/3.14 on macOS/Linux; see [project status](DEVELOPMENT.md#validation-and-release-status). Linux jobs validate fixtures, not device migration. |
+| Devices | Two Kobo readers mounted as USB storage, connected **one at a time**. A renamed volume is detected by its `.kobo/` directory. |
+| Identity | Both readers must have a readable `.kobo/version` file. The fingerprint prevents using the same device as both SOURCE and TARGET and guards subsequent writes. |
+| KOReader | FULL and KOREADER require an existing SOURCE installation with `reader.lua`, `frontend/` and `plugins/`. LIBRARY does not install KOReader. |
+| Space | Enough Mac space for source and target backups; enough target space for the planned replacement/copies. ZIP compression savings are not assumed. |
+
+SOURCE and TARGET are roles, not fixed model names. Each physical model must be confirmed by the operator. A model name found in KOReader logs is only a hint: a previous clone may have copied another device's log. Two different readers of the same model are allowed; identical fingerprints are refused.
+
+FULL and KOREADER copy the SOURCE runtime version and settings. The operator must confirm that this KOReader build is compatible with the TARGET hardware. The tool does not install a fresh model-specific build or automatically preserve hardware-specific settings. Support for entering a model label is not a claim that every Kobo model has been tested.
+
+Windows and Linux device migration are not supported. Linux CI runs fixture tests only. This tool does not migrate Kindle, Android, Nickel accounts, Kobo firmware, DRM licences or Kobo's internal database.
+
+## Choose a mode
+
+Running without `--mode` opens an interactive menu; FULL is its default.
+
+| Mode | Entire `.adds/koreader` | Books and external reading data | Root `fonts/` | Writes to Kobo |
+| --- | --- | --- | --- | --- |
+| FULL | Clean replacement from SOURCE | Included, original relative paths | Included by default; `--no-fonts` disables it | After backups and final confirmation |
+| KOREADER | Clean replacement from SOURCE | No copying outside KOReader | No copying outside KOReader | After backups and final confirmation |
+| LIBRARY | Retains installed runtime/global settings | Selected using flags or prompts | Optional | After backups and final confirmation |
+| AUDIT | Plans full runtime replacement | Selected using flags or prompts | Optional | Never |
+
+```bash
+# Everything supported, including books and reading state.
+python3 kobo-koreader-migrate.py --mode full
+
+# Entire KOReader directory only.
+python3 kobo-koreader-migrate.py --mode koreader
+
+# Books + reading data, retaining TARGET's installed KOReader.
+python3 kobo-koreader-migrate.py --mode library --books --no-fonts
+
+# Only custom root fonts.
+python3 kobo-koreader-migrate.py --mode library --no-books --fonts
+
+# Detailed read-only inspection and planning.
+python3 kobo-koreader-migrate.py --mode audit --books --fonts
+```
+
+FULL always includes supported books and reading data. `--no-books`, `--no-reading-data`, directory scopes and `keep-target` conflicts are rejected in FULL. Use KOREADER or LIBRARY for selective work.
+
+**FULL retains TARGET-only books outside KOReader.** It replaces SOURCE-matching files that differ, and skips identical payload files. It replaces the entire `.adds/koreader` tree, so TARGET-only files/settings/central reading metadata **inside that tree** are removed after backup. KOREADER has the same whole-directory behavior, including any books or fonts already stored inside that tree.
+
+## How it works
+
+```mermaid
+flowchart LR
+    S["SOURCE Kobo<br/>Read only"] --> M["Mac<br/>Capture and verify"]
+    M --> T["TARGET Kobo<br/>Plan and back up"]
+    T --> C{"Confirm?"}
+    C -->|Yes| W["Copy and verify"]
+    C -->|No| X["Cancel before writes"]
+    W -->|Caught failure| R["Attempt rollback"]
+```
+
+Connect **one Kobo at a time**. SOURCE is ejected before TARGET is requested; the Mac holds the captured data between devices. A successful migration ends with safe eject. The tool never evaluates device Lua files or executes copied plugins.
+
+
+1. Disconnect both readers. Launch the tool and select the mode.
+2. Connect only **SOURCE**, choose USB connection on the Kobo and press Return when requested.
+3. Inspect the displayed mount, model hint, KOReader version and masked serial hint. Enter/confirm the physical SOURCE model using the device's settings or your own verified information.
+4. The tool checks paths, plugins and SQLite statistics, scans supported files, checks free space, then captures source archives with SHA-256 manifests. SOURCE files are not changed by the tool.
+5. Wait for `Ejected successfully.` and `Unplug SOURCE now.` Disconnect SOURCE.
+6. Connect only **TARGET**, choose USB connection and press Return when requested. Confirm the physical TARGET model. For whole-runtime copying, confirm build compatibility.
+7. Review the payload plan and `difference.txt`. Select the TARGET KOReader identity policy when applicable. The tool verifies source archives and creates TARGET rollback backups.
+8. At the **final** `Proceed with the planned migration? [y/N]:` prompt, type `y` and Return to allow writes. Empty input means No. Declining is a normal cancellation; TARGET is not modified.
+9. Keep TARGET connected during copying and verification. On success, wait for safe eject and then disconnect it.
+10. Open KOReader on TARGET and check several books, reading progress, annotations, fonts and plugins. Keep backups until your physical-device acceptance checks are complete.
+
+Model flags provide labels in advance but do not bypass confirmations:
+
+```bash
+python3 kobo-koreader-migrate.py --mode full \
+  --source-model "Kobo Clara BW" --target-model "Kobo Libra Colour" --dry-run
+```
+
+Those names are examples, not a tested hardware pair. An incorrect or stale log hint can be overridden through physical-model confirmation. Identity guards still apply.
+
+## Language support
+
+| Language | CLI tag | Available now | Still pending |
+| --- | --- | --- | --- |
+| English | `en` | Complete current migration UI, help and samples | Review of future message extraction |
+| Traditional Chinese | `zh-Hant` | Help descriptions and static UI samples | Actual migration/maintenance interface |
+| Simplified Chinese | `zh-Hans` | Help descriptions and static UI samples | Actual migration/maintenance interface |
+
+Each locale contains 36 validated foundation messages. Translation wording still needs human review. Choosing a language changes no migration decisions. Diagnostic logs and machine-schema values stay English. Additional locales will follow the registry/catalog workflow after the initial foundation is accepted.
+
+These commands need no Kobo and do not create runs/logs/backups or inspect existing run data:
+
+```bash
+python3 kobo-koreader-migrate.py --list-locales
+python3 kobo-koreader-migrate.py --locale zh-Hant --help
+python3 kobo-koreader-migrate.py --locale zh-Hans --preview-ui
+python3 scripts/check_locales.py
+```
+
+`--preview-ui` displays a static translated mode menu and confirmation examples, then exits. It never asks for approval or starts an operation. The actual interactive mode menu remains English. Python argparse headings/usage diagnostics can also remain English in this foundation release. `--preview-ui`/`--list-locales` cannot be combined with migration operations/settings.
+
+
+Locale priority is `--locale`, then `KOBO_MIGRATE_LOCALE`, then the first nonempty terminal variable among `LANGUAGE`, `LC_ALL`, `LC_MESSAGES`, `LANG`, then English. Ordered colon-separated language preferences are supported. Common aliases include `en_US.UTF-8` -> `en`, `zh_TW.UTF-8`/`zh-HK`/`zh-MO` -> `zh-Hant`, and `zh_CN.UTF-8`/`zh-SG` -> `zh-Hans`. An explicit script wins over a conflicting region. Bare `zh` is ambiguous and falls back to English with guidance to choose a script; an unsupported explicit `--locale` is a usage error before device/run access.
+
+Missing individual translations use English. Missing/invalid selected translations fall back to the whole English catalog with a warning. A missing/invalid canonical English catalog or registry stops startup safely. Catalog validation rejects duplicate keys, unsafe controls/format fields and invalid schema/placeholder/plural definitions. No code is evaluated from locale data. On non-UTF-8 streams, help and preview text uses escaped characters instead of failing on encoding.
+
+The locale validator requires complete foundation coverage for all registered languages. CI and the publication helper run it in addition to tests/privacy checks. Publication allows only the four exact initial locale JSON files; arbitrary JSON files, device reports and additional language files remain blocked until deliberately reviewed. Future migration-message coverage and new-language contribution instructions are tracked separately in TRACKER.md.
+
+## Books, metadata and fonts
+
+### Book discovery
+
+Discovery is based on case-insensitive filename extensions, not a complete content/DRM inventory. The built-in set is:
+
+```text
+epub kepub pdf cbz cbr cb7 cbt cba
+mobi azw azw3 azw4 prc pdb fb2 fb3
+djvu djv txt rtf doc docx html htm xhtml md
+chm odt tif tiff xps oxps
+```
+
+Compound `.fb2.zip` is also recognised. `.kepub.epub` is found through its `.epub` suffix. Copying a format does not prove that KOReader on TARGET can open it. Unsupported extensions are not silently treated as books; the scan report includes unrecognised files.
+
+Hidden/system folders are excluded from ordinary book scanning. Symlinks are skipped or rejected by the relevant safety checks. Generic ZIP archives, standalone image collections and extensionless books are not included automatically.
+
+Use explicit extensions for other formats, and review the dry run:
+
+```bash
+python3 kobo-koreader-migrate.py --mode library --books --no-fonts \
+  --extra-extension png --extra-extension zip --dry-run
+```
+
+Adding `zip` includes ordinary ZIP files within the chosen scan scope; it does not inspect them to determine whether they contain ebooks.
+
+### Reading data
+
+When books and reading data are enabled, adjacent sidecar directories follow their books. Examples:
+
+```text
+Books/title.epub             -> Books/title.sdr/
+Books/title.kepub.epub       -> Books/title.kepub.sdr/
+Comics/issue.cbz             -> Comics/issue.sdr/
+```
+
+Supported central metadata locations under `.adds/koreader` are `docsettings/`, `hashdocsettings/` and legacy `history/`. FULL/KOREADER include these through the runtime archive. Unscoped LIBRARY can copy these metadata trees without replacing the entire runtime. Lua files are copied/read as text; they are never evaluated.
+
+Metadata is copied, **not merged**. For scoped LIBRARY scans, unfiltered central metadata is omitted to avoid overwriting unrelated reading state. Keeping a conflicting TARGET book also protects its related source sidecars and conservatively omits central metadata from that LIBRARY transfer. A different edition at the same pathname can still have incompatible reading state; review the file plan.
+
+### Fonts
+
+Custom root fonts live at `fonts/` relative to the Kobo root, for example `fonts/MyFont.ttf`. Root font copying recognises `.ttf`, `.otf`, `.ttc` and `.otc`. Fonts inside `.adds/koreader/fonts/` are part of the whole KOReader tree and are copied in FULL/KOREADER regardless of the external-root font option.
+
+### Directory scopes
+
+Use SOURCE-relative directories, without a leading slash:
+
+```bash
+python3 kobo-koreader-migrate.py --mode library --books --no-fonts \
+  --include-dir Books --include-dir Comics --exclude-dir Books/Temporary --dry-run
+```
+
+Repeat flags as needed. Target-only reporting uses the same scope and extension rules. Scopes are supported in LIBRARY/AUDIT, not FULL. Saved snapshots retain their original discovery scope.
+
+## Conflicts and target identity
+
+Payload files are compared by size and SHA-256. Identical files are skipped. Different files at the same relative path are governed by:
+
+| Policy | Result |
+| --- | --- |
+| `overwrite` | Back up existing TARGET content, then replace it with SOURCE content. Used by FULL/KOREADER; optional in LIBRARY/AUDIT. |
+| `keep-target` | Keep different existing TARGET files; still copy missing files. Protect associated reading metadata. LIBRARY/AUDIT only. |
+
+```bash
+python3 kobo-koreader-migrate.py --mode library --books --no-fonts \
+  --conflict keep-target --dry-run
+```
+
+For whole-runtime migration, choose one KOReader `device_id` policy:
+
+1. Preserve TARGET's existing identity (recommended; if absent, generate a new one).
+2. Generate a new TARGET identity.
+3. Clone SOURCE identity exactly.
+
+This setting concerns KOReader's ID, not the Kobo hardware serial. The copied tree is verified before deliberate identity/cache adjustments. Other hardware-specific settings are copied from SOURCE; a selective preservation feature is still on the roadmap.
+
+## Command-line reference
+
+Use `--help` for the definitive help text.
+
+| Option | Purpose |
+| --- | --- |
+| `--locale TAG` | Select en/zh-Hant/zh-Hans for help and UI samples; otherwise detect terminal preferences. |
+| `--list-locales` | List registered language options without accessing devices or runs. |
+| `--preview-ui` | Show a read-only translated mode/confirmation sample and exit. |
+| `--mode full\|koreader\|library\|audit` | Select a mode; otherwise show the menu. |
+| `--dry-run` | Preview with no Kobo writes or ZIP creation. |
+| `--source-model NAME`, `--target-model NAME` | Provide physical model labels; confirmations remain required. |
+| `--books`, `--no-books` | Include/exclude books in selective modes; FULL always includes them. |
+| `--fonts`, `--no-fonts` | Include/exclude root fonts; FULL default is include. |
+| `--reading-data`, `--no-reading-data` | Copy or omit reading metadata with books in LIBRARY/AUDIT. |
+| `--conflict overwrite\|keep-target` | Policy for different existing payload files. |
+| `--include-dir DIR` | Scan a SOURCE-relative directory; repeatable. |
+| `--exclude-dir DIR` | Exclude a SOURCE-relative payload directory; repeatable. |
+| `--extra-extension EXT` | Add a case-insensitive book extension; repeatable. |
+| `--backup-dir PATH` | Project/output root; default is script directory. |
+| `--from-run RUN_ID` | Reuse a verified saved SOURCE; connect TARGET only. |
+| `--restore-run RUN_ID` | Restore the recorded original TARGET state. |
+| `--list-runs` | Show saved batches/status without devices. |
+| `--cleanup` | Preview eligible old batches; no deletion by itself. |
+| `--keep-successful N` | Keep N newest successes during cleanup, minimum 1. |
+| `--delete-run RUN_ID` | Explicit eligible deletion selection with `--cleanup`; repeatable. |
+| `--self-test` | Small offline non-destructive self-test, then exit. |
+| `--version`, `--help` | Show version/help, then exit. |
+
+`--preview-ui`, `--list-locales`, `--from-run`, `--restore-run`, `--list-runs` and `--cleanup` are mutually exclusive operations. The main migration workflow is interactive; there is no unattended `--yes` switch.
+
+## FAQ
+
+### Will FULL erase all books on TARGET?
+
+It retains TARGET-only books outside `.adds/koreader`. Different SOURCE-matching payload files are backed up and replaced. The entire KOReader tree is replaced, including TARGET-only content inside it. [Review the mode table](#choose-a-mode).
+
+### Will it find every ebook?
+
+Discovery uses recognised filename extensions and your selected scope. Extensionless, unsupported or DRM-managed content is not guaranteed. [See formats and exclusions](#books-metadata-and-fonts).
+
+### Where do fonts go?
+
+Custom device fonts stay in root `fonts/`. KOReader's internal fonts stay inside `.adds/koreader/fonts/`; whole-runtime modes include that tree.
+
+### Does running it require ChatGPT, an LLM or an internet connection?
+
+No. Migration, validation, backups and cleanup use ordinary offline code. Obtaining the project and using optional GitHub publication tooling require network access. Copied plugin configurations are not executed.
+
+### Does cleanup delete backups immediately?
+
+`--cleanup` alone previews eligibility. Actual deletion needs explicit `--delete-run` selections and the exact typed confirmation. [See retention rules](RECOVERY.md#backup-cleanup).
+
+### Can I use only the Python script, or migrate from Windows/Linux?
+
+Keep `locales/` with the script, including for English. Device migration requires macOS. Linux CI validates synthetic fixtures only; Windows migration is unsupported.
+
+## Limitations
+
+- Extension-based scans cannot guarantee discovery of every ebook, DRM file, image folder or extensionless document.
+- Reading data is copied, not semantically merged; different editions and metadata locations can cause conflicts.
+- FULL/KOREADER replace the runtime and source settings. Selective target hardware-setting preservation is not implemented.
+- `.kobo/version` is fingerprinted as a whole; a firmware change can change that fingerprint and block an older exact restore. There is no unsafe bypass option.
+- There is no interrupted-transfer resume, default library mirror deletion, wireless sync, scheduled cleanup or unattended migration.
+- Live-device safety and usability still need physical testing and human sign-off. Current feature status is recorded rather than assumed.
+
+Planned work includes interrupted-transfer recovery, optional exact library mirroring, content-assisted discovery, reading-data conflict reports, portable hardware settings, settings-only migration and a separate archive verifier. These remain backlog items until implemented/tested.

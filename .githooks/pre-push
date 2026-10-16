@@ -1,0 +1,3 @@
+#!/bin/sh
+# Block data in both the index and local history; do not print secret values.
+exec python3 scripts/check_publication.py --history

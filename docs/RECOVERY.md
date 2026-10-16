@@ -1,0 +1,131 @@
+# Backups and recovery
+
+[Home](../README.md) · [Usage](USAGE.md) · [Recovery](RECOVERY.md) · [Troubleshooting](TROUBLESHOOTING.md) · [Development](DEVELOPMENT.md) · [Maintaining](MAINTAINING.md)
+
+Keep recovery artifacts until you have checked the result on the actual TARGET. Management commands operate on local run batches; restoration still requires the original device and final confirmation.
+
+## Run files, reports and status
+
+By default all generated files stay in the project folder containing the script:
+
+```text
+kobo-koreader-migrate.py
+README.md / LICENSE / CHANGELOG.md
+TRACKER.md / ACCEPTANCE.md / AGENTS.md
+CONTRIBUTING.md / SECURITY.md
+tests/
+locales/                 registry and three UTF-8 foundation catalogs
+scripts/                 locale/publication checks and PR helper
+.github/workflows/       fixture test CI
+.githooks/               optional local pre-push guard
+runs/                    private; ignored by Git
+  <timestamp-random-id>/
+    run.json
+    koreader-migration-<run-id>.log
+    koreader-scan-<run-id>.json
+    difference.txt / difference.json
+    source-snapshot.json or source-reference.json
+    target-snapshot.json / target-changes.json
+    *.zip / *.manifest.json
+    koreader-migration-result-<run-id>.json
+.project.lock             persistent lock inode; ignored by Git
+.local/                   optional private notes; ignored by Git
+```
+
+Not every operation creates every artifact. A dry run creates reports but no ZIPs. Files within one batch are intentionally flat for compatibility with earlier runs. The version is recorded in logs/JSON, not in the script filename.
+
+Choose a different output root on the Mac:
+
+```bash
+python3 kobo-koreader-migrate.py --backup-dir ~/KoboMigration --mode full --dry-run
+python3 kobo-koreader-migrate.py --backup-dir ~/KoboMigration --list-runs
+```
+
+The resulting batches are `~/KoboMigration/runs/<run-id>/`. Backups under `/Volumes` or inside a Kobo mount are refused. Management commands must use the same output root to find those runs.
+
+Progress output includes phase timestamps, file counts, bytes, large-file transfer/hash speed and estimated time, and periodic heartbeat messages for long macOS archive commands. Database diagnostics and target comparison announce their phases. Some calls, such as a SQLite check or an individual filesystem operation, can still take time without per-record progress.
+
+`difference.txt` and `difference.json` enumerate new, overwritten, identical, kept, skipped-metadata and target-only files, with counts/bytes and book/sidecar grouping. Target-only entries are informative; default migration does not delete those books.
+
+`run.json` tracks phases and final states:
+
+| Status | Meaning |
+| --- | --- |
+| `running` | Worker has not recorded a final result. |
+| `success` | Operation and verification completed. |
+| `audited` | Inspection/preview completed without device writes. |
+| `cancelled` | Ordinary user cancellation before target changes. |
+| `failed` | Failure recorded before target modification. |
+| `interrupted` | Interrupted without recorded target modification. |
+| `rolled-back` | Operation failed; automatic rollback succeeded. |
+| `needs-recovery` | Target may have changed and needs inspection/recovery. |
+| legacy/unknown | No trustworthy modern status; conservatively protected. |
+
+Project and device locks use OS-backed ownership. A leftover lock **filename** does not mean another worker is running: locks release when the process exits. Do not delete a live lock file to bypass ownership. Prior unfinished `running` records are reconciled conservatively at the next exclusive project startup. Older v3.0.x workers do not honour these locks; stop them before running newer versions.
+
+## Saved source migration and target restoration
+
+List existing runs first:
+
+```bash
+python3 kobo-koreader-migrate.py --list-runs
+```
+
+### Reuse a saved SOURCE
+
+```bash
+python3 kobo-koreader-migrate.py --from-run RUN_ID --dry-run
+python3 kobo-koreader-migrate.py --from-run RUN_ID
+```
+
+Replace `RUN_ID` with an ID listed under this project's `runs/`. Only TARGET is connected. The tool verifies archive SHA-256, manifests, member paths and contents. It references the original SOURCE archives and records dependencies instead of duplicating large ZIPs.
+
+| Captured snapshot | Permitted migration mode |
+| --- | --- |
+| FULL | FULL or KOREADER |
+| KOREADER | KOREADER |
+| LIBRARY | LIBRARY |
+
+Default mode follows the captured mode. You cannot silently use a FULL snapshot as LIBRARY: its central metadata is inside the runtime archive. Legacy source batches need a complete scan report and valid archive/manifest pairs with an identifiable source model. Legacy run status remains unknown/protected.
+
+Saved run selection is limited to this project's run directories; an absolute path is accepted only when it resolves to a direct run child in that same project. Use `--backup-dir` to select another project root.
+
+### Restore the original TARGET state
+
+```bash
+python3 kobo-koreader-migrate.py --restore-run RUN_ID --dry-run
+python3 kobo-koreader-migrate.py --restore-run RUN_ID
+```
+
+This uses a previous run's **TARGET pre-migration snapshot**, not its SOURCE snapshot. It restores the recorded originals and removes files that the recorded migration created. Unrelated library files are retained. If the run replaced KOReader, restoration replaces the full KOReader tree with its prior backup.
+
+Exact restoration requires v3.1+ `target-snapshot.json`, `target-changes.json`, a run that modified its target, verified archive pairs and the same device fingerprint. Older target backups without a complete journal are not accepted by this command. The tool creates pre-restore undo backups and asks for final confirmation. Subsequent changes to the affected paths/runtime can be overwritten by restoring an older state; inspect the dry run first.
+
+Restore cannot be combined with migration scope/model/conflict flags. Only the recorded state, `--dry-run` and `--backup-dir` control it. This is not an automatic interrupted-run resume feature.
+
+## Backup cleanup
+
+These commands do not require a connected Kobo:
+
+```bash
+# Inventory only.
+python3 kobo-koreader-migrate.py --list-runs
+
+# Preview only. This does not delete anything.
+python3 kobo-koreader-migrate.py --cleanup
+
+# Preview with a larger recent-success retention count.
+python3 kobo-koreader-migrate.py --cleanup --keep-successful 5
+```
+
+The default retention count is two; the minimum is one. Cleanup protects recent successful batches, referenced dependencies, the newest known successful recovery point per target, and all non-success/legacy/unknown batches. It deletes only whole eligible batches explicitly selected by ID:
+
+```bash
+python3 kobo-koreader-migrate.py --cleanup --delete-run RUN_ID
+```
+
+You must type the exact `DELETE ...` text shown by the tool. Multiple `--delete-run` flags select multiple eligible batches. The tool locks and rechecks eligibility and rejects symlink-containing batches. Adding `--dry-run` suppresses deletion even when IDs are supplied. There is no scheduled deletion, individual-ZIP pruning or automatic removal of failed runs. Keep recovery batches until physical testing is complete.
+
+## Recovery boundaries
+
+Caught failures attempt rollback while the original TARGET remains connected. Power loss, disconnection, hardware failure or forced termination can prevent recovery. A checksum verifies captured bytes, not settings compatibility. See [troubleshooting and exit codes](TROUBLESHOOTING.md#exit-codes) before retrying a failed operation. Preserve original backups and do not edit manifests to bypass verification.
