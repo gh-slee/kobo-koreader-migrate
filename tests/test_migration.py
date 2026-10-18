@@ -501,6 +501,42 @@ class PayloadTests(MigrationTestCase):
         self.assertEqual((target / "book.epub").read_bytes(), b"original")
 
 
+class TreeRemovalTests(MigrationTestCase):
+    def test_disappearing_descendant_does_not_abort_tree_removal(self):
+        root = self.root / 'runtime'
+        write_file(root / '._fixture', b'synthetic metadata')
+        real_unlink = migration.os.unlink
+        def disappear(path, *args, **kwargs):
+            result = real_unlink(path, *args, **kwargs)
+            if Path(path).name == '._fixture':
+                raise FileNotFoundError('Synthetic descendant disappeared')
+            return result
+        with mock.patch.object(migration.os, 'unlink', side_effect=disappear):
+            migration.remove_tree(root)
+        self.assertFalse(root.exists())
+
+    def test_tree_removal_keeps_permission_errors_visible(self):
+        root = self.root / 'runtime'
+        write_file(root / 'fixture', b'preserve on failure')
+        with mock.patch.object(migration.os, 'unlink', side_effect=PermissionError('Synthetic refusal')):
+            with self.assertRaises(PermissionError):
+                migration.remove_tree(root)
+        self.assertEqual((root / 'fixture').read_bytes(), b'preserve on failure')
+
+    def test_tree_removal_keeps_missing_root_visible(self):
+        with self.assertRaises(FileNotFoundError):
+            migration.remove_tree(self.root / 'missing')
+
+    def test_tree_removal_does_not_follow_root_symlink(self):
+        outside = self.root / 'outside'
+        write_file(outside / 'fixture', b'preserve outside tree')
+        link = self.root / 'link'
+        link.symlink_to(outside, target_is_directory=True)
+        with self.assertRaises(OSError):
+            migration.remove_tree(link)
+        self.assertEqual((outside / 'fixture').read_bytes(), b'preserve outside tree')
+
+
 class DiagnosticsTests(MigrationTestCase):
     def test_statistics_database_is_checked_read_only_and_counts_are_reported(self) -> None:
         mount = self.root / "device"
@@ -519,6 +555,34 @@ class DiagnosticsTests(MigrationTestCase):
         self.assertEqual(result["statistics"], {"quick_check": "ok", "rows": {"book": 2, "page_stat_data": 3}})
         self.assertEqual(result["missing_references"], [{"file": "history.lua", "path": "/mnt/onboard/Books/missing.epub"}])
         self.assertEqual(tree_contents(mount), before)
+
+    def test_statistics_connection_closes_on_success_and_database_error(self) -> None:
+        real_connect = sqlite3.connect
+        for valid in (True, False):
+            with self.subTest(valid=valid):
+                mount = self.root / ('valid' if valid else 'invalid')
+                kr = self.make_koreader(mount, b'runtime', 'DEVICE')
+                db = kr / 'settings/statistics.sqlite3'
+                write_file(db, b'' if valid else b'not a SQLite database')
+                before = tree_contents(mount)
+                opened = []
+                def capture(*args, **kwargs):
+                    connection = real_connect(*args, **kwargs)
+                    opened.append(connection)
+                    self.addCleanup(connection.close)
+                    return connection
+                with mock.patch.object(migration.sqlite3, 'connect', side_effect=capture):
+                    if valid:
+                        result = migration.device_diagnostics(mount)
+                        self.assertEqual(result['statistics']['quick_check'], 'ok')
+                    else:
+                        with self.assertRaises(migration.MigrationError):
+                            migration.device_diagnostics(mount)
+                self.assertEqual(len(opened), 1)
+                # Retain the connection: closure must not depend on garbage collection.
+                with self.assertRaises(sqlite3.ProgrammingError):
+                    opened[0].execute('SELECT 1')
+                self.assertEqual(tree_contents(mount), before)
 
     def test_pending_statistics_wal_blocks_unreliable_copy(self) -> None:
         mount = self.root / "device"
