@@ -1,18 +1,25 @@
 # Changelog
 
-## 3.3.0-dev.2 — 2026-10-18 — local candidate; hardware acceptance pending
+## Unreleased — maintainer tooling and documentation
+
+- Add offline `scripts/prepare_release.py` prepare/verify commands for explicit Git commits: guarded committed files only, complete runtime/locale assets, ZIP-to-Git byte verification, temporary-extraction smoke checks and local documentation links, SHA256SUMS and local preparation records.
+- Add synthetic source-package safety regressions and CI package preparation. Existing output directories are not overwritten; the helper has no upload, tag or device-operation commands.
+- Reconcile published pre-release, hosted CI and scoped hardware evidence across the README, tracker and guides. This does not complete pending manual acceptance, change migration behavior or replace the already published asset.
+- Local follow-up validation: 138 tests (15 package regressions), self-test, locale and publication checks passed. Hosted CI for these changes remains pending publication.
+
+## 3.3.0-dev.2 — 2026-10-18 — published experimental pre-release
 
 - Explicitly close read-only statistics connections after diagnostics, including error exits. SQLite transaction context management alone does not close a connection and can leave the migration process blocking safe eject.
 - Tolerate already-removed descendants during KOReader tree replacement, rollback and restore on older supported Python versions. Keep missing-root, permission and symlink errors visible. This handles disappearing macOS AppleDouble entries without suppressing other deletion errors.
 - Add synthetic removal-race, permission, missing-root and symlink regressions.
 - Add retained-connection regressions for successful and invalid-database diagnostics, verifying deterministic closure and unchanged fixture bytes.
-- Validation: 123 local tests, self-test, locale validation and publication checks passed. Connected-device source capture, verified target recovery and saved-source KOREADER transfer completed with full manifest verification; basic KOReader operation was subsequently confirmed. Broader hardware acceptance, FULL book migration and hosted CI for this candidate remain pending. This is not a published release.
+- Validation: 123 local tests, self-test, locale validation and publication checks passed. Connected-device source capture, verified target recovery and saved-source KOREADER transfer completed with full manifest verification; basic KOReader operation was subsequently confirmed. The exact release commit passed all six [main CI jobs](https://github.com/gh-slee/kobo-koreader-migrate/actions/runs/39155468946). The [experimental pre-release](https://github.com/gh-slee/kobo-koreader-migrate/releases/tag/v3.3.0-dev.2) is published; broader hardware acceptance and FULL book migration remain pending.
 
-## Publication guard follow-up — 2026-10-15 — ready for review
+## Publication guard follow-up — 2026-10-15 — subsequently merged
 
 - Diagnosed PR-only CI rejection of GitHub's public merge committer address. Approved branch push CI passed all six macOS/Linux and Python 3.9/3.12/3.14 jobs.
 - Permit exact `noreply@github.com` only as a merge committer; user noreply authors, all file/content/history scans and personal-email rejection remain required.
-- Added real Git-history fixtures covering seven allowed/rejected identity cases. All 115 tests, self-test and locale validation passed locally. Follow-up changes await separate push approval; physical acceptance and PR merge remain pending.
+- Added real Git-history fixtures covering seven allowed/rejected identity cases. All 115 tests, self-test and locale validation passed locally. The guard follow-up was subsequently merged into main; physical acceptance remains separate from automated checks and PR merge.
 
 ## 3.3.0-dev.1 — 2026-10-15 — KM-013 foundation; ready for user testing
 

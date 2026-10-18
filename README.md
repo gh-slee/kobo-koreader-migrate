@@ -25,7 +25,7 @@
 </p>
 
 > [!IMPORTANT]
-> **3.3.0-dev.2 is an experimental development build.** One connected-device KOREADER migration passed file verification and basic use; broader hardware and feature acceptance remain pending. Device migration requires **macOS**. Locale support currently covers help and static UI samples; migration/maintenance messages remain English.
+> **[3.3.0-dev.2](https://github.com/gh-slee/kobo-koreader-migrate/releases/tag/v3.3.0-dev.2) is a published experimental pre-release, not a stable release.** One connected-device KOREADER migration passed file verification and basic use; broader hardware and feature acceptance remain pending. Device migration requires **macOS**. Locale support currently covers help and static UI samples; migration/maintenance messages remain English.
 
 ## Why use it?
 
@@ -40,9 +40,21 @@
 
 ## Quick start
 
-The complete development source is available on [`main`](https://github.com/gh-slee/kobo-koreader-migrate/tree/main). This is an experimental build; start with the offline checks and a dry run.
+The version-pinned [3.3.0-dev.2 pre-release](https://github.com/gh-slee/kobo-koreader-migrate/releases/tag/v3.3.0-dev.2) is available for controlled testing. The current development source is on [`main`](https://github.com/gh-slee/kobo-koreader-migrate/tree/main). Start with the offline checks and a dry run.
 
 ### 1. Get the project
+
+For the version-pinned package, download `kobo-koreader-migrate-3.3.0-dev.2.zip` and `SHA256SUMS` from the pre-release page into the same folder:
+
+```bash
+shasum -a 256 -c SHA256SUMS
+unzip kobo-koreader-migrate-3.3.0-dev.2.zip
+cd kobo-koreader-migrate-3.3.0-dev.2
+python3 scripts/check_locales.py
+python3 kobo-koreader-migrate.py --self-test
+```
+
+Alternatively, clone the current development source:
 
 ```bash
 git clone https://github.com/gh-slee/kobo-koreader-migrate.git
@@ -81,7 +93,7 @@ python3 kobo-koreader-migrate.py --mode full
 > [!NOTE]
 > FULL includes supported books, reading data and root fonts by default. It retains TARGET-only library files outside `.adds/koreader`, but replaces the **entire KOReader directory** after backup. See [complete mode behavior](docs/USAGE.md#choose-a-mode) before approving writes.
 
-Do not run as `sudo`. Keep backups until you have checked the result on TARGET. Cloning main obtains current development source, not a version-pinned release. Release publication and physical-device acceptance remain separate steps.
+Do not run as `sudo`. Keep backups until you have checked the result on TARGET. Cloning main obtains current development source, not a version-pinned release. Publishing the pre-release does not complete physical-device acceptance. SHA-256 checks detect mismatches; the checksum file is not a digital signature.
 
 ## Requirements
 
@@ -160,7 +172,7 @@ English (`en`), Traditional Chinese (`zh-Hant`) and Simplified Chinese (`zh-Hans
 
 ## Project status and roadmap
 
-**3.3.0-dev.2 is experimental.** A connected-device KOREADER transfer using a saved source backup completed full SHA-256 verification, preserved TARGET identity and safely ejected; basic KOReader operation was confirmed afterward. Broader acceptance, including FULL book migration and detailed hardware controls, remains pending.
+**[3.3.0-dev.2](https://github.com/gh-slee/kobo-koreader-migrate/releases/tag/v3.3.0-dev.2) was published on 2026-10-18 as an experimental pre-release.** A connected-device KOREADER transfer using a saved source backup completed full SHA-256 verification, preserved TARGET identity and safely ejected; basic KOReader operation was confirmed afterward. Broader acceptance, including FULL book migration and detailed hardware controls, remains pending.
 
 CI covers synthetic fixtures on macOS/Linux and a real macOS `ditto` round trip on temporary directories. It does not certify every device or replace the remaining manual acceptance checklists. The badge tracks push CI on main; review-branch checks are available on the corresponding PR. Detailed fixes and validation belong in CHANGELOG.md and docs/DEVELOPMENT.md.
 
