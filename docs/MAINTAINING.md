@@ -47,3 +47,33 @@ Before a release, verify the intended commit, version/changelog, complete source
 The complete development implementation is on main following the merge of PR #1. The README clone command and CI badge target main. Keep installation instructions and badge scope aligned with the actual default/release branch when release policy changes. Do not advertise nonexistent binaries, package-manager packages or hardware certification.
 
 Confirm that user/developer links work in a clone and an extracted source archive. Keep public instructions generic, and keep personal preferences, credentials and session histories local. Existing public Git history is not erased by reorganizing current files. Release publication, merge and remote deletion are separate authorized actions; the helper does not perform them.
+
+## Local package preparation and verification
+
+The published [3.3.0-dev.2 pre-release](https://github.com/gh-slee/kobo-koreader-migrate/releases/tag/v3.3.0-dev.2) was prepared and independently verified before this helper existed. The helper is a development follow-up; it does not modify that release or its assets.
+
+Use Python 3.9+ and Git in a reviewed clone containing `scripts/prepare_release.py`. No GitHub CLI, network, Kobo, third-party Python package or AI service is needed. Commit reviewed public changes first if they should be included. The explicit ref selects Git objects: modified, untracked and ignored working files are never packaged. Selecting an older commit deliberately excludes later changes. Only execute extracted smoke checks from code you have reviewed; the publication guard is not a sandbox for arbitrary code.
+
+```bash
+python3 scripts/check_publication.py --history
+python3 scripts/prepare_release.py prepare --ref HEAD
+```
+
+The preparation command:
+
+1. Resolves the exact local commit and reads its guarded tracked files, rejecting symlinks, submodules, unsafe content and missing required runtime/locale/documentation assets. It reads VERSION as a literal without importing source code.
+2. Builds a ZIP containing a single `kobo-koreader-migrate-VERSION/` directory, preserving ordinary/executable modes. Timestamps and entry order are fixed; byte-for-byte reproducibility across different compression-library versions is not promised.
+3. Compares every ZIP member against Git before extracting it into a disposable directory. It checks local Markdown/HTML file links and runs locale validation, version/help/list-locales, Traditional Chinese preview and self-test. No full unit suite or hardware test is implied; run the normal development checks separately.
+4. Creates `.local/releases/VERSION-COMMIT/` only after verification succeeds. It contains the ZIP, `SHA256SUMS` and local-only `PREPARATION.json` with the exact source commit and per-file hashes/modes/sizes. It never reads run/backup contents. Existing destinations are refused, including older preparation records; no overwrite or cleanup is attempted. Use `--output-dir` for another ignored/private parent if desired.
+
+Reverify later using the printed directory and an independently chosen expected commit/ref (replace DIRECTORY and COMMIT):
+
+```bash
+python3 scripts/prepare_release.py verify DIRECTORY --ref COMMIT
+```
+
+Verification re-reads Git, checks the ZIP and checksum/record, rejects missing/extra/duplicate members and reruns the extracted checks. It does not trust a replaced checksum or preparation record as proof of provenance. It requires the local Git objects; it is not the standalone Kobo-backup verifier planned as KM-010. For a downloaded release, `shasum -a 256 -c SHA256SUMS` only detects a mismatch with the accompanying checksum, not publisher authenticity.
+
+CI runs preparation for its checked-out commit on all supported fixture hosts and Python versions. It does not upload packages or publish releases. Human publication review must still cover release notes, public metadata, exact commit/assets and remaining acceptance limitations. The helper does not generate or publish release notes, create tags, push branches or access the network/devices. Upload only the reviewed ZIP and checksum; keep PREPARATION.json local. A published pre-release invites controlled testing and is distinct from stable-release acceptance.
+
+Local builds may share a runtime version while carrying different source commits. Before another public release, assign a new version/tag and review its final commit and assets; do not reuse or replace the published pre-release tag/assets. No preparation result grants permission to publish.

@@ -25,7 +25,7 @@ Reading metadata and plugins are transferred as files. Lua is not an execution d
 ```text
 kobo-koreader-migrate.py   CLI and migration/management implementation
 locales/                 registry and reviewed UTF-8 catalogs
-scripts/                 locale validation, publication checks and PR helper
+scripts/                 locale/privacy checks, source-package preparation and PR helper
 tests/                   synthetic migration, management, locale and privacy regressions
 docs/                    user, recovery, troubleshooting, development and maintainer guides
 .github/workflows/       CI matrix
@@ -57,7 +57,9 @@ Run scripts/check_locales.py after any catalog/registry change. The three initia
 
 ## Validation and release status
 
-The development build is **3.3.0-dev.2**. The SQLite connection-lifetime and disappearing-descendant fixes passed 123 local tests, self-test, locale and privacy checks. Connected-device target recovery and saved-source KOREADER transfer passed full manifest verification; basic KOReader operation was confirmed, while broader hardware acceptance and hosted CI for this change remain pending; the release is experimental.
+The [**3.3.0-dev.2 experimental pre-release**](https://github.com/gh-slee/kobo-koreader-migrate/releases/tag/v3.3.0-dev.2) was published on 2026-10-18 from commit `721e2cad01c7c2811baeb9bd3fff424bba87f275`. Its [main CI](https://github.com/gh-slee/kobo-koreader-migrate/actions/runs/39155468946) passed all six macOS/Ubuntu Python 3.9, 3.12 and 3.14 jobs. The release baseline passed 123 local tests, self-test, locale and privacy checks. Connected-device target recovery and saved-source KOREADER transfer passed full manifest verification; basic KOReader operation was confirmed. Broader hardware acceptance, FULL book migration and the remaining manual checklists are still pending. This is not a stable release.
+
+The development branch adds an offline [source-package helper](MAINTAINING.md#local-package-preparation-and-verification) and synthetic package-safety regressions. CI prepares and checks a source ZIP for its checked-out commit without uploading it. This helper is not included in the already published 3.3.0-dev.2 ZIP. Local follow-up validation passed 138 tests (including 15 package tests), self-test, locale and worktree/history privacy checks. Hosted CI for this follow-up is pending publication. Its extracted smoke checks do not rerun the full unit suite or establish hardware acceptance; new changes need their own test results.
 
 [PR #1](https://github.com/gh-slee/kobo-koreader-migrate/pull/1) merged into main on 2026-10-16 as [564234e](https://github.com/gh-slee/kobo-koreader-migrate/commit/564234e2256bb6a64085cc10a4d3c5535322313e). Its [main-branch CI run](https://github.com/gh-slee/kobo-koreader-migrate/actions/runs/38918881111) passed all six macOS/Ubuntu Python 3.9, 3.12 and 3.14 jobs. Linux checks fixtures only. The pre-merge documentation commit dedc884 passed 117 local tests plus self-test and locale validation, and all twelve push/PR CI jobs.
 

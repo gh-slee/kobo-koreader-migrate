@@ -1,6 +1,6 @@
 # Manual acceptance and sign-off
 
-Current development version 3.3.0-dev.2 is ready for controlled testing, not signed off on physical devices. The base migration acceptance work from 3.2.0 remains pending. KM-011, KM-005, KM-001 and KM-003 remain Ready for test. Public-release changes also require review. Automated tests use synthetic fixtures and do not replace this checklist.
+The [3.3.0-dev.2 experimental pre-release](https://github.com/gh-slee/kobo-koreader-migrate/releases/tag/v3.3.0-dev.2) was published on 2026-10-18. A connected-device KOREADER transfer, verified target recovery and basic KOReader operation have scoped confirmation; the full physical/manual checklist is not signed off. The base migration acceptance work from 3.2.0 remains pending. KM-011, KM-005, KM-001, KM-003 and KM-013 remain Ready for test. Publication is not acceptance. Automated tests use synthetic fixtures and do not replace this checklist.
 
 Run commands from the repository root, or pass `--backup-dir` consistently if using a separate private output root. Stop any older migration worker first. Use disposable test books and retain all recovery snapshots until acceptance is complete.
 
@@ -102,3 +102,18 @@ python3 scripts/check_locales.py
 - An unsupported explicit locale must fail before device activity. Do not damage production catalogs to test fallback; malformed/missing assets are covered by synthetic automated tests.
 - Actual migration/maintenance messages and logs remain English. Do not sign off KM-014/KM-015 based on this preview.
 - Automated evidence: 114 fixture tests, including language-independent FULL outcomes and the actual macOS ditto fixture; this is not hardware acceptance. Record explicit human feedback before marking KM-013 Done.
+
+## KM-018: local source package preparation (no Kobo)
+
+Status: Ready for test on the development branch; this helper is not part of the already published 3.3.0-dev.2 ZIP. Run from a clone containing the helper after committing the reviewed changes:
+
+```bash
+python3 scripts/prepare_release.py prepare --ref HEAD
+```
+
+- The helper must create a fresh `.local/releases/VERSION-COMMIT/` with a complete source ZIP, `SHA256SUMS` and local-only `PREPARATION.json`. It must not create a tag, access a Kobo or contact GitHub.
+- Use the printed directory and exact source commit with `python3 scripts/prepare_release.py verify DIRECTORY --ref COMMIT`. Verification must recheck actual ZIP bytes against that commit, not trust the preparation record or checksum alone.
+- Offline commands and local documentation file links must pass from a temporary extraction. Required locale assets must be included, even for English.
+- Repeating preparation into the same destination must refuse without overwriting anything. Different output parents can hold separate copies.
+- Synthetic regressions cover private/untracked and modified files, bad refs, missing locales, symlinks, unsafe/duplicate ZIP members, tampering, failed extracted commands and broken links. Do not tamper with a real recovery archive for testing.
+- This is source-package validation, not a new full unit-test run, privacy guarantee, hardware certification or publication approval. See [maintainer instructions](docs/MAINTAINING.md#local-package-preparation-and-verification).
