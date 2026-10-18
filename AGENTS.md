@@ -19,7 +19,7 @@ This is the shared project guidance for coding agents. Human usage belongs in RE
 - Never evaluate device Lua or execute copied plugins. Keep path, ZIP, symlink, integrity, lock and rollback protections intact.
 - Keep normal cancellation distinct from migration and recovery errors. Do not selectively preserve hardware settings or merge reading metadata without an implemented, tested policy.
 - Keep the stable filename kobo-koreader-migrate.py; record versions in code/logs/JSON. Generated data stays in runs/<run-id>/ under the selected project root.
-- KM-013 localizes help/static samples only. Actual migration/maintenance output remains English until the corresponding implementation and acceptance work is complete.
+- KM-014 slice 1 routes shared prompts/progress/run/catalog/difference messages to the selected console locale and English diagnostic log. Remaining diagnostics/menus/workflow text is still English. Use explicit message IDs, never post-process rendered strings; full translation/human review remains pending.
 
 ## Verify changes
 

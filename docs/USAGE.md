@@ -93,10 +93,10 @@ Those names are examples, not a tested hardware pair. An incorrect or stale log 
 | Language | CLI tag | Available now | Still pending |
 | --- | --- | --- | --- |
 | English | `en` | Complete current migration UI, help and samples | Review of future message extraction |
-| Traditional Chinese | `zh-Hant` | Help descriptions and static UI samples | Actual migration/maintenance interface |
-| Simplified Chinese | `zh-Hans` | Help descriptions and static UI samples | Actual migration/maintenance interface |
+| Traditional Chinese | `zh-Hant` | Help/samples; development build also translates shared confirmations, progress and run/catalog/difference labels | Detailed diagnostics, mode/identity/conflict menus and remaining workflow/error text; human wording review |
+| Simplified Chinese | `zh-Hans` | Help/samples; development build also translates shared confirmations, progress and run/catalog/difference labels | Detailed diagnostics, mode/identity/conflict menus and remaining workflow/error text; human wording review |
 
-Each locale contains 36 validated foundation messages. Translation wording still needs human review. Choosing a language changes no migration decisions. Diagnostic logs and machine-schema values stay English. Additional locales will follow the registry/catalog workflow after the initial foundation is accepted.
+Development 3.3.0-dev.3 contains 94 validated messages per locale; the published 3.3.0-dev.2 ZIP has the original 36-message help/sample foundation. Translation wording still needs human review. Choosing a language changes no migration decisions. Owned diagnostic log text and machine-schema values stay English. Raw operating-system diagnostics, book paths, identifiers and other user/device data are preserved as received; an English log can contain non-English data. Additional locales will follow the registry/catalog workflow after the initial foundation is accepted.
 
 These commands need no Kobo and do not create runs/logs/backups or inspect existing run data:
 
@@ -107,14 +107,18 @@ python3 kobo-koreader-migrate.py --locale zh-Hans --preview-ui
 python3 scripts/check_locales.py
 ```
 
-`--preview-ui` displays a static translated mode menu and confirmation examples, then exits. It never asks for approval or starts an operation. The actual interactive mode menu remains English. Python argparse headings/usage diagnostics can also remain English in this foundation release. `--preview-ui`/`--list-locales` cannot be combined with migration operations/settings.
+`--preview-ui` displays a static translated mode menu and confirmation examples, then exits. It never asks for approval or starts an operation. The actual interactive mode menu remains English. Python argparse headings/usage diagnostics can also remain English. `--preview-ui`/`--list-locales` cannot be combined with migration operations/settings.
 
 
 Locale priority is `--locale`, then `KOBO_MIGRATE_LOCALE`, then the first nonempty terminal variable among `LANGUAGE`, `LC_ALL`, `LC_MESSAGES`, `LANG`, then English. Ordered colon-separated language preferences are supported. Common aliases include `en_US.UTF-8` -> `en`, `zh_TW.UTF-8`/`zh-HK`/`zh-MO` -> `zh-Hant`, and `zh_CN.UTF-8`/`zh-SG` -> `zh-Hans`. An explicit script wins over a conflicting region. Bare `zh` is ambiguous and falls back to English with guidance to choose a script; an unsupported explicit `--locale` is a usage error before device/run access.
 
-Missing individual translations use English. Missing/invalid selected translations fall back to the whole English catalog with a warning. A missing/invalid canonical English catalog or registry stops startup safely. Catalog validation rejects duplicate keys, unsafe controls/format fields and invalid schema/placeholder/plural definitions. No code is evaluated from locale data. On non-UTF-8 streams, help and preview text uses escaped characters instead of failing on encoding.
+Missing individual translations use English. Missing/invalid selected translations fall back to the whole English catalog with a warning. A missing/invalid canonical English catalog or registry stops startup safely. Catalog validation rejects duplicate keys, unsafe controls/format fields and invalid schema/placeholder/plural definitions. No code is evaluated from locale data. On non-UTF-8 streams, help/preview and messages routed through the shared output adapter use escaped characters instead of failing on encoding. Unconverted legacy output is not covered by that guarantee.
 
-The locale validator requires complete foundation coverage for all registered languages. CI and the publication helper run it in addition to tests/privacy checks. Publication allows only the four exact initial locale JSON files; arbitrary JSON files, device reports and additional language files remain blocked until deliberately reviewed. Future migration-message coverage and new-language contribution instructions are tracked separately in TRACKER.md.
+The locale validator requires complete coverage of all extracted message IDs for all registered languages; this does not mean all workflow text has been extracted. CI and the publication helper run it in addition to tests/privacy checks. Publication allows only the four exact initial locale JSON files; arbitrary JSON files, device reports and additional language files remain blocked until deliberately reviewed. Remaining migration-message extraction and new-language contribution instructions are tracked separately in TRACKER.md.
+
+Integrated confirmations still accept only y/yes/n/no (case-insensitive); empty input keeps the displayed default and invalid input retries. A question with `[y/N]` still defaults to No. Numeric menu keys and exact `DELETE RUN_ID` syntax remain unchanged. Do not infer support for Chinese affirmative answers. The adapter logs English prompts but never records typed answers.
+
+In development builds, run.json and difference.json have an additive `ui_locale` field. Statuses, operations, phases, category keys, fingerprints and archive paths remain stable; older records without ui_locale remain readable. difference.txt uses the selected locale while retaining stable action tokens and original file paths. Cleanup reasons and detailed exception text can still be English.
 
 ## Books, metadata and fonts
 

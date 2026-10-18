@@ -100,7 +100,7 @@ python3 scripts/check_locales.py
 - Check all three options, translation wording, FULL/KOREADER distinctions, default-No examples and exact DELETE RUN_ID text. Previews must not request an answer, connect devices, inspect run data or create runs/logs/backups.
 - Use a known terminal locale alias or KOBO_MIGRATE_LOCALE to confirm preference selection. Explicit --locale must win. Bare zh must not silently guess a Chinese script.
 - An unsupported explicit locale must fail before device activity. Do not damage production catalogs to test fallback; malformed/missing assets are covered by synthetic automated tests.
-- Actual migration/maintenance messages and logs remain English. Do not sign off KM-014/KM-015 based on this preview.
+- The published 3.3.0-dev.2 messages remain English. Development 3.3.0-dev.3 partially localizes runtime presentation; tool-owned log text remains English. Do not sign off all of KM-014/KM-015 based on a preview.
 - Automated evidence: 114 fixture tests, including language-independent FULL outcomes and the actual macOS ditto fixture; this is not hardware acceptance. Record explicit human feedback before marking KM-013 Done.
 
 ## KM-018: local source package preparation (no Kobo)
@@ -117,3 +117,14 @@ python3 scripts/prepare_release.py prepare --ref HEAD
 - Repeating preparation into the same destination must refuse without overwriting anything. Different output parents can hold separate copies.
 - Synthetic regressions cover private/untracked and modified files, bad refs, missing locales, symlinks, unsafe/duplicate ZIP members, tampering, failed extracted commands and broken links. Do not tamper with a real recovery archive for testing.
 - This is source-package validation, not a new full unit-test run, privacy guarantee, hardware certification or publication approval. See [maintainer instructions](docs/MAINTAINING.md#local-package-preparation-and-verification).
+
+## KM-014 slice 1: shared routing (3.3.0-dev.3)
+
+Status: Ready for controlled testing of this slice; full KM-014 remains In progress and KM-015 human wording review is pending. The published pre-release ZIP does not contain this change.
+
+- In a disposable project root, use --list-runs/--cleanup in en, zh-Hant and zh-Hans. Headings/instructions should match the selected locale; run IDs/status tokens and protection reasons retain their technical/English values. Preview creates no deletion.
+- Review translated SOURCE/TARGET confirmation wording and [y/N]/[Y/n] defaults. Only y/yes/n/no are accepted; numeric choices and exact DELETE RUN_ID remain unchanged. Use synthetic disposable batches for any cleanup deletion test.
+- In controlled migration tests, inspect console versus the saved log: integrated owned messages should be localized on screen and occur once in English in the log. Raw diagnostics, user/device data and unconverted messages are preserved; Unicode filenames can appear in both. Responses typed at prompts must not be recorded.
+- Check localized difference.txt against stable difference.json category/path/action data. ui_locale may be present in modern records; older records without it must remain usable.
+- Rendering/fallback, ascii-console safety, all-mode equivalence, saved-source/restore, final default-No, rollback after writes and context/exit-state regressions use temporary fixtures. Do not induce failures on real readers or corrupt a real recovery backup for this test.
+- Record manual feedback separately. Mode/identity/conflict menu descriptions, detailed diagnostics/errors and remaining workflow messages still need extraction; do not label this full interface translation or full hardware acceptance.
