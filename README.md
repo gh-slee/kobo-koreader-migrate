@@ -2,7 +2,7 @@
 
 <p align="center">
   <strong>Your books. Your reading progress. Your next Kobo.</strong><br/>
-  Move KOReader, ebooks, reading data and custom fonts between Kobo readers using a Mac.<br/>
+  An independent, MIT-licensed open-source Python CLI for migrating KOReader, supported ebooks, reading data and fonts between Kobo devices on macOS.<br/>
   Keep the original folder paths, preview changes and verify copied files.
 </p>
 
