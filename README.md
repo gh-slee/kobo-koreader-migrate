@@ -25,7 +25,7 @@
 </p>
 
 > [!IMPORTANT]
-> **3.3.0-dev.2 is an experimental development build.** Automated fixtures cover macOS and Linux; physical-device acceptance and human sign-off are still pending. Device migration requires **macOS**. Locale support currently covers help and static UI samples; migration/maintenance messages remain English.
+> **3.3.0-dev.2 is an experimental development build.** One connected-device KOREADER migration passed file verification and basic use; broader hardware and feature acceptance remain pending. Device migration requires **macOS**. Locale support currently covers help and static UI samples; migration/maintenance messages remain English.
 
 ## Why use it?
 
@@ -103,6 +103,8 @@ Do not run as `sudo`. Keep backups until you have checked the result on TARGET. 
 
 FULL is the default interactive mode. It retains TARGET-only library files outside `.adds/koreader`, but replaces the **entire KOReader tree**, including TARGET-only content within it, after backup. Different matching payload files are backed up and replaced; identical files are skipped.
 
+KOREADER includes history/statistics stored inside `.adds/koreader`. Book-adjacent `.sdr` directories outside that tree are excluded, so progress, bookmarks and annotations stored there retain TARGET's existing data.
+
 AUDIT and `--dry-run` make no Kobo writes, but create local reports/locks. [Complete modes and examples](docs/USAGE.md#choose-a-mode).
 
 ## How it works
@@ -158,7 +160,9 @@ English (`en`), Traditional Chinese (`zh-Hant`) and Simplified Chinese (`zh-Hans
 
 ## Project status and roadmap
 
-**3.3.0-dev.2 is experimental.** CI uses temporary fixtures; successful checks do not prove physical-device compatibility. Human testing/sign-off remains pending. The badge tracks push CI on main.
+**3.3.0-dev.2 is experimental.** A connected-device KOREADER transfer using a saved source backup completed full SHA-256 verification, preserved TARGET identity and safely ejected; basic KOReader operation was confirmed afterward. Broader acceptance, including FULL book migration and detailed hardware controls, remains pending.
+
+CI covers synthetic fixtures on macOS/Linux and a real macOS `ditto` round trip on temporary directories. It does not certify every device or replace the remaining manual acceptance checklists. The badge tracks push CI on main; review-branch checks are available on the corresponding PR. Detailed fixes and validation belong in CHANGELOG.md and docs/DEVELOPMENT.md.
 
 Interrupted-transfer resume, exact library mirroring, content-assisted discovery, portable hardware settings and full migration-interface translations remain planned work. [Current status and criteria](TRACKER.md) · [Automated evidence](docs/DEVELOPMENT.md#validation-and-release-status).
 
