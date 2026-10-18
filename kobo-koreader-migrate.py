@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-KOReader Kobo Migration Tool v3.3.0-dev.1
+KOReader Kobo Migration Tool v3.3.0-dev.2
 macOS, standard library only.
 
 Supported workflow:
@@ -25,7 +25,7 @@ from __future__ import annotations
 
 import argparse
 import fcntl
-from contextlib import ExitStack
+from contextlib import ExitStack, closing
 import hashlib
 import json
 import os
@@ -46,7 +46,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, Iterable, List, Optional, Tuple
 
-VERSION = "3.3.0-dev.1"
+VERSION = "3.3.0-dev.2"
 DEFAULT_BACKUP_DIR = Path(__file__).resolve().parent
 VOLUME_ROOT = Path("/Volumes")
 
@@ -1011,6 +1011,19 @@ def create_archive(
         raise
 
 
+def remove_tree(root: Path) -> None:
+    """Remove a tree while tolerating descendants already removed by the filesystem."""
+    root_path = os.path.abspath(root)
+    def handle_error(function, path, exc_info):
+        error = exc_info[1]
+        # Match Python 3.13 behavior on older supported interpreters. FAT/macOS
+        # may remove an AppleDouble companion while its listed entry remains.
+        if isinstance(error, FileNotFoundError) and os.path.abspath(path) != root_path:
+            return
+        raise error.with_traceback(exc_info[2])
+    shutil.rmtree(root, onerror=handle_error)
+
+
 def remove_macos_metadata(root: Path) -> int:
     removed = 0
     if not root.exists():
@@ -1027,7 +1040,7 @@ def remove_macos_metadata(root: Path) -> int:
         for name in dirs:
             if name.startswith("._"):
                 try:
-                    shutil.rmtree(base_p / name)
+                    remove_tree(base_p / name)
                     removed += 1
                 except FileNotFoundError:
                     pass
@@ -1097,7 +1110,7 @@ def rollback_target(
         if target_backup_manifest and sha256_file(target_backup_zip) != target_backup_manifest['archive']['sha256']:
             raise MigrationError('Rollback archive checksum changed.')
     if target_koreader.exists():
-        shutil.rmtree(target_koreader)
+        remove_tree(target_koreader)
     if target_backup_zip is None:
         print('Target had no original KOReader tree; incomplete restore was removed.')
         return
@@ -1478,7 +1491,7 @@ def device_diagnostics(mount: Path) -> dict:
         if db.with_name(db.name + '-wal').exists() and db.with_name(db.name + '-wal').stat().st_size:
             raise MigrationError('Statistics has pending WAL data. Exit KOReader cleanly before connecting USB.')
         try:
-            with sqlite3.connect(db.as_uri() + '?mode=ro&immutable=1', uri=True) as conn:
+            with closing(sqlite3.connect(db.as_uri() + '?mode=ro&immutable=1', uri=True)) as conn:
                 log_status(f'Statistics quick_check: {human_bytes(db.stat().st_size)} database')
                 checks = [row[0] for row in conn.execute('PRAGMA quick_check')]
                 if checks != ['ok']:
@@ -2326,7 +2339,7 @@ def restore_saved_target(args, project: Path, run: Path, run_id: str, log_path: 
         if replacing_kr:
             kr_modified = True
             if kr.exists():
-                shutil.rmtree(kr)
+                remove_tree(kr)
             if descriptor.get('had_koreader'):
                 if kr_archive is None:
                     raise MigrationError('Original KOReader backup is missing.')
@@ -2602,7 +2615,7 @@ def migrate_target(args, backup_dir, run_id, log_path, mode, dry_run, full, book
             if target_kr.exists():
                 if not target_kr.is_dir():
                     raise MigrationError('Target KOReader path is not a directory.')
-                shutil.rmtree(target_kr)
+                remove_tree(target_kr)
             restore_zip(source_zip, target_adds)
             remove_stale_caches(target_kr)
             remove_macos_metadata(target_kr)

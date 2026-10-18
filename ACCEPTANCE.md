@@ -1,6 +1,6 @@
 # Manual acceptance and sign-off
 
-Current development version 3.3.0-dev.1 is ready for controlled testing, not signed off on physical devices. The base migration acceptance work from 3.2.0 remains pending. KM-011, KM-005, KM-001 and KM-003 remain Ready for test. Public-release changes also require review. Automated tests use synthetic fixtures and do not replace this checklist.
+Current development version 3.3.0-dev.2 is ready for controlled testing, not signed off on physical devices. The base migration acceptance work from 3.2.0 remains pending. KM-011, KM-005, KM-001 and KM-003 remain Ready for test. Public-release changes also require review. Automated tests use synthetic fixtures and do not replace this checklist.
 
 Run commands from the repository root, or pass `--backup-dir` consistently if using a separate private output root. Stop any older migration worker first. Use disposable test books and retain all recovery snapshots until acceptance is complete.
 
@@ -16,6 +16,14 @@ python3 scripts/check_publication.py --worktree
 ```
 
 Confirm that these work with AI applications closed and without AI services/credentials. Cleanup alone must list eligibility without deleting anything. Legacy/non-success runs must remain protected.
+
+## Statistics handles and safe eject (3.3.0-dev.2)
+
+Current scoped evidence: connected-device KOREADER transfer and verified target recovery completed, and basic KOReader operation was confirmed. This does not sign off all controls/plugins, other modes or the remaining feature checklists.
+
+- With a statistics database present, run KOREADER dry-run and confirm both SOURCE and TARGET safely eject without the migration process retaining the SQLite file.
+- No device files or ZIPs should be created by the preview. Keep the run audited only after the entire preview succeeds.
+- Success/error connection-closure regressions use synthetic databases; never corrupt a real device database for this test. A preview result does not sign off migration writes or hardware settings.
 
 ## KM-011: locks and durable status
 

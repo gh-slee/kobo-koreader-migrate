@@ -25,7 +25,7 @@
 </p>
 
 > [!IMPORTANT]
-> **3.3.0-dev.1 is an experimental development build.** Automated fixture CI passes on macOS and Linux; physical-Kobo testing and human sign-off are still pending. Device migration requires **macOS**. Locale support currently covers help and static UI samples; migration/maintenance messages remain English.
+> **3.3.0-dev.2 is an experimental development build.** Automated fixtures cover macOS and Linux; physical-device acceptance and human sign-off are still pending. Device migration requires **macOS**. Locale support currently covers help and static UI samples; migration/maintenance messages remain English.
 
 ## Why use it?
 
@@ -158,7 +158,7 @@ English (`en`), Traditional Chinese (`zh-Hant`) and Simplified Chinese (`zh-Hans
 
 ## Project status and roadmap
 
-**3.3.0-dev.1 is experimental.** CI uses temporary fixtures; successful checks do not prove physical-device compatibility. Human testing/sign-off remains pending. The badge tracks push CI on main.
+**3.3.0-dev.2 is experimental.** CI uses temporary fixtures; successful checks do not prove physical-device compatibility. Human testing/sign-off remains pending. The badge tracks push CI on main.
 
 Interrupted-transfer resume, exact library mirroring, content-assisted discovery, portable hardware settings and full migration-interface translations remain planned work. [Current status and criteria](TRACKER.md) · [Automated evidence](docs/DEVELOPMENT.md#validation-and-release-status).
 

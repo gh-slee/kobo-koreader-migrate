@@ -1,6 +1,6 @@
 # Development tracker
 
-Last reconciled: **2026-10-16**. Tool version: **3.3.0-dev.1** (experimental; physical acceptance pending).
+Last reconciled: **2026-10-18**. Tool version: **3.3.0-dev.2** (experimental; physical acceptance pending).
 
 Status vocabulary: `Queued`, `In progress`, `Ready for test`, `Blocked`, `Done`, `Deferred`. KM-011, KM-005, KM-001 and KM-003 are implemented and ready for user testing; no human sign-off has been recorded. Entries represent planned work, not permission to operate physical devices or delete backups.
 
@@ -58,7 +58,7 @@ These four tickets await human testing/sign-off. See ACCEPTANCE.md. KM-013 is im
 
 ## Current constraints and historical evidence
 
-- No successful physical-device migration has been recorded for this release. Do not infer hardware acceptance from fixture tests.
+- The local candidate completed a connected-device KOREADER file transfer with full manifest verification and target identity preservation. Basic KOReader operation was confirmed; broader hardware acceptance and FULL book migration remain pending. Do not infer hardware acceptance from file verification or fixture tests.
 - Backup batch files are flat inside each run. Proposed `source/`, `target-backup/`, `reports/` subdivision is not implemented.
 - Retention/cleanup preview, durable run status and execution locks exist in 3.1.0. Automatic resume is still queued. Legacy runs without run.json stay protected as legacy/unknown.
 - FULL/KOREADER copy source runtime version. Target-specific hardware settings are not selectively preserved; only device_id has a dedicated policy.
@@ -67,7 +67,7 @@ These four tickets await human testing/sign-off. See ACCEPTANCE.md. KM-013 is im
 
 ## Development and validation status
 
-The development build is 3.3.0-dev.1. KM-011/KM-005/KM-001/KM-003/KM-013 remain Ready for test; no human or physical acceptance is recorded. Use ACCEPTANCE.md for verification. A public roadmap describes product work, not authority to access devices or publish changes.
+The development build is 3.3.0-dev.2. Local fixes close read-only statistics connections before safe eject and tolerate already-removed descendants during runtime replacement/recovery. All 123 local tests passed; verified target recovery and saved-source KOREADER transfer completed on connected hardware. Basic KOReader operation was confirmed; broader hardware acceptance, FULL book migration and candidate hosted CI remain pending. KM-011/KM-005/KM-001/KM-003/KM-013 remain Ready for test; no human or physical acceptance is recorded. Use ACCEPTANCE.md for verification. A public roadmap describes product work, not authority to access devices or publish changes.
 
 Target restoration needs a modern target-snapshot.json and target-changes.json plus verified archive pairs. A FULL source snapshot can serve FULL/KOREADER, not LIBRARY; central metadata belongs to the runtime archive. See README.md for compatibility and recovery details.
 

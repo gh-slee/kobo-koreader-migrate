@@ -1,5 +1,13 @@
 # Changelog
 
+## 3.3.0-dev.2 — 2026-10-18 — local candidate; hardware acceptance pending
+
+- Explicitly close read-only statistics connections after diagnostics, including error exits. SQLite transaction context management alone does not close a connection and can leave the migration process blocking safe eject.
+- Tolerate already-removed descendants during KOReader tree replacement, rollback and restore on older supported Python versions. Keep missing-root, permission and symlink errors visible. This handles disappearing macOS AppleDouble entries without suppressing other deletion errors.
+- Add synthetic removal-race, permission, missing-root and symlink regressions.
+- Add retained-connection regressions for successful and invalid-database diagnostics, verifying deterministic closure and unchanged fixture bytes.
+- Validation: 123 local tests, self-test, locale validation and publication checks passed. Connected-device source capture, verified target recovery and saved-source KOREADER transfer completed with full manifest verification; basic KOReader operation was subsequently confirmed. Broader hardware acceptance, FULL book migration and hosted CI for this candidate remain pending. This is not a published release.
+
 ## Publication guard follow-up — 2026-10-15 — ready for review
 
 - Diagnosed PR-only CI rejection of GitHub's public merge committer address. Approved branch push CI passed all six macOS/Linux and Python 3.9/3.12/3.14 jobs.
