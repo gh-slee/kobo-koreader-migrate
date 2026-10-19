@@ -1,11 +1,19 @@
 # Changelog
 
+## 3.3.0-dev.6 — unreleased — owned-runtime localization completion
+
+- Catalog all remaining owned runtime errors, per-file status/progress, maintenance/cleanup reasons, scan/plugin warnings, self-test notices and custom argument-combination checks. Add 123 explicit message contracts (371 entries per locale).
+- Preserve English exception/reason/warning/lock-label strings and machine records while displaying structured translations. Keep grouped recovery details structured; display-only booleans localize without changing English logs or stored bool values.
+- Complete an independent editorial terminology pass for the three catalogs. Human wording and end-to-end acceptance are deferred to the combined final round; bootstrap/framework/external diagnostics retain original text by design.
+- Add source-coverage and temporary-fixture regressions for protection rules, data equivalence, warnings, per-file comparison, unsafe archives, CLI refusals, command/recovery details and lock refusal. Combined local validation passed 184 tests (nine new), self-test, 3x371 locales and privacy/whitespace checks, plus 73 doc file links and 30 shell examples. New hosted CI and combined human acceptance remain pending; no real Kobo or backup deletion is involved.
+- No new release, runtime dependency, migration mode or change to confirmation/write/rollback safety decisions.
+
 ## 3.3.0-dev.5 — unreleased — KM-014 workflow and recovery slice 3
 
 - Translate core migration/saved-source/target-restore plans, archive/backup/verification/eject/identity notices, recovery guidance, five cancellation reasons and 36 selected refusals through the console/English-log adapter.
 - Add 117 static entries/explicit placeholder contracts per locale (248 total), including archive subprocess heartbeats. Preserve exception string args in English; render structured IDs only at presentation and label unconverted integrated diagnostic details without changing the original log text.
 - Report pre-run interruption once while retaining exit 130. Preserve migration decisions, identity guards, write/rollback branches, capacity/integrity checks, machine schemas and confirmation defaults.
-- Add nine synthetic error/recovery regressions covering successful/blocked/failed rollback, exact-restore undo/guard, raw Unicode diagnostics, preserved English args and refusal before device access. Local validation passed 175 tests (nine new), self-test, 3x248 locale validation and publication worktree/history/whitespace checks. Hosted CI/human wording/hardware acceptance remain pending.
+- Add nine synthetic error/recovery regressions covering successful/blocked/failed rollback, exact-restore undo/guard, raw Unicode diagnostics, preserved English args and refusal before device access. Local validation passed 175 tests (nine new), self-test, 3x248 locale validation and publication worktree/history/whitespace checks. Subsequently merged as PR #8 with all 12 push/PR and six merged-main jobs passed. Human wording/hardware acceptance remains pending.
 - Low-level/maintenance errors and detailed scanner/comparison output still need extraction. This is not full translation, hardware acceptance or a new published release.
 
 ## 3.3.0-dev.4 — unreleased — KM-014 menus and inspection slice 2

@@ -53,7 +53,7 @@ Tests use temporary synthetic devices and mock USB/eject operations. On macOS, a
 
 Add meaningful tests for changed behavior and safety boundaries. Documentation-only work needs relative-link/anchor checks, CLI/example verification, shell syntax checks and publication privacy review. The publication helper independently runs its mandatory full checks before uploading.
 
-Run scripts/check_locales.py after any catalog/registry change. The development catalogs each contain 248 extracted message entries (36 in the published 3.3.0-dev.2 foundation); validation does not substitute for human translation review. Keep mode tokens, flags, JSON schemas and destructive confirmation semantics language-independent.
+Run scripts/check_locales.py after any catalog/registry change. The development catalogs each contain 371 extracted message entries (36 in the published 3.3.0-dev.2 foundation); validation does not substitute for human translation review. Keep mode tokens, flags, JSON schemas and destructive confirmation semantics language-independent.
 
 ## Validation and release status
 
@@ -63,7 +63,7 @@ The development branch adds an offline [source-package helper](MAINTAINING.md#lo
 
 [PR #1](https://github.com/gh-slee/kobo-koreader-migrate/pull/1) merged into main on 2026-10-16 as [564234e](https://github.com/gh-slee/kobo-koreader-migrate/commit/564234e2256bb6a64085cc10a4d3c5535322313e). Its [main-branch CI run](https://github.com/gh-slee/kobo-koreader-migrate/actions/runs/38918881111) passed all six macOS/Ubuntu Python 3.9, 3.12 and 3.14 jobs. Linux checks fixtures only. The pre-merge documentation commit dedc884 passed 117 local tests plus self-test and locale validation, and all twelve push/PR CI jobs.
 
-New changes require fresh validation. Temporary fixtures and the real macOS ditto round trip do not establish hardware compatibility. KM-011/KM-005/KM-001/KM-003/KM-013 remain Ready for test; see [manual acceptance](../ACCEPTANCE.md). KM-014 shared output routing is in progress with slices 1/2/3 ready for controlled testing; full extraction and KM-015 catalog review remain pending. Follow the current [CI runs](https://github.com/gh-slee/kobo-koreader-migrate/actions) and [open pull requests](https://github.com/gh-slee/kobo-koreader-migrate/pulls) for subsequent changes.
+New changes require fresh validation. Temporary fixtures and the real macOS ditto round trip do not establish hardware compatibility. KM-011/KM-005/KM-001/KM-003/KM-013 remain Ready for test; see [manual acceptance](../ACCEPTANCE.md). KM-014 owned-runtime extraction is ready for the combined acceptance round in 3.3.0-dev.6; final human catalog review remains pending. Follow the current [CI runs](https://github.com/gh-slee/kobo-koreader-migrate/actions) and [open pull requests](https://github.com/gh-slee/kobo-koreader-migrate/pulls) for subsequent changes.
 
 ## Coding agents
 
@@ -121,16 +121,16 @@ Development 3.3.0-dev.3 adds a ContextVar-scoped UIOutput adapter. Explicit mess
 
 UI_MESSAGE_FIELDS inventories the integrated IDs and exact named parameters. Canonical missing/mismatched fields fail at catalog load. Both renderings are computed before either stream is written; all integrated templates are pre-rendered before run creation/device access. A translation formatting failure falls back to English. Filenames, model labels, statuses and other technical data are never translated; original Unicode data can legitimately occur in an English log. Severity and output channel are explicit and preserve stdout/stderr routing. Typed responses are never logged. Shared yes/no defaults, numeric choices and exact cleanup tokens remain unchanged.
 
-| Integrated IDs / surface | Remaining extraction |
+| Surface | Coverage and boundary |
 | --- | --- |
-| prompt.*, confirm.*, menu.* | Owned migration/restore prompts covered; argparse/startup diagnostics remain English |
-| progress.*, phase.* | Archive heartbeats added in slice 3; detailed scanner/comparison/per-file diagnostic lines remain English |
-| run.*, error.*, recovery.*, restore.* | Recovery workflow, pre-run interrupt and selected refusals added in slice 3; unconverted low-level/maintenance errors remain English |
-| catalog.*, cleanup.* | Cleanup protection reasons and detailed maintenance errors |
-| difference.* | Machine JSON notes remain English; paths/action tokens unchanged |
-| device.*, inspection.*, space.*, value.*, migration.*, workflow.*, saved_source.*, archive.*, identity.*, diagnostic.* | Core plans, diagnostics headings, archive/eject/identity/restore notices added; raw data/warnings and detailed scanner diagnostics retain original values |
+| Help/prompts/menus/custom argument checks | Catalogued; exact numeric/yes-no/destructive tokens unchanged |
+| Runtime errors and status/progress lines | All owned MigrationError/MigrationCancelled/log_status sites use IDs; raw OS/library diagnostics remain original |
+| Cleanup protection reasons and scan/plugin warnings | Structured string subclasses render from IDs; their stored JSON strings remain English |
+| Restore/rollback detail groups | Nested messages retain IDs and English string compatibility through joining |
+| Difference/catalog/device/space reports | Owned headings/labels localized; paths and category/status/operation tokens retain stable values |
+| Startup and Python framework output | Locale bootstrap failures/fallback notices and Python-generated argparse/tracebacks are deliberate English/original-text boundaries |
 
-run.json and difference.json gain optional ui_locale metadata. No status/category/phase tokens or recovery schemas are renamed; old runs remain accepted. difference.txt is localized human presentation. Full message extraction, raw-diagnostic labelling for remaining legacy output and full human catalog review are later KM-014/KM-015 work, not completed by this slice. All text is static UTF-8 JSON and ordinary offline Python code; there is no runtime translator or AI dependency.
+run.json and difference.json gain optional ui_locale metadata. No status/category/phase tokens or recovery schemas are renamed; old runs remain accepted. difference.txt is localized human presentation. This historical slice did not complete extraction. Development 3.3.0-dev.6 completes owned runtime extraction; human review remains pending. All text is static UTF-8 JSON and ordinary offline Python code; there is no runtime translator or AI dependency.
 
 Synthetic regressions compare all four modes, saved-source reuse, exact target restore, final default-No, rollback after writes, cleanup tokens and exit states across the three locales. Stream tests cover English logs, Unicode/ascii output, no duplicate tee entries, fallback, parameter contracts and context cleanup. These do not establish physical-device acceptance or human translation sign-off. New hosted CI results require publication of this branch.
 
@@ -154,4 +154,16 @@ Exception arguments can carry UIMessage, whose actual string content remains Eng
 
 The root UI scope reports pre-run KeyboardInterrupt once and re-raises it with ui_reported; the CLI wrapper retains exit 130 without duplicating that message. Interrupts before locale parsing still use the English fallback. Run cancellation/failure/recovery codes and durable statuses remain unchanged.
 
-Nine new temporary-fixture tests cover structured exception English args/JSON values, raw Unicode details and no tee duplication, subprocess heartbeat/eject commands, refusal before device access, successful rollback, changed-device write refusal, secondary rollback failure, exact-restore undo/guard and pre-run interrupt context. Existing all-mode, source-reuse, restore, default-No and archive tests remain required. Local validation passed 175 tests (nine new), self-test, 3x248 locale validation, publication worktree/history checks and whitespace checks. Hosted CI, human wording review and physical acceptance remain pending.
+Nine new temporary-fixture tests cover structured exception English args/JSON values, raw Unicode details and no tee duplication, subprocess heartbeat/eject commands, refusal before device access, successful rollback, changed-device write refusal, secondary rollback failure, exact-restore undo/guard and pre-run interrupt context. Existing all-mode, source-reuse, restore, default-No and archive tests remain required. Slice 3 passed 175 local tests/self-test/3x248 locales/privacy checks, then merged as PR #8. All 12 push/PR jobs and six [merged-main jobs](https://github.com/gh-slee/kobo-koreader-migrate/actions/runs/39262795019) passed. This is evidence for slice 3 only; human wording/hardware acceptance remains pending.
+
+## Owned-runtime localization completion (3.3.0-dev.6)
+
+All remaining owned runtime exception sites, per-file scan/compare/copy/archive status lines, maintenance/cleanup reasons, scan/plugin warnings, self-test notices and custom argument-combination errors now have explicit IDs. The change adds 123 entries (371 per locale) and reviews terminology independently for English, Traditional Chinese and Simplified Chinese. This is an editorial pass, not human acceptance. Human wording and hardware validation will be combined at the end, as planned.
+
+Keep stored data independent of language: UIMessage is an English str subclass with structured values. Cleanup protection reasons, plugin/scan warnings, lock labels and exception args serialize as the same English strings; source and target machine schemas do not acquire translated values. diagnostic_detail distinguishes an actual UIMessage from raw data by type, never by matching text. join_diagnostics nests message values instead of flattening a recovery error group. Display-only True/False labels preserve English log wording and bool values in records.
+
+Boundary: locale asset validation cannot depend on the catalog it is validating. Invalid/unsupported/missing assets therefore retain safe English bootstrap errors/fallback notices. Python-generated argparse headings/usage/type/choice errors and tracebacks, external process/database text, machine tokens and user data are also preserved. Custom project-owned argument-combination errors use bundle.render before run/device access. Do not monkeypatch gettext/argparse internals or translate rendered English with search/replace.
+
+Source-coverage regressions reject uncatalogued runtime exception/status sites and custom parser errors; only blank/decorative print calls are allowed in runtime functions. Minimal module-wrapper fallback output is deliberate. Fixture tests also compare cleanup protection/JSON, warnings, plan/device bytes, malformed ZIP refusal, busy locks, CLI refusal and grouped recovery diagnostics across all three locales. Combined local validation passed 184 tests (nine new), self-test, 3x371 locale checks, worktree/history privacy and whitespace checks, 73 public documentation file links and 30 bash examples. Changed Python parses with 3.9 grammar; new hosted interpreter CI is pending publication. Human wording/hardware acceptance remains separate and deferred to the final combined round.
+
+Editorial policy: preserve SOURCE/TARGET, mode/flag/status/category tokens and exact confirmation syntax; distinguish restoring a saved snapshot from automatic rollback and manual recovery. Review placeholders, negation, retained-versus-overwritten files and action timing in all three catalogs. Each language is maintained independently; script conversion alone is not an accepted review. Additional-language contribution guidance remains KM-017.

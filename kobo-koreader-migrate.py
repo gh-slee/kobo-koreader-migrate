@@ -48,7 +48,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, Iterable, List, Optional, Tuple
 
-VERSION = "3.3.0-dev.5"
+VERSION = "3.3.0-dev.6"
 DEFAULT_BACKUP_DIR = Path(__file__).resolve().parent
 VOLUME_ROOT = Path("/Volumes")
 
@@ -395,7 +395,7 @@ def preview_locale_ui(bundle: LocaleBundle) -> None:
 
 
 
-# This slice migrates shared presentation; remaining owned messages stay English.
+# Owned runtime presentation uses explicit IDs; bootstrap/framework diagnostics stay English.
 UI_MESSAGE_FIELDS = {
     'ui.partial_notice': set(),
     'prompt.retry_yes_no': set(), 'prompt.default': set(), 'prompt.selection': set(),
@@ -579,6 +579,129 @@ UI_MESSAGE_FIELDS = {
     'phase.finished': {'seconds', 'label'},
     'archive.creating': set(),
     'archive.restoring': set(),
+    'error.platform': set(),
+    'error.command_missing': {'command'},
+    'error.multiple_devices': set(),
+    'error.command_failed': {'code', 'command', 'detail'},
+    'error.identity_symlink': set(),
+    'error.identity_size': set(),
+    'error.identity_file_missing': {'path'},
+    'error.settings_table': set(),
+    'error.model_ascii': set(),
+    'error.source_preflight': {'paths'},
+    'error.tree_root_symlink': {'path'},
+    'error.runtime_symlink': {'path'},
+    'error.runtime_zip_unsafe': {'name'},
+    'error.runtime_zip_duplicate': {'name'},
+    'error.archive_reader_missing': set(),
+    'error.zip_path_duplicate': {'path'},
+    'error.zip_read': {'detail', 'path'},
+    'error.backup_exists': {'path'},
+    'error.restore_required_missing': {'path'},
+    'error.restore_file_missing': {'path'},
+    'error.restore_size': {'path'},
+    'error.restore_checksum': {'path'},
+    'error.rollback_archive_changed': set(),
+    'error.preserve_identity_missing': set(),
+    'error.identity_mode': {'mode'},
+    'error.identity_verify': set(),
+    'error.relative_path': {'path'},
+    'error.system_path': {'path'},
+    'error.device_root': {'path'},
+    'error.path_symlink': {'path'},
+    'error.parent_directory': {'path'},
+    'error.payload_regular_file': {'path'},
+    'error.case_unicode_collision': {'first', 'second'},
+    'error.file_directory_collision': {'first', 'path'},
+    'error.book_directory': {'path'},
+    'error.source_scan_changed': {'path'},
+    'error.source_archive_changed': {'path'},
+    'error.destination_collision': {'path', 'second'},
+    'error.payload_zip_duplicate': set(),
+    'error.payload_zip_missing': {'path'},
+    'error.payload_zip_unsafe': {'path'},
+    'error.payload_verify': {'path'},
+    'error.rollback_payload_changed': {'path'},
+    'error.rollback_payload_missing': set(),
+    'error.statistics_symlink': set(),
+    'error.statistics_wal': set(),
+    'error.statistics_check': {'detail'},
+    'error.statistics_read': {'detail'},
+    'error.backup_on_device': set(),
+    'error.lock_symlink': {'path'},
+    'error.lock_regular_file': set(),
+    'error.lock_busy': {'label'},
+    'error.lock_directory_symlink': set(),
+    'error.json_missing': {'name'},
+    'error.json_read': {'name'},
+    'error.json_object': {'name'},
+    'error.run_reference': set(),
+    'error.run_symlink': set(),
+    'error.run_location': set(),
+    'error.artifact_filename': set(),
+    'error.artifact_missing': {'name'},
+    'error.manifest_invalid': set(),
+    'error.manifest_path': set(),
+    'error.manifest_system_path': set(),
+    'error.manifest_entry': {'path'},
+    'error.saved_archive_checksum': {'name'},
+    'error.saved_zip_duplicate': set(),
+    'error.payload_members': set(),
+    'error.payload_directory_entry': set(),
+    'error.saved_payload_symlink': set(),
+    'error.runtime_members': set(),
+    'error.saved_reader_missing': set(),
+    'error.saved_zip_size': {'path'},
+    'error.saved_zip_checksum': {'path'},
+    'error.legacy_scan_count': set(),
+    'error.legacy_mode': set(),
+    'error.legacy_archive_pair': set(),
+    'error.preview_source_missing': set(),
+    'error.legacy_payload_missing': set(),
+    'error.legacy_model_missing': set(),
+    'error.cleanup_keep': set(),
+    'error.cleanup_ineligible': set(),
+    'error.cleanup_changed': set(),
+    'error.cleanup_symlink': set(),
+    'error.project_location': set(),
+    'error.runs_symlink': set(),
+    'scan.complete': {'count'},
+    'scan.archiving': {'index', 'path', 'total'},
+    'scan.compare_start': {'count'},
+    'scan.comparing': {'index', 'path', 'size', 'total'},
+    'scan.identical': set(),
+    'scan.keep_target': set(),
+    'scan.overwrite': set(),
+    'scan.create': set(),
+    'scan.copying': {'index', 'path', 'total'},
+    'scan.metadata': set(),
+    'scan.statistics': {'size'},
+    'scan.references': set(),
+    'scan.saved_verified': {'name'},
+    'scan.target_only': set(),
+    'self_test.start': set(),
+    'self_test.success': set(),
+    'catalog.row': {'operation', 'run_id', 'size', 'status'},
+    'cleanup.reason_recent': set(),
+    'cleanup.reason_dependency': set(),
+    'cleanup.reason_recovery': set(),
+    'cleanup.reason_unconfirmed': set(),
+    'scan.warning_central': set(),
+    'scan.warning_scoped': set(),
+    'plugin.directory_missing': set(),
+    'plugin.main_missing': {'name'},
+    'plugin.meta_missing': {'name'},
+    'argument.delete_cleanup': set(),
+    'argument.keep_minimum': set(),
+    'argument.restore_settings': set(),
+    'argument.preview_settings': set(),
+    'lock.project': set(),
+    'lock.device': set(),
+    'diagnostic.join': {'first', 'second'},
+    'recovery.payload_error': {'detail'},
+    'recovery.runtime_error': {'detail'},
+    'value.true': set(),
+    'value.false': set(),
 }
 CURRENT_UI = ContextVar('kobo_migration_ui', default=None)
 
@@ -612,6 +735,23 @@ def exception_detail(exc):
     if len(exc.args) == 1 and isinstance(exc.args[0], UIMessage):
         return exc.args[0]
     return message('diagnostic.raw', detail=str(exc))
+
+
+def diagnostic_detail(value):
+    """Preserve an owned message ID or label a raw diagnostic at presentation."""
+    return value if isinstance(value, UIMessage) else message('diagnostic.raw', detail=str(value))
+
+
+def join_diagnostics(details):
+    """Join structured recovery details without flattening translated children."""
+    result = details[0]
+    for item in details[1:]:
+        result = message('diagnostic.join', first=result, second=item)
+    return result
+
+
+def display_bool(value: bool):
+    return message('value.true' if value else 'value.false')
 
 
 class UIOutput:
@@ -738,10 +878,10 @@ def choose(question: str, options: List[Tuple[str, str]], default: Optional[str]
 
 def require_macos_tools() -> None:
     if sys.platform != "darwin":
-        raise MigrationError("This migration tool is designed for macOS.")
+        raise MigrationError(message('error.platform'))
     for cmd in ("ditto", "diskutil", "sync"):
         if shutil.which(cmd) is None:
-            raise MigrationError(f"Required macOS command not found: {cmd}")
+            raise MigrationError(message('error.command_missing', command=cmd))
 
 
 def kobo_mounts() -> List[Path]:
@@ -764,7 +904,7 @@ def wait_for_single_kobo(role: str) -> Path:
         mounts = kobo_mounts()
         if len(mounts) > 1:
             raise MigrationError(
-                "More than one Kobo is mounted. Disconnect all but the requested device."
+                message('error.multiple_devices')
             )
         if len(mounts) == 1:
             ui_emit('device.detected', path=mounts[0])
@@ -797,15 +937,14 @@ def run_with_spinner(cmd: List[str], label: str, env: Optional[dict] = None) -> 
             stderr.seek(0)
             stdout.seek(0)
             detail = (stderr.read() or stdout.read()).strip()
-            raise MigrationError(f"Command failed ({proc.returncode}): {' '.join(cmd)}\n{detail}")
+            raise MigrationError(message('error.command_failed', code=proc.returncode, command=' '.join(cmd), detail=message('diagnostic.raw', detail=detail)))
 
 
 def run_checked(cmd: List[str]) -> str:
     proc = subprocess.run(cmd, capture_output=True, text=True)
     if proc.returncode != 0:
         raise MigrationError(
-            f"Command failed ({proc.returncode}): {' '.join(cmd)}\n"
-            f"{(proc.stderr or proc.stdout).strip()}"
+            message('error.command_failed', code=proc.returncode, command=' '.join(cmd), detail=message('diagnostic.raw', detail=(proc.stderr or proc.stdout).strip()))
         )
     return proc.stdout.strip()
 
@@ -882,9 +1021,9 @@ def device_fingerprint(mount: Path) -> Tuple[Optional[str], Optional[str]]:
     if not version_file.is_file():
         return None, None
     if mount.is_symlink() or (mount / '.kobo').is_symlink() or version_file.is_symlink():
-        raise MigrationError('Device identity paths must not be symlinks.')
+        raise MigrationError(message('error.identity_symlink'))
     if version_file.stat().st_size > 65536:
-        raise MigrationError('Device identity file is unexpectedly large.')
+        raise MigrationError(message('error.identity_size'))
     raw = version_file.read_bytes()
     if not raw.strip():
         return None, None
@@ -912,7 +1051,7 @@ def read_device_id(settings_file: Path) -> Optional[str]:
 
 def set_device_id(settings_file: Path, new_id: str) -> None:
     if not settings_file.is_file():
-        raise MigrationError(f"Cannot set device_id; file not found: {settings_file}")
+        raise MigrationError(message('error.identity_file_missing', path=settings_file))
 
     text = settings_file.read_text(encoding="utf-8", errors="strict")
     match = DEVICE_ID_RE.search(text)
@@ -926,7 +1065,7 @@ def set_device_id(settings_file: Path, new_id: str) -> None:
         marker = re.search(r"return\s*\{", text)
         if not marker:
             raise MigrationError(
-                "settings.reader.lua does not look like a KOReader Lua settings table."
+                message('error.settings_table')
             )
         insert_at = marker.end()
         updated = (
@@ -972,7 +1111,7 @@ def basic_plugin_audit(koreader: Path) -> Tuple[List[str], List[str]]:
     plugins: List[str] = []
     warnings: List[str] = []
     if not plugins_dir.is_dir():
-        warnings.append("plugins/ directory is missing")
+        warnings.append(message('plugin.directory_missing'))
         return plugins, warnings
 
     for p in sorted(plugins_dir.glob("*.koplugin")):
@@ -981,9 +1120,9 @@ def basic_plugin_audit(koreader: Path) -> Tuple[List[str], List[str]]:
         plugins.append(p.name)
         # Structural audit only; not a dependency/compatibility guarantee.
         if not (p / "main.lua").is_file():
-            warnings.append(f"{p.name}: main.lua missing")
+            warnings.append(message('plugin.main_missing', name=p.name))
         if not (p / "_meta.lua").is_file():
-            warnings.append(f"{p.name}: _meta.lua missing")
+            warnings.append(message('plugin.meta_missing', name=p.name))
     return plugins, warnings
 
 
@@ -1032,7 +1171,7 @@ def confirm_role_model(info: DeviceInfo, requested: Optional[str], role: str) ->
             if not expected:
                 ui_emit('device.model_retry')
     if len(expected) > 80 or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9 ._()+-]*", expected):
-        raise MigrationError('Model names must be short plain ASCII labels, e.g. Kobo Clara BW.')
+        raise MigrationError(message('error.model_ascii'))
     verify_expected_model(info, expected, role)
     return expected
 
@@ -1063,7 +1202,7 @@ def ensure_source_structure(mount: Path) -> None:
     missing = [str(p) for p in required if not p.exists()]
     if missing:
         raise MigrationError(
-            "Source KOReader failed pre-flight; missing:\n  " + "\n  ".join(missing)
+            message('error.source_preflight', paths="\n  ".join(missing))
         )
 
 
@@ -1153,11 +1292,11 @@ def print_progress(label: str, done: int, total: int) -> None:
 
 def validate_tree_symlinks(root: Path) -> None:
     if root.is_symlink():
-        raise MigrationError(f'Symlink tree root is not allowed: {root}')
+        raise MigrationError(message('error.tree_root_symlink', path=root))
     for base, dirs, files in os.walk(root, followlinks=False):
         for name in dirs + files:
             if (Path(base) / name).is_symlink():
-                raise MigrationError(f'Symlink in KOReader tree: {Path(base) / name}')
+                raise MigrationError(message('error.runtime_symlink', path=Path(base) / name))
 
 
 def validate_koreader_zip(archive: Path) -> None:
@@ -1171,9 +1310,9 @@ def validate_koreader_zip(archive: Path) -> None:
                     or parts[0] not in {'koreader', '__MACOSX'}
                     or any(part in {'', '.', '..'} for part in parts)
                     or stat.S_ISLNK(info.external_attr >> 16)):
-                raise MigrationError(f'Unsafe KOReader ZIP member: {name}')
+                raise MigrationError(message('error.runtime_zip_unsafe', name=name))
             if name in seen:
-                raise MigrationError(f'Duplicate KOReader ZIP member: {name}')
+                raise MigrationError(message('error.runtime_zip_duplicate', name=name))
             seen.add(name)
             if not info.is_dir():
                 paths.append(name)
@@ -1209,14 +1348,14 @@ def build_manifest(
     with zipfile.ZipFile(zip_path, "r") as zf:
         names = set(zf.namelist())
         if strict_source and "koreader/reader.lua" not in names:
-            raise MigrationError("Archive is missing koreader/reader.lua.")
+            raise MigrationError(message('error.archive_reader_missing'))
 
         entries = archive_entries(zf)
         seen = set()
         for idx, info in enumerate(entries, 1):
             rel = info.filename.replace("\\", "/")[len("koreader/"):]
             if rel in seen:
-                raise MigrationError(f"Duplicate path in ZIP: {rel}")
+                raise MigrationError(message('error.zip_path_duplicate', path=rel))
             seen.add(rel)
 
             h = hashlib.sha256()
@@ -1228,7 +1367,7 @@ def build_manifest(
                             break
                         h.update(chunk)
             except Exception as exc:
-                raise MigrationError(f"Failed reading ZIP member {rel}: {exc}") from exc
+                raise MigrationError(message('error.zip_read', path=rel, detail=exception_detail(exc))) from exc
 
             files[rel] = {
                 "sha256": h.hexdigest(),
@@ -1273,7 +1412,7 @@ def create_archive(
     strict_source: bool = True,
 ) -> dict:
     if zip_path.exists() or manifest_path.exists():
-        raise MigrationError(f"Refusing to overwrite an existing backup: {zip_path}")
+        raise MigrationError(message('error.backup_exists', path=zip_path))
     validate_tree_symlinks(source_koreader)
 
     env = os.environ.copy()
@@ -1355,7 +1494,7 @@ def verify_restored_tree(target_koreader: Path, manifest: dict) -> None:
     ]
     for p in (required if manifest.get("strict_source", True) else []):
         if not p.exists():
-            raise MigrationError(f"Restore verification failed; missing: {p}")
+            raise MigrationError(message('error.restore_required_missing', path=p))
 
     files = manifest["files"]
     items = list(files.items())
@@ -1364,12 +1503,12 @@ def verify_restored_tree(target_koreader: Path, manifest: dict) -> None:
     for idx, (rel, meta) in enumerate(items, 1):
         p = target_koreader / rel
         if not p.is_file():
-            raise MigrationError(f"Restore verification failed; file missing: {rel}")
+            raise MigrationError(message('error.restore_file_missing', path=rel))
         if p.stat().st_size != meta["size"]:
-            raise MigrationError(f"Restore verification failed; size mismatch: {rel}")
+            raise MigrationError(message('error.restore_size', path=rel))
         actual = sha256_file(p)
         if actual != meta["sha256"]:
-            raise MigrationError(f"Restore verification failed; checksum mismatch: {rel}")
+            raise MigrationError(message('error.restore_checksum', path=rel))
         print_progress(message('progress.verify_target'), idx, len(items))
 
     ui_emit('archive.verified')
@@ -1399,7 +1538,7 @@ def rollback_target(
     if target_backup_zip is not None:
         validate_koreader_zip(target_backup_zip)
         if target_backup_manifest and sha256_file(target_backup_zip) != target_backup_manifest['archive']['sha256']:
-            raise MigrationError('Rollback archive checksum changed.')
+            raise MigrationError(message('error.rollback_archive_changed'))
     if target_koreader.exists():
         remove_tree(target_koreader)
     if target_backup_zip is None:
@@ -1440,19 +1579,19 @@ def apply_identity_mode(target_koreader: Path, mode: str, target_device_id: Opti
 
     if mode == "preserve":
         if not target_device_id:
-            raise MigrationError("Target device_id was not available to preserve.")
+            raise MigrationError(message('error.preserve_identity_missing'))
         new_id = target_device_id
         label = message('identity.preserved')
     elif mode == "new":
         new_id = uuid.uuid4().hex.upper()
         label = message('identity.new')
     else:
-        raise MigrationError(f"Unknown identity mode: {mode}")
+        raise MigrationError(message('error.identity_mode', mode=mode))
 
     set_device_id(settings, new_id)
     check = read_device_id(settings)
     if check != new_id:
-        raise MigrationError("Failed to verify updated device_id.")
+        raise MigrationError(message('error.identity_verify'))
     ui_emit('identity.applied', label=label)
     return new_id
 
@@ -1472,18 +1611,18 @@ def checked_path(mount: Path, rel: str, allow_metadata: bool = False) -> Path:
     parts = rel.split('/')
     allowed_hidden = allow_metadata and len(parts) >= 2 and parts[:2] == ['.adds', 'koreader']
     if not rel or any(part in {'', '.', '..'} for part in parts):
-        raise MigrationError(f'Unsafe relative path: {rel}')
+        raise MigrationError(message('error.relative_path', path=rel))
     if any(part.startswith('.') for part in parts) and not allowed_hidden:
-        raise MigrationError(f'Hidden/system path is not allowed: {rel}')
+        raise MigrationError(message('error.system_path', path=rel))
     current = mount
     if mount.is_symlink() or not mount.is_dir():
-        raise MigrationError(f'Invalid device root: {mount}')
+        raise MigrationError(message('error.device_root', path=mount))
     for idx, part in enumerate(parts):
         current = current / part
         if current.is_symlink():
-            raise MigrationError(f'Symlink is not allowed: {rel}')
+            raise MigrationError(message('error.path_symlink', path=rel))
         if current.exists() and idx < len(parts) - 1 and not current.is_dir():
-            raise MigrationError(f'Parent is not a directory: {rel}')
+            raise MigrationError(message('error.parent_directory', path=rel))
     return current
 
 
@@ -1491,7 +1630,7 @@ def payload_path(mount: Path, rel: str) -> Path:
     central = any(rel.startswith(f'.adds/koreader/{name}/') for name in METADATA_DIRS)
     path = checked_path(mount, rel, allow_metadata=central)
     if path.exists() and not path.is_file():
-        raise MigrationError(f'Payload destination is not a regular file: {rel}')
+        raise MigrationError(message('error.payload_regular_file', path=rel))
     return path
 
 
@@ -1508,7 +1647,7 @@ def assert_unique_paths(paths) -> None:
             prefix = '/'.join(parts[:idx])
             key = path_key(prefix)
             if key in spellings and spellings[key] != prefix:
-                raise MigrationError(f'Case/Unicode path collision: {spellings[key]} and {prefix}')
+                raise MigrationError(message('error.case_unicode_collision', first=spellings[key], second=prefix))
             spellings[key] = prefix
         seen[path_key(rel)] = rel
     for rel in paths:
@@ -1516,7 +1655,7 @@ def assert_unique_paths(paths) -> None:
         for idx in range(1, len(parts)):
             key = path_key('/'.join(parts[:idx]))
             if key in seen:
-                raise MigrationError(f'File/directory path collision: {seen[key]} and {rel}')
+                raise MigrationError(message('error.file_directory_collision', first=seen[key], path=rel))
 
 
 def scan_payload(mount: Path, include_books: bool, include_fonts: bool,
@@ -1573,7 +1712,7 @@ def scan_payload(mount: Path, include_books: bool, include_fonts: bool,
             roots = [checked_path(mount, rel) for rel in include_dirs]
             for root in roots:
                 if not root.is_dir() and not missing_roots_ok:
-                    raise MigrationError(f'Book directory not found: {root}')
+                    raise MigrationError(message('error.book_directory', path=root))
             roots = [root for root in roots if root.is_dir()]
         for root in roots:
             for base, dirs, names in os.walk(root, followlinks=False):
@@ -1602,9 +1741,9 @@ def scan_payload(mount: Path, include_books: bool, include_fonts: bool,
             for name in METADATA_DIRS:
                 root = checked_path(mount, f'.adds/koreader/{name}', allow_metadata=True)
                 walk_regular(root, 'central_metadata')
-            report['warnings'].append('Central metadata is copied as complete trees; no Lua data is merged.')
+            report['warnings'].append(message('scan.warning_central'))
     if include_metadata and include_books and (include_dirs or exclude_dirs):
-        report['warnings'].append('Scoped scan: central metadata excluded to avoid overwriting data for unrelated books; adjacent sidecars still included.')
+        report['warnings'].append(message('scan.warning_scoped'))
     if include_fonts:
         root = checked_path(mount, 'fonts')
         if root.is_dir():
@@ -1620,7 +1759,7 @@ def scan_payload(mount: Path, include_books: bool, include_fonts: bool,
     report['file_count'] = len(files)
     report['total_bytes'] = sum(meta['size'] for meta in files.values())
     report['extensions'] = sorted(extensions)
-    log_status(f'Scan complete: {len(files):,} payload files found.')
+    log_status(message('scan.complete', count=len(files)))
     return files, report
 
 
@@ -1629,7 +1768,7 @@ def hash_payload(mount: Path, files: dict) -> dict:
     for idx, (rel, meta) in enumerate(files.items(), 1):
         path = payload_path(mount, rel)
         if path.stat().st_size != meta['size']:
-            raise MigrationError(f'Source changed during scan: {rel}')
+            raise MigrationError(message('error.source_scan_changed', path=rel))
         result[rel] = {**meta, 'sha256': sha256_file(path)}
         print_progress(message('progress.hash_payload'), idx, len(files))
     return {'files': result}
@@ -1640,7 +1779,7 @@ def create_payload_archive(mount: Path, files: dict, archive: Path) -> dict:
     with zipfile.ZipFile(archive, 'x', compression=zipfile.ZIP_STORED, allowZip64=True) as zf:
         for idx, (rel, meta) in enumerate(manifest['files'].items(), 1):
             path = payload_path(mount, rel)
-            log_status(f'Archiving payload [{idx}/{len(files)}]: {rel}')
+            log_status(message('scan.archiving', index=idx, total=len(files), path=rel))
             with path.open('rb') as src, zf.open(rel, 'w', force_zip64=True) as dst:
                 copy_with_progress(src, dst, f'Archiving {rel}', meta['size'])
             digest = hashlib.sha256()
@@ -1653,7 +1792,7 @@ def create_payload_archive(mount: Path, files: dict, archive: Path) -> dict:
             if progress:
                 progress.update(0, final=True)
             if digest.hexdigest() != meta['sha256']:
-                raise MigrationError(f'Source changed during archive: {rel}')
+                raise MigrationError(message('error.source_archive_changed', path=rel))
             print_progress(message('progress.archive_payload'), idx, len(files))
     manifest.update({'tool_version': VERSION, 'created_at': iso_now(),
                      'archive_sha256': sha256_file(archive)})
@@ -1666,10 +1805,10 @@ def plan_payload(target: Path, manifest: dict, conflict: str = 'overwrite') -> d
     assert_unique_paths(files)
     plan = {'copy': {}, 'skip': [], 'existing': {}, 'conflicts_kept': []}
     directory_names = {}
-    log_status(f'Comparing TARGET payload: {len(files):,} files; this phase only reads the device.')
+    log_status(message('scan.compare_start', count=len(files)))
     # Check the spelling of each existing component even on case-sensitive hosts.
     for index, (rel, meta) in enumerate(files.items(), 1):
-        log_status(f'Comparing TARGET [{index}/{len(files)}]: {rel} ({human_bytes(meta["size"])})')
+        log_status(message('scan.comparing', index=index, total=len(files), path=rel, size=human_bytes(meta["size"])))
         path = payload_path(target, rel)
         current = target
         for part in rel.split('/'):
@@ -1678,20 +1817,20 @@ def plan_payload(target: Path, manifest: dict, conflict: str = 'overwrite') -> d
                     directory_names[current] = {path_key(p.name): p.name for p in current.iterdir()}
                 existing_name = directory_names[current].get(path_key(part))
                 if existing_name is not None and existing_name != part:
-                    raise MigrationError(f'Destination name collision: {rel} vs {existing_name}')
+                    raise MigrationError(message('error.destination_collision', path=rel, second=existing_name))
             current = current / part
         if path.exists():
             if path.stat().st_size == meta['size'] and sha256_file(path) == meta['sha256']:
                 plan['skip'].append(rel)
-                log_status('  Identical: skipped.')
+                log_status(message('scan.identical'))
                 continue
             if conflict == 'keep-target':
                 plan['conflicts_kept'].append(rel)
-                log_status('  Different: keeping TARGET.')
+                log_status(message('scan.keep_target'))
                 continue
             plan['existing'][rel] = {'size': path.stat().st_size, 'category': meta.get('category', 'backup')}
         plan['copy'][rel] = meta
-        log_status('  Different: backup then overwrite.' if rel in plan['existing'] else '  New: will copy.')
+        log_status(message('scan.overwrite' if rel in plan['existing'] else 'scan.create'))
     kept_books = [rel for rel in plan['conflicts_kept'] if files[rel].get('category') == 'books']
     protected_sidecars = [str(Path(rel).with_suffix('.sdr')).replace(os.sep, '/') + '/' for rel in kept_books]
     plan['metadata_skipped'] = []
@@ -1709,16 +1848,16 @@ def restore_payload(target: Path, archive: Path, files: dict, journal: dict) -> 
     with zipfile.ZipFile(archive) as zf:
         all_names = zf.namelist()
         if len(all_names) != len(set(all_names)):
-            raise MigrationError('Duplicate payload ZIP members.')
+            raise MigrationError(message('error.payload_zip_duplicate'))
         assert_unique_paths(files)
         for rel, meta in files.items():
             payload_path(target, rel)
             try:
                 member = zf.getinfo(rel)
             except KeyError as exc:
-                raise MigrationError(f'Payload ZIP member is missing: {rel}') from exc
+                raise MigrationError(message('error.payload_zip_missing', path=rel)) from exc
             if member.is_dir() or stat.S_ISLNK(member.external_attr >> 16) or member.file_size != meta['size']:
-                raise MigrationError(f'Unsafe/incorrect payload ZIP member: {rel}')
+                raise MigrationError(message('error.payload_zip_unsafe', path=rel))
         for idx, (rel, meta) in enumerate(files.items(), 1):
             path = payload_path(target, rel)
             missing = []
@@ -1732,10 +1871,10 @@ def restore_payload(target: Path, archive: Path, files: dict, journal: dict) -> 
             journal['touched'].append(rel)
             persist_target_changes(journal)
             with zf.open(rel) as src, path.open('wb') as dst:
-                log_status(f'Copying payload [{idx}/{len(files)}]: {rel}')
+                log_status(message('scan.copying', index=idx, total=len(files), path=rel))
                 copy_with_progress(src, dst, f'Copying {rel}', meta['size'])
             if path.stat().st_size != meta['size'] or sha256_file(path) != meta['sha256']:
-                raise MigrationError(f'Payload verification failed: {rel}')
+                raise MigrationError(message('error.payload_verify', path=rel))
             print_progress(message('progress.copy_payload'), idx, len(files))
 
 
@@ -1751,14 +1890,14 @@ def rollback_payload(target: Path, backup: Optional[Path], previous: dict, journ
                         for chunk in iter(lambda: member.read(1024 * 1024), b''):
                             digest.update(chunk)
                     if digest.hexdigest() != meta['sha256']:
-                        raise MigrationError(f'Rollback payload checksum changed: {rel}')
+                        raise MigrationError(message('error.rollback_payload_changed', path=rel))
     # Only restore overwritten files that were actually touched.
     for rel in reversed(journal['touched']):
         payload_path(target, rel).unlink(missing_ok=True)
     restore = {rel: meta for rel, meta in previous.items() if rel in journal['touched']}
     if restore:
         if backup is None:
-            raise MigrationError('Payload rollback backup is missing.')
+            raise MigrationError(message('error.rollback_payload_missing'))
         restore_payload(target, backup, restore, {'touched': [], 'created_dirs': []})
     for directory in reversed(journal['created_dirs']):
         if directory.exists() and not any(directory.iterdir()):
@@ -1767,7 +1906,7 @@ def rollback_payload(target: Path, backup: Optional[Path], previous: dict, journ
 
 
 def device_diagnostics(mount: Path) -> dict:
-    log_status('Checking metadata configuration and reading statistics...')
+    log_status(message('scan.metadata'))
     kr = checked_path(mount, '.adds/koreader', allow_metadata=True)
     result = {'metadata_mode': 'unknown', 'statistics': None, 'missing_references': []}
     settings = checked_path(mount, '.adds/koreader/settings.reader.lua', allow_metadata=True)
@@ -1777,23 +1916,23 @@ def device_diagnostics(mount: Path) -> dict:
         result['metadata_mode'] = match.group(1) if match else 'doc (default)'
     db = checked_path(mount, '.adds/koreader/settings/statistics.sqlite3', allow_metadata=True)
     if db.is_symlink():
-        raise MigrationError('Statistics database must not be a symlink.')
+        raise MigrationError(message('error.statistics_symlink'))
     if db.is_file():
         if db.with_name(db.name + '-wal').exists() and db.with_name(db.name + '-wal').stat().st_size:
-            raise MigrationError('Statistics has pending WAL data. Exit KOReader cleanly before connecting USB.')
+            raise MigrationError(message('error.statistics_wal'))
         try:
             with closing(sqlite3.connect(db.as_uri() + '?mode=ro&immutable=1', uri=True)) as conn:
-                log_status(f'Statistics quick_check: {human_bytes(db.stat().st_size)} database')
+                log_status(message('scan.statistics', size=human_bytes(db.stat().st_size)))
                 checks = [row[0] for row in conn.execute('PRAGMA quick_check')]
                 if checks != ['ok']:
-                    raise MigrationError('Statistics database quick_check failed: ' + '; '.join(checks))
+                    raise MigrationError(message('error.statistics_check', detail=message('diagnostic.raw', detail='; '.join(checks))))
                 tables = {row[0] for row in conn.execute("SELECT name FROM sqlite_master WHERE type='table'")}
                 counts = {table: conn.execute(f'SELECT COUNT(*) FROM "{table}"').fetchone()[0]
                           for table in ('book', 'page_stat_data', 'page_stat') if table in tables}
                 result['statistics'] = {'quick_check': 'ok', 'rows': counts}
         except sqlite3.Error as exc:
-            raise MigrationError(f'Statistics database could not be read: {exc}') from exc
-    log_status('Checking history, collections and folder references...')
+            raise MigrationError(message('error.statistics_read', detail=exception_detail(exc))) from exc
+    log_status(message('scan.references'))
     for rel in ('history.lua', 'settings/collection.lua', 'settings.reader.lua'):
         path = checked_path(mount, '.adds/koreader/' + rel, allow_metadata=True)
         if path.is_file() and not path.is_symlink():
@@ -1823,7 +1962,7 @@ class LogTee:
 
 def ensure_local_backup(backup_dir: Path, mount: Path) -> None:
     if backup_dir == mount or mount in backup_dir.parents:
-        raise MigrationError('Backup directory must be on the Mac, not the Kobo.')
+        raise MigrationError(message('error.backup_on_device'))
 
 
 def confirm_device(mount: Path, fingerprint: Optional[str]) -> None:
@@ -1837,7 +1976,7 @@ def confirm_device(mount: Path, fingerprint: Optional[str]) -> None:
 def self_test() -> None:
     import tempfile
 
-    print("Running self-tests...")
+    ui_emit('self_test.start')
 
     with tempfile.TemporaryDirectory() as td:
         root = Path(td)
@@ -1882,7 +2021,7 @@ def self_test() -> None:
         rollback_payload(target, None, {}, journal)
         assert not (target / 'Books').exists()
 
-    print("Self-tests: OK")
+    ui_emit('self_test.success')
 
 
 def parse_args() -> argparse.Namespace:
@@ -1924,18 +2063,18 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument('--version', action='version', version=f'%(prog)s {VERSION}', help=bundle.render('help.version'))
     args = parser.parse_args()
     if args.delete_run and not args.cleanup:
-        parser.error('--delete-run requires --cleanup')
+        parser.error(bundle.render('argument.delete_cleanup'))
     if args.keep_successful < 1:
-        parser.error('--keep-successful must be at least 1')
+        parser.error(bundle.render('argument.keep_minimum'))
     if args.restore_run and (args.source_model or args.target_model or args.mode or args.books is not None or args.fonts is not None or args.conflict
                             or args.include_dir or args.exclude_dir or args.extra_extension or not args.reading_data):
-        parser.error('--restore-run restores the recorded TARGET snapshot; only --dry-run and --backup-dir may customize it')
+        parser.error(bundle.render('argument.restore_settings'))
     args.locale = bundle.tag
     args.locale_bundle = bundle
     if (args.preview_ui or args.list_locales) and (args.mode or args.self_test or args.books is not None or args.fonts is not None
             or args.source_model or args.target_model or args.conflict or args.include_dir or args.exclude_dir
             or args.extra_extension or not args.reading_data):
-        parser.error('Locale preview/list commands cannot be combined with migration settings')
+        parser.error(bundle.render('argument.preview_settings'))
     return args
 
 
@@ -1968,15 +2107,15 @@ class FileLock:
     def __enter__(self):
         self.path.parent.mkdir(parents=True, exist_ok=True)
         if self.path.is_symlink():
-            raise MigrationError(f'Lock path must not be a symlink: {self.path}')
+            raise MigrationError(message('error.lock_symlink', path=self.path))
         fd = os.open(self.path, os.O_RDWR | os.O_CREAT | getattr(os, 'O_NOFOLLOW', 0), 0o600)
         try:
             if not stat.S_ISREG(os.fstat(fd).st_mode):
-                raise MigrationError('Lock must be a regular file.')
+                raise MigrationError(message('error.lock_regular_file'))
             try:
                 fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
             except BlockingIOError as exc:
-                raise MigrationError(f'{self.label} is busy in another process. Wait for it to finish; do not remove the lock file.') from exc
+                raise MigrationError(message('error.lock_busy', label=self.label)) from exc
             os.ftruncate(fd, 0)
             os.write(fd, json.dumps({'pid': os.getpid(), 'started_at': iso_now(), 'label': self.label}).encode())
             self.fd = fd
@@ -2003,11 +2142,11 @@ class DeviceLocks:
             identities.append('device:' + fingerprint)
         base = Path(tempfile.gettempdir()) / f'koreader-migration-locks-{os.getuid()}'
         if base.is_symlink():
-            raise MigrationError('Device lock directory must not be a symlink.')
+            raise MigrationError(message('error.lock_directory_symlink'))
         for identity in identities:
             key = hashlib.sha256(identity.encode()).hexdigest()
             if key not in self.keys:
-                self.stack.enter_context(FileLock(base / (key + '.lock'), 'Kobo device'))
+                self.stack.enter_context(FileLock(base / (key + '.lock'), message('lock.device')))
                 self.keys.add(key)
 
     def close(self):
@@ -2045,13 +2184,13 @@ def acquire_device(mount: Path, fingerprint: Optional[str]):
 
 def read_json(path: Path) -> dict:
     if path.is_symlink() or not path.is_file():
-        raise MigrationError(f'Missing or unsafe JSON file: {path.name}')
+        raise MigrationError(message('error.json_missing', name=path.name))
     try:
         data = json.loads(path.read_text(encoding='utf-8'))
     except (ValueError, OSError) as exc:
-        raise MigrationError(f'Cannot read JSON file: {path.name}') from exc
+        raise MigrationError(message('error.json_read', name=path.name)) from exc
     if not isinstance(data, dict):
-        raise MigrationError(f'JSON must contain an object: {path.name}')
+        raise MigrationError(message('error.json_object', name=path.name))
     return data
 
 
@@ -2060,41 +2199,41 @@ def resolve_saved_run(project: Path, reference: str) -> Path:
     candidate = Path(reference).expanduser()
     if not candidate.is_absolute():
         if len(candidate.parts) != 1:
-            raise MigrationError('Use a run ID or an absolute run path inside this project.')
+            raise MigrationError(message('error.run_reference'))
         candidate = root / reference
     if candidate.is_symlink() or root.is_symlink():
-        raise MigrationError('Saved run directories must not be symlinks.')
+        raise MigrationError(message('error.run_symlink'))
     if not candidate.is_dir() or candidate.resolve().parent != root.resolve():
-        raise MigrationError('Saved run must be a direct child of this project\'s runs/ directory.')
+        raise MigrationError(message('error.run_location'))
     return candidate.resolve()
 
 
 def saved_file(run: Path, name: str) -> Path:
     if not isinstance(name, str) or Path(name).name != name or name in {'', '.', '..'}:
-        raise MigrationError('Invalid saved artifact filename.')
+        raise MigrationError(message('error.artifact_filename'))
     path = run / name
     if path.is_symlink() or not path.is_file():
-        raise MigrationError(f'Saved artifact is missing/unsafe: {name}')
+        raise MigrationError(message('error.artifact_missing', name=name))
     return path
 
 
 def validate_file_manifest(files: dict, payload: bool):
     if not isinstance(files, dict):
-        raise MigrationError('Invalid file manifest.')
+        raise MigrationError(message('error.manifest_invalid'))
     assert_unique_paths(files)
     for rel, meta in files.items():
         if not isinstance(rel, str) or '\\' in rel or rel.startswith('/'):
-            raise MigrationError('Unsafe manifest path.')
+            raise MigrationError(message('error.manifest_path'))
         parts = rel.split('/')
         if any(part in {'', '.', '..'} for part in parts):
-            raise MigrationError('Unsafe manifest path.')
+            raise MigrationError(message('error.manifest_path'))
         if payload:
             central = any(rel.startswith(f'.adds/koreader/{name}/') for name in METADATA_DIRS)
             if any(part.startswith('.') for part in parts) and not central:
-                raise MigrationError('System path is not allowed in payload manifest.')
+                raise MigrationError(message('error.manifest_system_path'))
         if (not isinstance(meta, dict) or not isinstance(meta.get('size'), int)
                 or meta['size'] < 0 or not re.fullmatch(r'[0-9a-f]{64}', str(meta.get('sha256', '')))):
-            raise MigrationError(f'Invalid manifest entry: {rel}')
+            raise MigrationError(message('error.manifest_entry', path=rel))
 
 
 def verify_saved_archive(archive: Path, manifest: dict, kind: str) -> None:
@@ -2103,34 +2242,34 @@ def verify_saved_archive(archive: Path, manifest: dict, kind: str) -> None:
     validate_file_manifest(files, payload)
     expected = manifest.get('archive_sha256') if payload else manifest.get('archive', {}).get('sha256')
     if not isinstance(expected, str) or sha256_file(archive) != expected:
-        raise MigrationError(f'Saved archive checksum mismatch: {archive.name}')
+        raise MigrationError(message('error.saved_archive_checksum', name=archive.name))
     if not payload:
         validate_koreader_zip(archive)
     with zipfile.ZipFile(archive) as zf:
         names = zf.namelist()
         if len(names) != len(set(names)):
-            raise MigrationError('Duplicate saved ZIP members.')
+            raise MigrationError(message('error.saved_zip_duplicate'))
         if payload:
             actual = {info.filename for info in zf.infolist() if not info.is_dir()}
             if actual != set(files):
-                raise MigrationError('Payload archive members do not match manifest.')
+                raise MigrationError(message('error.payload_members'))
             for info in zf.infolist():
                 if info.is_dir():
-                    raise MigrationError('Unexpected directory entry in saved payload archive.')
+                    raise MigrationError(message('error.payload_directory_entry'))
                 if stat.S_ISLNK(info.external_attr >> 16):
-                    raise MigrationError('Symlink in saved payload archive.')
+                    raise MigrationError(message('error.saved_payload_symlink'))
                 validate_file_manifest({info.filename: files.get(info.filename, {})}, True) if not info.is_dir() else None
         else:
             actual = {info.filename[len('koreader/'):] for info in archive_entries(zf)}
             if actual != set(files):
-                raise MigrationError('KOReader archive members do not match manifest.')
+                raise MigrationError(message('error.runtime_members'))
             if manifest.get('strict_source', True) and 'reader.lua' not in files:
-                raise MigrationError('Source archive has no reader.lua.')
+                raise MigrationError(message('error.saved_reader_missing'))
         for index, (rel, meta) in enumerate(files.items(), 1):
             member_name = rel if payload else 'koreader/' + rel
             info = zf.getinfo(member_name)
             if info.file_size != meta['size']:
-                raise MigrationError(f'Saved ZIP size mismatch: {rel}')
+                raise MigrationError(message('error.saved_zip_size', path=rel))
             digest = hashlib.sha256()
             progress = ByteProgress(message('progress.verify_file', name=rel), meta['size']) if meta['size'] >= 32 * 1024 * 1024 else None
             with zf.open(member_name) as member:
@@ -2141,9 +2280,9 @@ def verify_saved_archive(archive: Path, manifest: dict, kind: str) -> None:
             if progress:
                 progress.update(0, final=True)
             if digest.hexdigest() != meta['sha256']:
-                raise MigrationError(f'Saved ZIP checksum mismatch: {rel}')
+                raise MigrationError(message('error.saved_zip_checksum', path=rel))
             print_progress(message('progress.verify_members'), index, len(files))
-    log_status(f'Saved archive verified: {archive.name}')
+    log_status(message('scan.saved_verified', name=archive.name))
 
 
 def load_artifact(run: Path, entry: Optional[dict], kind: str):
@@ -2175,28 +2314,28 @@ def source_descriptor(run: Path) -> dict:
     # Import old flat runs conservatively. Require finished manifests and scan metadata.
     reports = list(run.glob('koreader-scan-*.json'))
     if len(reports) != 1:
-        raise MigrationError('Legacy source run requires exactly one scan report.')
+        raise MigrationError(message('error.legacy_scan_count'))
     report = read_json(reports[0])
     mode = report.get('mode')
     if mode not in {'full', 'koreader', 'library'}:
-        raise MigrationError('Legacy run mode is missing or not reusable.')
+        raise MigrationError(message('error.legacy_mode'))
     kr = [p for p in run.glob('koreader-*.manifest.json') if '-pre-migration-' not in p.name]
     library = [p for p in run.glob('library-*.manifest.json') if '-pre-migration-' not in p.name]
     if (mode in {'full', 'koreader'} and len(kr) != 1) or len(library) > 1:
-        raise MigrationError('Legacy source archive pair is missing or ambiguous.')
+        raise MigrationError(message('error.legacy_archive_pair'))
     if report.get('dry_run'):
-        raise MigrationError('A dry-run has no reusable source snapshot.')
+        raise MigrationError(message('error.preview_source_missing'))
     book_count = len(report.get('books', []))
     payload_count = book_count + len(report.get('sidecars', [])) + len(report.get('fonts', []))
     if mode == 'library':
         payload_count += len(report.get('central_metadata', []))
     if payload_count and not library:
-        raise MigrationError('Legacy source payload archive is missing; source snapshot is incomplete.')
+        raise MigrationError(message('error.legacy_payload_missing'))
     kr_manifest = read_json(kr[0]) if kr else None
     source = kr_manifest.get('source', {}) if kr_manifest else {}
     model = source.get('detected_model')
     if not model:
-        raise MigrationError('Legacy source device model cannot be established.')
+        raise MigrationError(message('error.legacy_model_missing'))
     info = DeviceInfo('', model, source.get('koreader_version'), source.get('device_fingerprint_sha256'),
                       source.get('serial_hint'), bool(source.get('device_id_present')),
                       bool(source.get('ai_assistant_config')), len(kr_manifest.get('files', {})),
@@ -2218,7 +2357,7 @@ def build_difference_report(target: Path, source_files: dict, plan: dict, books:
             'target_size': plan['existing'].get(rel, {}).get('size')})
     for label, key in (('identical', 'skip'), ('keep_target', 'conflicts_kept'), ('metadata_skipped', 'metadata_skipped')):
         categories[label] = [{'path': rel, **source_files[rel]} for rel in plan[key]]
-    log_status('Scanning TARGET-only books/fonts within the same discovery scope...')
+    log_status(message('scan.target_only'))
     target_files, target_scan = scan_payload(target, books, fonts, include_metadata=books, include_central_metadata=False,
         include_dirs=scan_options.get('include_dirs') or None,
         exclude_dirs=scan_options.get('exclude_dirs') or None,
@@ -2290,7 +2429,7 @@ def run_catalog(project: Path) -> List[dict]:
 
 def cleanup_plan(project: Path, keep_successful: int = 2) -> dict:
     if keep_successful < 1:
-        raise MigrationError('Keep at least one successful run.')
+        raise MigrationError(message('error.cleanup_keep'))
     records = run_catalog(project)
     successes = sorted([r for r in records if r['status'] == 'success'],
                        key=lambda r: (r['ended_at'] or '', r['run_id']), reverse=True)
@@ -2306,13 +2445,13 @@ def cleanup_plan(project: Path, keep_successful: int = 2) -> dict:
     for record in records:
         reason = None
         if record['run_id'] in keep:
-            reason = 'recent successful run'
+            reason = message('cleanup.reason_recent')
         elif record['run_id'] in dependencies:
-            reason = 'referenced by another run'
+            reason = message('cleanup.reason_dependency')
         elif record['run_id'] in recovery_ids:
-            reason = 'newest successful recovery snapshot for this target device'
+            reason = message('cleanup.reason_recovery')
         elif record['status'] != 'success':
-            reason = 'not a confirmed successful run; may be the only recovery backup'
+            reason = message('cleanup.reason_unconfirmed')
         if reason:
             protected.append({**record, 'reason': reason})
         else:
@@ -2324,7 +2463,7 @@ def cleanup_plan(project: Path, keep_successful: int = 2) -> dict:
 def print_catalog(records: List[dict]):
     ui_emit('catalog.heading')
     for record in records:
-        print(f'{record["run_id"]} | {record["status"]} | {record["operation"]} | {human_bytes(record["bytes"])}')
+        ui_emit('catalog.row', run_id=record["run_id"], status=record["status"], operation=record["operation"], size=human_bytes(record["bytes"]))
     if not records:
         ui_emit('catalog.empty')
 
@@ -2342,12 +2481,12 @@ def cleanup_command(project: Path, keep: int, selected: List[str]) -> int:
     if not selected:
         show(cleanup_plan(project, keep))
         return 0
-    with FileLock(project / '.project.lock', 'Project'):
+    with FileLock(project / '.project.lock', message('lock.project')):
         plan = cleanup_plan(project, keep)
         show(plan)
         allowed = {r['run_id'] for r in plan['candidates']}
         if len(set(selected)) != len(selected) or not set(selected) <= allowed:
-            raise MigrationError('Requested runs are not eligible for cleanup; nothing deleted.')
+            raise MigrationError(message('error.cleanup_ineligible'))
         expected = 'DELETE ' + ','.join(sorted(selected))
         ui_emit('cleanup.confirm', expected=expected, severity='warning')
         if ui_input(message('prompt.confirmation')).strip() != expected:
@@ -2356,11 +2495,11 @@ def cleanup_command(project: Path, keep: int, selected: List[str]) -> int:
         # Recompute protection at the final step; the project lock blocks new dependents.
         allowed = {r['run_id'] for r in cleanup_plan(project, keep)['candidates']}
         if not set(selected) <= allowed:
-            raise MigrationError('Cleanup eligibility changed; nothing deleted.')
+            raise MigrationError(message('error.cleanup_changed'))
         for run_id in selected:
             run = resolve_saved_run(project, run_id)
             if any(p.is_symlink() for p in run.rglob('*')):
-                raise MigrationError('Refusing cleanup of a batch containing symlinks.')
+                raise MigrationError(message('error.cleanup_symlink'))
         for run_id in selected:
             shutil.rmtree(resolve_saved_run(project, run_id))
             ui_emit('cleanup.deleted', run_id=run_id)
@@ -2412,16 +2551,16 @@ def run_main(args) -> int:
         return 0
     project = args.backup_dir.expanduser().resolve()
     if VOLUME_ROOT.resolve() == project or VOLUME_ROOT.resolve() in project.parents:
-        raise MigrationError('Project/backups must be on the Mac, outside /Volumes.')
+        raise MigrationError(message('error.project_location'))
     if (project / 'runs').is_symlink():
-        raise MigrationError('runs/ must not be a symlink.')
+        raise MigrationError(message('error.runs_symlink'))
     if getattr(args, 'list_runs', False):
         print_catalog(run_catalog(project))
         return 0
     if getattr(args, 'cleanup', False):
         return cleanup_command(project, args.keep_successful, [] if args.dry_run else args.delete_run)
     require_macos_tools()
-    with FileLock(project / '.project.lock', 'Project'):
+    with FileLock(project / '.project.lock', message('lock.project')):
         reconcile_interrupted_runs(project)
         run_id = now_stamp() + '-' + uuid.uuid4().hex[:8]
         directory = project / 'runs' / run_id
@@ -2610,7 +2749,7 @@ def restore_saved_target(args, project: Path, run: Path, run_id: str, log_path: 
         if path.exists():
             current_files[rel] = {'size': path.stat().st_size, 'category': previous.get(rel, {}).get('category', 'backup')}
     replacing_kr = bool(descriptor.get('replaced_koreader'))
-    ui_emit('restore.plan', runtime=replacing_kr, restore_count=len(restored), remove_count=len(removed))
+    ui_emit('restore.plan', runtime=display_bool(replacing_kr), restore_count=len(restored), remove_count=len(removed))
     for rel in sorted(restored):
         ui_emit('restore.original', path=rel)
     for rel in sorted(removed):
@@ -2680,14 +2819,14 @@ def restore_saved_target(args, project: Path, run: Path, run_id: str, log_path: 
         try:
             rollback_payload(mount, undo_payload, undo_files, journal)
         except Exception as error:
-            errors.append(str(error))
+            errors.append(exception_detail(error))
         if kr_modified:
             try:
                 rollback_target(kr, kr.parent, undo_kr, undo_manifest)
             except Exception as error:
-                errors.append(str(error))
+                errors.append(exception_detail(error))
         if errors:
-            ui_emit('restore.rollback_errors', detail=message('diagnostic.raw', detail='; '.join(errors)), severity='error')
+            ui_emit('restore.rollback_errors', detail=join_diagnostics(errors), severity='error')
             return 3
         ui_emit('restore.rolled_back')
         return 2
@@ -2736,7 +2875,7 @@ def migrate(args, backup_dir: Path, run_id: str, log_path: Path) -> int:
     conflict = select_conflict_policy(mode, args.conflict)
     source_expected, target_expected = getattr(args, 'source_model', None), getattr(args, 'target_model', None)
     source_slug, target_slug = 'source', 'target'
-    ui_emit('migration.options', mode=mode.upper(), books=books, fonts=fonts, conflict=conflict)
+    ui_emit('migration.options', mode=mode.upper(), books=display_bool(books), fonts=display_bool(fonts), conflict=conflict)
     if dry_run:
         ui_emit('workflow.preview')
         ui_emit('workflow.local_reports')
@@ -2772,7 +2911,7 @@ def migrate(args, backup_dir: Path, run_id: str, log_path: Path) -> int:
     for category in ('books', 'sidecars', 'central_metadata', 'fonts', 'unrecognized', 'skipped_symlinks'):
         ui_emit('workflow.category', category=category, count=len(scan_report[category]))
     for warning in scan_report['warnings']:
-        ui_emit('diagnostic.warning', detail=message('diagnostic.raw', detail=warning), severity='warning')
+        ui_emit('diagnostic.warning', detail=diagnostic_detail(warning), severity='warning')
     report_path = backup_dir / f'koreader-scan-{run_id}.json'
     scan_report.update({'tool_version': VERSION, 'mode': mode, 'source_diagnostics': source_diag,
                         'scan_options': {'include_dirs': args.include_dir, 'exclude_dirs': args.exclude_dir, 'extra_extensions': args.extra_extension}})
@@ -2789,7 +2928,7 @@ def migrate(args, backup_dir: Path, run_id: str, log_path: Path) -> int:
         plugins, warnings = basic_plugin_audit(source_kr)
         ui_emit('diagnostic.plugins', count=len(plugins), warnings=len(warnings))
         for warning in warnings:
-            ui_emit('diagnostic.plugin_warning', detail=message('diagnostic.raw', detail=warning), severity='warning')
+            ui_emit('diagnostic.plugin_warning', detail=diagnostic_detail(warning), severity='warning')
         if dry_run:
             ui_emit('preview.archive_runtime', path=source_zip)
         else:
@@ -2906,7 +3045,7 @@ def migrate_target(args, backup_dir, run_id, log_path, mode, dry_run, full, book
         'koreader': artifact_entry(actual_target_zip), 'payload': artifact_entry(actual_payload_backup),
         'planned_paths': list(plan['copy'])})
     run_phase('awaiting-final-confirmation')
-    ui_emit('workflow.final_plan', runtime=full, count=len(plan["copy"]))
+    ui_emit('workflow.final_plan', runtime=display_bool(full), count=len(plan['copy']))
     ui_emit('workflow.retain_unrelated')
     if not prompt_yes_no(message('confirm.migration')):
         safe_eject(target_mount)
@@ -2969,7 +3108,7 @@ def migrate_target(args, backup_dir, run_id, log_path, mode, dry_run, full, book
         try:
             rollback_payload(target_mount, actual_payload_backup, previous, journal)
         except Exception as error:
-            errors.append(f'Payload: {error}')
+            errors.append(message('recovery.payload_error', detail=exception_detail(error)))
         if kr_modified:
             try:
                 checked_path(target_mount, '.adds/koreader', allow_metadata=True)
@@ -2977,10 +3116,10 @@ def migrate_target(args, backup_dir, run_id, log_path, mode, dry_run, full, book
                 if adds_created and target_adds.exists() and not any(target_adds.iterdir()):
                     target_adds.rmdir()
             except Exception as error:
-                errors.append(f'KOReader: {error}')
+                errors.append(message('recovery.runtime_error', detail=exception_detail(error)))
         if errors:
             for error in errors:
-                ui_emit('recovery.error', detail=message('diagnostic.raw', detail=error), severity='error')
+                ui_emit('recovery.error', detail=diagnostic_detail(error), severity='error')
             ui_emit('recovery.keep_connected')
             return 3
         ui_emit('recovery.complete')

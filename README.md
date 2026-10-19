@@ -147,9 +147,9 @@ SOURCE is ejected before TARGET is requested. Writes require final confirmation;
 
 ## Language support
 
-English (`en`), Traditional Chinese (`zh-Hant`) and Simplified Chinese (`zh-Hans`) are registered. The published 3.3.0-dev.2 ZIP translates help and static previews only. **Development 3.3.0-dev.5 adds partial runtime translation** for menus, device/space checks, shared confirmations, migration/saved-source/target-restore workflows, recovery notices, selected refusal reasons, archive heartbeat/progress and report labels. Low-level errors, detailed scan/comparison output, maintenance reasons and some diagnostics remain English; tool-owned diagnostic log text stays English. Keep `locales/` beside the script, even for English.
+English (`en`), Traditional Chinese (`zh-Hant`) and Simplified Chinese (`zh-Hans`) are registered. The published 3.3.0-dev.2 ZIP translates help and static previews only. **Development 3.3.0-dev.6 catalogs the tool-owned runtime text** across migration, recovery, cleanup, safety errors, per-file progress, warnings and custom argument checks in all three languages. Diagnostic logs and machine values stay English. External diagnostics, Python-generated parser/traceback text and safe startup errors when locale assets cannot load retain their original text. Keep `locales/` beside the script, even for English.
 
-[Language selection and fallback](docs/USAGE.md#language-support). Translation wording and full interface localization still need review and follow-up work. Machine values such as statuses/modes and exact DELETE confirmations do not change with language; filenames and user data are preserved.
+[Language selection and fallback](docs/USAGE.md#language-support). Final human wording review and end-to-end acceptance remain pending. Machine values such as statuses/modes and exact DELETE confirmations do not change with language; filenames and user data are preserved.
 
 ## Documentation
 
@@ -176,7 +176,7 @@ English (`en`), Traditional Chinese (`zh-Hant`) and Simplified Chinese (`zh-Hans
 
 CI covers synthetic fixtures on macOS/Linux and a real macOS `ditto` round trip on temporary directories. It does not certify every device or replace the remaining manual acceptance checklists. The badge tracks push CI on main; review-branch checks are available on the corresponding PR. Detailed fixes and validation belong in CHANGELOG.md and docs/DEVELOPMENT.md.
 
-Interrupted-transfer resume, exact library mirroring, content-assisted discovery, portable hardware settings and full migration-interface translations remain planned work. [Current status and criteria](TRACKER.md) · [Automated evidence](docs/DEVELOPMENT.md#validation-and-release-status).
+Interrupted-transfer resume, exact library mirroring, content-assisted discovery, portable hardware settings and additional interface languages remain planned work. [Current status and criteria](TRACKER.md) · [Automated evidence](docs/DEVELOPMENT.md#validation-and-release-status).
 
 ## Contributing
 
