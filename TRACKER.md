@@ -1,6 +1,6 @@
 # Development tracker
 
-Last reconciled: **2026-10-18**. Tool version: **3.3.0-dev.2** (published experimental pre-release; broader physical acceptance pending).
+Last reconciled: **2026-10-18**. Development version: **3.3.0-dev.3** (KM-014 slice 1); published experimental pre-release: **3.3.0-dev.2**. Broader physical acceptance remains pending.
 
 Status vocabulary: `Queued`, `In progress`, `Ready for test`, `Blocked`, `Done`, `Deferred`. KM-011, KM-005, KM-001 and KM-003 are implemented and ready for user testing; ticket-wide human sign-off remains pending despite scoped KOREADER success. Entries represent planned work, not permission to operate physical devices or delete backups.
 
@@ -17,7 +17,7 @@ Acceptance for every ticket must include standalone CLI operation without AI API
 3. **KM-001**: migrate/restore from verified saved archives.
 4. **KM-003**: backup management and cleanup preview.
 
-These four tickets await human testing/sign-off. See ACCEPTANCE.md. KM-013 is implemented and Ready for test for locale selection, localized help and read-only UI samples. KM-014 through KM-017 remain Queued; actual migration/maintenance localization has not started. Other Queued work is not authorized by this release.
+These four tickets await human testing/sign-off. See ACCEPTANCE.md. KM-013 is implemented and Ready for test for locale selection, localized help and read-only UI samples. KM-014 is In progress: shared output routing slice 1 is ready for testing in 3.3.0-dev.3. Remaining workflow extraction and KM-015 through KM-017 full catalogs/review/expansion work are pending; full translation is not available. Other Queued work is not authorized by this release.
 
 ## Backlog
 
@@ -36,7 +36,7 @@ These four tickets await human testing/sign-off. See ACCEPTANCE.md. KM-013 is im
 | KM-011 | P1 | Ready for test | Execution lock and run status | Prevent concurrent runs targeting the same project/device; recover stale lock safely; durable status transitions (running, success, cancelled, failed, rolled-back, needs-recovery), distinguish interruption from success, update on every exit. Logs alone are insufficient for status. |
 | KM-012 | P2 | Queued | Maintainable project structure and Git hygiene | Tracker, agent instructions, README and portable tests are now present. Git ignore policy, changelog and project-owned macOS fixture test were added with 3.1.0. Public-release privacy guard, documentation, CI and PR helper are implemented. Shared AGENTS.md guidance and native ignored Codex override now separate public project rules from private maintainer context. |
 | KM-013 | P1 | Ready for test | i18n locale foundation | en, zh-Hant, zh-Hans; explicit/env locale resolution, reviewed aliases, JSON catalogs, safe named placeholders/plurals and English fallback; no runtime LLM or network. |
-| KM-014 | P1 | Queued | Localized CLI and English diagnostic output | Separate console/log rendering, localize owned help/prompts/progress/errors and human report labels, stable English machine schemas and additive ui_locale metadata; preserve all migration safety. |
+| KM-014 | P1 | In progress | Localized CLI and English diagnostic output | Separate console/log rendering, localize owned help/prompts/progress/errors and human report labels, stable English machine schemas and additive ui_locale metadata; preserve all migration safety. Slice 1 integrates shared prompts/progress/run/catalog/difference surfaces; remaining diagnostics/menus/errors are inventoried in docs/DEVELOPMENT.md. |
 | KM-015 | P1 | Queued | Initial three reviewed translations | Complete English, Traditional Chinese and Simplified Chinese catalogs; consistent terminology, exact destructive confirmation tokens and human-reviewed safety prompts. |
 | KM-016 | P1 | Queued | Locale validation and multilingual regression | Schema/duplicate-key/coverage/placeholder/control-character checks, exact publication allowlist extensions and CI; equivalent migration/device outcomes in all three locales. |
 | KM-017 | P2 | Queued | Translation contribution and expansion guide | Document CLI selection, packaging, aliases, fallback, supported plural rules and acceptance; new languages require reviewed registry/catalog changes and privacy checks. |
@@ -69,7 +69,7 @@ These four tickets await human testing/sign-off. See ACCEPTANCE.md. KM-013 is im
 
 The [3.3.0-dev.2 experimental pre-release](https://github.com/gh-slee/kobo-koreader-migrate/releases/tag/v3.3.0-dev.2) was published on 2026-10-18 from commit `721e2cad01c7c2811baeb9bd3fff424bba87f275`. Its [main CI](https://github.com/gh-slee/kobo-koreader-migrate/actions/runs/39155468946) passed all six macOS/Ubuntu Python 3.9/3.12/3.14 jobs; the release baseline also passed 123 local tests, self-test, locale and privacy checks. The fixes close read-only statistics connections before safe eject and tolerate already-removed descendants during runtime replacement/recovery. Verified target recovery and saved-source KOREADER transfer completed on connected hardware, with basic KOReader operation confirmed. Broader hardware acceptance and FULL book migration remain pending. KM-011/KM-005/KM-001/KM-003/KM-013 remain Ready for test; this scoped success does not sign off entire tickets. Use ACCEPTANCE.md for verification. A public roadmap describes product work, not authority to access devices or publish changes.
 
-The current development follow-up adds KM-018 local source-package tooling and reconciles release status documentation; these changes are not in the published ZIP. The helper never uploads, creates tags or runs device operations. Local follow-up validation passed 138 tests (15 for packaging), self-test, locale and worktree/history privacy checks. Hosted CI for the helper remains pending publication. The existing release CI result is not evidence for later commits.
+The merged PR #5 follow-up added KM-018 local source-package tooling and reconciles release status documentation; these changes are not in the published ZIP. The helper never uploads, creates tags or runs device operations. Local follow-up validation passed 138 tests (15 for packaging), self-test, locale and worktree/history privacy checks. The helper was merged in PR #5 and merged-main CI 39165980479 passed all six jobs. The existing release CI result is not evidence for later commits.
 
 Target restoration needs a modern target-snapshot.json and target-changes.json plus verified archive pairs. A FULL source snapshot can serve FULL/KOREADER, not LIBRARY; central metadata belongs to the runtime archive. See README.md for compatibility and recovery details.
 
@@ -85,7 +85,7 @@ Local guidance validation passed: 116 fixture tests, self-test, three-locale val
 
 ## Internationalization design and implementation status
 
-Status: KM-013 locale foundation is implemented in 3.3.0-dev.1 and Ready for test. Help descriptions and static UI samples support en/zh-Hant/zh-Hans; actual migration/maintenance output remains English. The rest of this design describes the target full i18n scope, not completed runtime behavior.
+Status: KM-013 locale foundation is implemented in 3.3.0-dev.1 and Ready for test. Help/static samples support en/zh-Hant/zh-Hans. Development 3.3.0-dev.3 also routes shared confirmations/progress/run/catalog/difference messages to localized console output with English diagnostics; remaining workflow messages are still English. The rest of this design describes the target full i18n scope, not completed runtime behavior.
 
 ### Initial language scope
 
@@ -99,7 +99,7 @@ This is a proposed initial product scope, not a claim about market popularity. U
 
 Code, comments, identifiers and canonical developer documentation use English. Reviewed catalogs can localize owned user-facing text. Tool-owned diagnostic log messages remain English.
 
-### First-release behavior
+### Target full-interface behavior
 
 Translate owned menus, prompts, help descriptions, progress labels, safety warnings, cancellation/error guidance, run-catalog headings and difference.txt labels. Preserve raw macOS/Python/subprocess diagnostics as received, with a translated explanatory wrapper when useful. Do not claim arbitrary operating-system output is translated.
 
@@ -115,7 +115,7 @@ SOURCE and TARGET must remain visibly identifiable in translated text, e.g. a tr
 
 ### Proposed CLI and locale resolution
 
-Locale selection/help/list commands now work in 3.3.0-dev.1. Migration commands accept the preference but still use English output; localized migration presentation is deferred:
+Locale selection/help/list commands now work in 3.3.0-dev.1. Migration commands accept the preference; shared presentation is partially localized in 3.3.0-dev.3 while unconverted workflow/diagnostic text remains English:
 
 ```bash
 python3 kobo-koreader-migrate.py --locale en --help
@@ -200,7 +200,7 @@ Add an optional ui_locale field to modern run.json and human-report metadata, wh
 | KM-016 | Validation and regression | check_locales.py, publication allowlist updates for exact locale/doc/tool paths, CI and parameterized language tests. | Catalog errors fail CI; unknown JSON/device files remain blocked; all existing migration tests plus multilingual safety regressions pass. |
 | KM-017 | Documentation and language expansion | English contributor/translation guide, examples, language-status table and manual acceptance instructions. | A contributor can add a supported-rule language using catalog/registry changes and checks; release readiness and pending human review are explicit. |
 
-Implementation order: KM-013 -> KM-014 -> KM-015 -> KM-016 -> KM-017, with focused tests alongside each phase. Test English migration behavior immediately after output routing changes, before integrating all translations. KM-013 is Ready for test. The initial validator, exact publication allowlist and foundation regression checks are implemented as dependencies; the remaining KM-016 migration-translation matrix and KM-014/KM-015/KM-017 work remain Queued.
+Implementation order: KM-013 -> KM-014 -> KM-015 -> KM-016 -> KM-017, with focused tests alongside each phase. Test English migration behavior immediately after output routing changes, before integrating all translations. KM-013 is Ready for test. The initial validator, exact publication allowlist and foundation regression checks are implemented as dependencies; KM-014 slice 1 adds shared routing and a synthetic multilingual safety matrix; remaining extraction, full KM-016 coverage and KM-015/KM-017 work are pending.
 
 ### Verification matrix
 
@@ -240,3 +240,11 @@ The publication allowlist adds only the five exact reviewed Markdown paths; othe
 ## Post-merge documentation
 
 Following PR #1, the default main checkout contains the complete implementation. Installation, CI badge scope, contributor base-branch instructions and release-preparation guidance now target main. This is a documentation-only correction; runtime/catalog behavior and all pending human acceptance tickets remain unchanged. Local checks passed: 100 document link targets, 27 shell examples, live main CI badge, publication privacy/history and whitespace. Runtime, catalogs, scripts and tests are unchanged; the full fixture suite was not repeated for this documentation-only correction.
+
+## KM-014 slice 1 — shared output routing
+
+Status: Ready for controlled testing as a scoped part of In progress KM-014, development 3.3.0-dev.3. The published 3.3.0-dev.2 ZIP/tag is unchanged. Adds explicit message-ID/parameter contracts, scoped console/English-log rendering, shared confirmations/progress/run/catalog/cleanup/difference labels, additive ui_locale metadata and 94 extracted entries per locale. Typed input rules and data/decision schemas stay stable; no LLM or network dependency.
+
+The remaining message inventory is in docs/DEVELOPMENT.md. Mode/identity/conflict menus, detailed errors/diagnostics, raw diagnostic labelling and human catalog review are not complete. Existing physical/manual acceptance tickets retain their status. This slice does not authorize device operations, cleanup of real backups, publication or merge.
+
+Local slice validation passed 154 tests (16 new UI routing/workflow cases), self-test, 3x94 locale validation and worktree/history privacy checks. Hosted CI and manual translation/hardware acceptance for this slice remain pending. These results do not change older tickets to Done.

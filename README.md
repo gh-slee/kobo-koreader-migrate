@@ -25,7 +25,7 @@
 </p>
 
 > [!IMPORTANT]
-> **[3.3.0-dev.2](https://github.com/gh-slee/kobo-koreader-migrate/releases/tag/v3.3.0-dev.2) is a published experimental pre-release, not a stable release.** One connected-device KOREADER migration passed file verification and basic use; broader hardware and feature acceptance remain pending. Device migration requires **macOS**. Locale support currently covers help and static UI samples; migration/maintenance messages remain English.
+> **[3.3.0-dev.2](https://github.com/gh-slee/kobo-koreader-migrate/releases/tag/v3.3.0-dev.2) is a published experimental pre-release, not a stable release.** One connected-device KOREADER migration passed file verification and basic use; broader hardware and feature acceptance remain pending. Device migration requires **macOS**. That published ZIP translates help/static samples only; the development branch has [partial runtime translation](#language-support).
 
 ## Why use it?
 
@@ -147,9 +147,9 @@ SOURCE is ejected before TARGET is requested. Writes require final confirmation;
 
 ## Language support
 
-English (`en`), Traditional Chinese (`zh-Hant`) and Simplified Chinese (`zh-Hans`) are registered. Chinese help descriptions and static UI samples are available; **actual migration/maintenance output remains English**. Keep `locales/` beside the script, even for English.
+English (`en`), Traditional Chinese (`zh-Hant`) and Simplified Chinese (`zh-Hans`) are registered. The published 3.3.0-dev.2 ZIP translates help and static previews only. **Development 3.3.0-dev.3 adds partial runtime translation** for shared confirmations, progress, run status, catalog/cleanup headings and difference reports. Detailed device diagnostics, menu descriptions and remaining workflow messages are still English; tool-owned diagnostic log text stays English. Keep `locales/` beside the script, even for English.
 
-[Language selection and fallback](docs/USAGE.md#language-support). Translation wording and full interface localization still need the planned review/implementation work.
+[Language selection and fallback](docs/USAGE.md#language-support). Translation wording and full interface localization still need review and follow-up work. Machine values such as statuses/modes and exact DELETE confirmations do not change with language; filenames and user data are preserved.
 
 ## Documentation
 

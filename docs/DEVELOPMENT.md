@@ -53,17 +53,17 @@ Tests use temporary synthetic devices and mock USB/eject operations. On macOS, a
 
 Add meaningful tests for changed behavior and safety boundaries. Documentation-only work needs relative-link/anchor checks, CLI/example verification, shell syntax checks and publication privacy review. The publication helper independently runs its mandatory full checks before uploading.
 
-Run scripts/check_locales.py after any catalog/registry change. The three initial catalogs each contain 36 foundation message entries; validation does not substitute for human translation review. Keep mode tokens, flags, JSON schemas and destructive confirmation semantics language-independent.
+Run scripts/check_locales.py after any catalog/registry change. The development catalogs each contain 94 extracted message entries (36 in the published 3.3.0-dev.2 foundation); validation does not substitute for human translation review. Keep mode tokens, flags, JSON schemas and destructive confirmation semantics language-independent.
 
 ## Validation and release status
 
 The [**3.3.0-dev.2 experimental pre-release**](https://github.com/gh-slee/kobo-koreader-migrate/releases/tag/v3.3.0-dev.2) was published on 2026-10-18 from commit `721e2cad01c7c2811baeb9bd3fff424bba87f275`. Its [main CI](https://github.com/gh-slee/kobo-koreader-migrate/actions/runs/39155468946) passed all six macOS/Ubuntu Python 3.9, 3.12 and 3.14 jobs. The release baseline passed 123 local tests, self-test, locale and privacy checks. Connected-device target recovery and saved-source KOREADER transfer passed full manifest verification; basic KOReader operation was confirmed. Broader hardware acceptance, FULL book migration and the remaining manual checklists are still pending. This is not a stable release.
 
-The development branch adds an offline [source-package helper](MAINTAINING.md#local-package-preparation-and-verification) and synthetic package-safety regressions. CI prepares and checks a source ZIP for its checked-out commit without uploading it. This helper is not included in the already published 3.3.0-dev.2 ZIP. Local follow-up validation passed 138 tests (including 15 package tests), self-test, locale and worktree/history privacy checks. Hosted CI for this follow-up is pending publication. Its extracted smoke checks do not rerun the full unit suite or establish hardware acceptance; new changes need their own test results.
+The development branch adds an offline [source-package helper](MAINTAINING.md#local-package-preparation-and-verification) and synthetic package-safety regressions. CI prepares and checks a source ZIP for its checked-out commit without uploading it. This helper is not included in the already published 3.3.0-dev.2 ZIP. Local follow-up validation passed 138 tests (including 15 package tests), self-test, locale and worktree/history privacy checks. The helper was merged as PR #5; its [merged-main CI](https://github.com/gh-slee/kobo-koreader-migrate/actions/runs/39165980479) passed all six jobs. Its extracted smoke checks do not rerun the full unit suite or establish hardware acceptance; new changes need their own test results.
 
 [PR #1](https://github.com/gh-slee/kobo-koreader-migrate/pull/1) merged into main on 2026-10-16 as [564234e](https://github.com/gh-slee/kobo-koreader-migrate/commit/564234e2256bb6a64085cc10a4d3c5535322313e). Its [main-branch CI run](https://github.com/gh-slee/kobo-koreader-migrate/actions/runs/38918881111) passed all six macOS/Ubuntu Python 3.9, 3.12 and 3.14 jobs. Linux checks fixtures only. The pre-merge documentation commit dedc884 passed 117 local tests plus self-test and locale validation, and all twelve push/PR CI jobs.
 
-New changes require fresh validation. Temporary fixtures and the real macOS ditto round trip do not establish hardware compatibility. KM-011/KM-005/KM-001/KM-003/KM-013 remain Ready for test; see [manual acceptance](../ACCEPTANCE.md). KM-014/KM-015 actual migration-interface localization remains queued. Follow the current [CI runs](https://github.com/gh-slee/kobo-koreader-migrate/actions) and [open pull requests](https://github.com/gh-slee/kobo-koreader-migrate/pulls) for subsequent changes.
+New changes require fresh validation. Temporary fixtures and the real macOS ditto round trip do not establish hardware compatibility. KM-011/KM-005/KM-001/KM-003/KM-013 remain Ready for test; see [manual acceptance](../ACCEPTANCE.md). KM-014 shared output routing is in progress with slice 1 ready for controlled testing; full extraction and KM-015 catalog review remain pending. Follow the current [CI runs](https://github.com/gh-slee/kobo-koreader-migrate/actions) and [open pull requests](https://github.com/gh-slee/kobo-koreader-migrate/pulls) for subsequent changes.
 
 ## Coding agents
 
@@ -114,3 +114,24 @@ There is no automated English-language guard. A CJK search can help review canon
 ## Feature and locale work
 
 Use [TRACKER.md](../TRACKER.md) for feature criteria and the i18n design. Follow the requested ticket scope; a backlog entry is not authority to start implementation or access devices. Use [ACCEPTANCE.md](../ACCEPTANCE.md) for human feedback and [CHANGELOG.md](../CHANGELOG.md) for behavior changes. This documentation organization adds no new runtime feature or complete translation claim.
+
+## Shared output routing (KM-014 slice 1)
+
+Development 3.3.0-dev.3 adds a ContextVar-scoped UIOutput adapter. Explicit message IDs and named values render separately for the selected console locale and English diagnostic log. UIMessage retains its English string representation so existing helper contracts and technical comparisons do not depend on the selected language. Do not translate already-formatted output or monkeypatch print/input. A nested ui_session binds the original stdout/stderr plus the run log; it resets in finally on every exit. Emitters bypass LogTee to avoid duplicate/localized log entries. Legacy print/external diagnostics still pass through the tee unchanged until extracted.
+
+UI_MESSAGE_FIELDS inventories the integrated IDs and exact named parameters. Canonical missing/mismatched fields fail at catalog load. Both renderings are computed before either stream is written; all integrated templates are pre-rendered before run creation/device access. A translation formatting failure falls back to English. Filenames, model labels, statuses and other technical data are never translated; original Unicode data can legitimately occur in an English log. Severity and output channel are explicit and preserve stdout/stderr routing. Typed responses are never logged. Shared yes/no defaults, numeric choices and exact cleanup tokens remain unchanged.
+
+| Integrated IDs / surface | Remaining extraction |
+| --- | --- |
+| prompt.*, confirm.* | Physical model free-text prompt; mode/identity/conflict menu questions and option descriptions |
+| progress.* | Spinner/scan/comparison phase sentences and per-file diagnostic lines |
+| run.*, error.summary | Detailed MigrationError text, caught-failure/rollback explanations and pre-run interrupt output |
+| catalog.*, cleanup.* | Cleanup protection reasons and detailed maintenance errors |
+| difference.* | Machine JSON notes remain English; paths/action tokens unchanged |
+| device.waiting/connect_one/detected, migration.success/done | Device inspection, space/metadata/plugin diagnostics, restore completion and remaining workflow notices |
+
+run.json and difference.json gain optional ui_locale metadata. No status/category/phase tokens or recovery schemas are renamed; old runs remain accepted. difference.txt is localized human presentation. Full message extraction, consistent raw-diagnostic labelling and full human catalog review are later KM-014/KM-015 work, not completed by this slice. All text is static UTF-8 JSON and ordinary offline Python code; there is no runtime translator or AI dependency.
+
+Synthetic regressions compare all four modes, saved-source reuse, exact target restore, final default-No, rollback after writes, cleanup tokens and exit states across the three locales. Stream tests cover English logs, Unicode/ascii output, no duplicate tee entries, fallback, parameter contracts and context cleanup. These do not establish physical-device acceptance or human translation sign-off. New hosted CI results require publication of this branch.
+
+Local slice evidence: 154 tests passed (16 new shared-output/workflow tests), self-test, all 94 messages in each of three catalogs and publication worktree/history checks. The existing main CI applies to the merged baseline; hosted CI for this local slice remains pending.

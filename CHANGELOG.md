@@ -1,11 +1,20 @@
 # Changelog
 
+## 3.3.0-dev.3 — unreleased — KM-014 shared output routing slice 1
+
+- Introduce explicit message IDs/parameter contracts and scoped console/English-log rendering. Integrated messages bypass the legacy tee, preserve output channels, flush progress, support non-UTF-8 consoles and never log typed answers.
+- Integrate shared confirmations, progress, run status, catalog/cleanup headings and difference labels; retain English string compatibility for existing helpers. Add 58 static messages per locale (94 total); full workflow extraction and human wording review remain pending.
+- Add optional ui_locale to run.json/difference.json; localize difference.txt while retaining stable category/action tokens and original paths. Old records remain readable.
+- Add synthetic routing, prompt/default/token, all-mode/saved-source/restore equivalence, cancellation, interrupt and rollback tests across en/zh-Hant/zh-Hans. Device semantics and offline standalone requirements remain unchanged.
+- Local validation: 154 tests (16 new shared-output/workflow cases), self-test, 3x94 locale and publication checks passed. Hosted CI and human translation/hardware acceptance remain pending.
+- This is a local development slice, not a new published release or completion of KM-014/KM-015/manual hardware acceptance.
+
 ## Unreleased — maintainer tooling and documentation
 
 - Add offline `scripts/prepare_release.py` prepare/verify commands for explicit Git commits: guarded committed files only, complete runtime/locale assets, ZIP-to-Git byte verification, temporary-extraction smoke checks and local documentation links, SHA256SUMS and local preparation records.
 - Add synthetic source-package safety regressions and CI package preparation. Existing output directories are not overwritten; the helper has no upload, tag or device-operation commands.
 - Reconcile published pre-release, hosted CI and scoped hardware evidence across the README, tracker and guides. This does not complete pending manual acceptance, change migration behavior or replace the already published asset.
-- Local follow-up validation: 138 tests (15 package regressions), self-test, locale and publication checks passed. Hosted CI for these changes remains pending publication.
+- Maintainer follow-up validation: 138 local tests (15 package regressions), self-test, locale and publication checks passed; merged PR #5 main CI passed all six jobs.
 
 ## 3.3.0-dev.2 — 2026-10-18 — published experimental pre-release
 

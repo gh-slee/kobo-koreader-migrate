@@ -771,7 +771,8 @@ class WorkflowTests(MigrationTestCase):
 class CancellationTests(unittest.TestCase):
     def test_normal_cancellation_is_logged_without_error_and_returns_zero(self):
         with tempfile.TemporaryDirectory() as td:
-            args = argparse.Namespace(self_test=False, backup_dir=Path(td))
+            args = argparse.Namespace(self_test=False, backup_dir=Path(td),
+                                      locale='en', locale_bundle=migration.load_locale_bundle('en', {}))
             output = io.StringIO()
             message = "Migration cancelled. No target files were modified."
             with mock.patch.object(migration, "parse_args", return_value=args),                     mock.patch.object(migration, "require_macos_tools"),                     mock.patch.object(migration, "migrate", side_effect=migration.MigrationCancelled(message)),                     mock.patch("sys.stdout", new=output):
@@ -784,7 +785,8 @@ class CancellationTests(unittest.TestCase):
 
     def test_real_migration_error_remains_an_error(self):
         with tempfile.TemporaryDirectory() as td:
-            args = argparse.Namespace(self_test=False, backup_dir=Path(td))
+            args = argparse.Namespace(self_test=False, backup_dir=Path(td),
+                                      locale='en', locale_bundle=migration.load_locale_bundle('en', {}))
             with mock.patch.object(migration, "parse_args", return_value=args),                     mock.patch.object(migration, "require_macos_tools"),                     mock.patch.object(migration, "migrate", side_effect=migration.MigrationError("Checksum failed")),                     mock.patch("sys.stdout", new=io.StringIO()):
                 with self.assertRaises(migration.MigrationError):
                     migration.main()

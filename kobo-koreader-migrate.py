@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-KOReader Kobo Migration Tool v3.3.0-dev.2
+KOReader Kobo Migration Tool v3.3.0-dev.3
 macOS, standard library only.
 
 Supported workflow:
@@ -25,7 +25,9 @@ from __future__ import annotations
 
 import argparse
 import fcntl
-from contextlib import ExitStack, closing
+from contextlib import ExitStack, closing, contextmanager
+from contextvars import ContextVar
+from functools import lru_cache
 import hashlib
 import json
 import os
@@ -46,7 +48,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, Iterable, List, Optional, Tuple
 
-VERSION = "3.3.0-dev.2"
+VERSION = "3.3.0-dev.3"
 DEFAULT_BACKUP_DIR = Path(__file__).resolve().parent
 VOLUME_ROOT = Path("/Volumes")
 
@@ -281,7 +283,7 @@ def load_locale_catalog(root: Path, tag: str, registry: dict, english: Optional[
     messages = data['messages']
     if not messages or len(messages) > 2000:
         raise LocaleError('Locale catalog must contain a bounded message map.')
-    if tag == 'en' and not LOCALE_REQUIRED_IDS <= set(messages):
+    if tag == 'en' and not (LOCALE_REQUIRED_IDS | UI_MESSAGE_FIELDS.keys()) <= set(messages):
         raise LocaleError('Canonical English catalog is missing required messages.')
     if english is not None and (set(messages) - set(english) or (complete and set(messages) != set(english))):
         raise LocaleError('Locale catalog message coverage does not match English.')
@@ -302,6 +304,9 @@ def load_locale_catalog(root: Path, tag: str, registry: dict, english: Optional[
             plural = key == 'preview.file_count'
             if fields != ({'count'} if plural else set()) or isinstance(value, dict) != plural:
                 raise LocaleError('Canonical message placeholders do not match the startup contract.')
+        if tag == 'en' and key in UI_MESSAGE_FIELDS:
+            if not isinstance(value, str) or fields != UI_MESSAGE_FIELDS[key]:
+                raise LocaleError('Canonical message placeholders do not match the UI contract.')
         if english is not None:
             original = english[key]
             reference = original if isinstance(original, str) else original['other']
@@ -390,6 +395,137 @@ def preview_locale_ui(bundle: LocaleBundle) -> None:
 
 
 
+# This slice migrates shared presentation; remaining owned messages stay English.
+UI_MESSAGE_FIELDS = {
+    'ui.partial_notice': set(),
+    'prompt.retry_yes_no': set(), 'prompt.default': set(), 'prompt.selection': set(),
+    'prompt.invalid_selection': set(), 'prompt.confirmation': set(),
+    'run.banner': {'version', 'run_id'}, 'run.log_path': {'path'},
+    'run.cancelled': {'detail'}, 'run.interrupted': set(),
+    'run.stopped': {'kind', 'detail'}, 'error.summary': {'detail'},
+    'progress.files': {'label', 'bar', 'percent', 'done', 'total'},
+    'progress.start': {'label', 'size'},
+    'progress.bytes': {'label', 'percent', 'done', 'total', 'rate', 'elapsed', 'eta'},
+    'progress.hash_file': {'name'}, 'progress.hash_archive': set(),
+    'progress.verify_target': set(), 'progress.hash_payload': set(),
+    'progress.archive_payload': set(), 'progress.copy_payload': set(),
+    'progress.verify_members': set(), 'progress.verify_file': {'name'},
+    'catalog.heading': set(), 'catalog.empty': set(),
+    'cleanup.heading': set(), 'cleanup.empty': set(), 'cleanup.reclaimable': {'size'},
+    'cleanup.protected': {'run_id', 'reason'}, 'cleanup.confirm': {'expected'},
+    'cleanup.cancelled': set(), 'cleanup.deleted': {'run_id'},
+    'difference.title': set(), 'difference.retain': set(),
+    'difference.section': {'label', 'count', 'size'}, 'difference.paths': {'path'},
+    'difference.new': set(), 'difference.overwrite': set(), 'difference.identical': set(),
+    'difference.keep_target': set(), 'difference.metadata_skipped': set(), 'difference.target_only': set(),
+    'confirm.continue': set(), 'confirm.saved_source': set(), 'confirm.restore_target': set(),
+    'confirm.compatibility': set(), 'confirm.migration': set(),
+    'confirm.books': set(), 'confirm.fonts': set(), 'confirm.device': {'role', 'model'},
+    'prompt.source': set(), 'prompt.target': set(),
+    'prompt.restore_target': {'model'}, 'device.waiting': {'role'},
+    'device.connect_one': set(), 'device.detected': {'path'},
+    'migration.success': {'path'}, 'migration.done': set(),
+}
+CURRENT_UI = ContextVar('kobo_migration_ui', default=None)
+
+
+@lru_cache(maxsize=8)
+def _english_output_bundle(root: Path):
+    return load_locale_bundle('en', {}, root)
+
+
+def current_ui():
+    ui = CURRENT_UI.get()
+    return ui if ui is not None else UIOutput(_english_output_bundle(LOCALE_ROOT), preflight=False)
+
+
+class UIMessage(str):
+    """A stable message ID with English string compatibility for existing helpers."""
+    def __new__(cls, key, **values):
+        ui = current_ui()
+        english, _ = ui.render(key, values)
+        result = str.__new__(cls, english)
+        result.key, result.values = key, dict(values)
+        return result
+
+
+def message(key, **values):
+    return UIMessage(key, **values)
+
+
+class UIOutput:
+    """Render console and English diagnostics separately, before writing either."""
+    def __init__(self, bundle, log=None, stdout=None, stderr=None, preflight=True):
+        self.bundle = bundle
+        self.english = LocaleBundle('en', bundle.registry, bundle.english, bundle.english, ())
+        self.log = log
+        self.stdout = sys.stdout if stdout is None else stdout
+        self.stderr = sys.stderr if stderr is None else stderr
+        # Format every integrated message before creating runs or accessing devices.
+        if preflight:
+            for key, fields in UI_MESSAGE_FIELDS.items():
+                self.render(key, {field: 0 for field in fields})
+
+    def text(self, value, english=False):
+        if isinstance(value, UIMessage):
+            pair = self.render(value.key, value.values)
+            return pair[0 if english else 1]
+        return str(value)
+
+    def render(self, key, values):
+        english_values = {key: self.text(value, True) if isinstance(value, UIMessage) else value
+                          for key, value in values.items()}
+        console_values = {key: self.text(value) if isinstance(value, UIMessage) else value
+                          for key, value in values.items()}
+        english = self.english.render(key, **english_values)
+        console = self.bundle.render(key, **console_values)
+        return english, console
+
+    def deliver(self, english, console, *, channel='stdout', severity='info', prefix='', end='\n'):
+        if channel not in {'stdout', 'stderr'} or severity not in {'info', 'warning', 'error'}:
+            raise ValueError('Invalid UI event channel or severity.')
+        stream = self.stderr if channel == 'stderr' else self.stdout
+        locale_console_write(prefix + console + end, stream)
+        if self.log is not None:
+            self.log.write(prefix + english + end)
+            self.log.flush()
+
+    def write(self, value, **presentation):
+        self.deliver(self.text(value, True), self.text(value), **presentation)
+
+    def emit(self, key, *, channel='stdout', severity='info', prefix='', end='\n', **values):
+        english, console = self.render(key, values)
+        self.deliver(english, console, channel=channel, severity=severity, prefix=prefix, end=end)
+
+    def read(self, prompt, suffix=''):
+        self.write(prompt, end=suffix)
+        try:
+            # Never log user responses or patch builtins.input/print.
+            return input()
+        finally:
+            if self.log is not None:
+                self.log.write('\n')
+                self.log.flush()
+
+
+@contextmanager
+def ui_session(bundle, log=None, stdout=None, stderr=None):
+    ui = UIOutput(bundle, log, stdout, stderr)
+    token = CURRENT_UI.set(ui)
+    try:
+        yield ui
+    finally:
+        CURRENT_UI.reset(token)
+
+
+def ui_emit(key, **values):
+    current_ui().emit(key, **values)
+
+
+def ui_input(prompt):
+    return current_ui().read(prompt)
+
+
 def now_stamp() -> str:
     return datetime.now().strftime("%Y%m%d-%H%M%S")
 
@@ -411,28 +547,32 @@ def human_bytes(value: int) -> str:
 def prompt_yes_no(question: str, default: bool = False) -> bool:
     suffix = " [Y/n]: " if default else " [y/N]: "
     while True:
-        ans = input(question + suffix).strip().lower()
+        ans = current_ui().read(question, suffix=suffix).strip().lower()
         if not ans:
             return default
         if ans in {"y", "yes"}:
             return True
         if ans in {"n", "no"}:
             return False
-        print("Please enter y or n.")
+        ui_emit('prompt.retry_yes_no')
 
 
 def choose(question: str, options: List[Tuple[str, str]], default: Optional[str] = None) -> str:
-    print(question)
+    current_ui().write(question)
     for key, label in options:
-        marker = " (default)" if key == default else ""
-        print(f"  {key}) {label}{marker}")
+        ui = current_ui()
+        marker = ' ' + ui.text(message('prompt.default')) if key == default else ''
+        log_marker = ' ' + ui.text(message('prompt.default'), True) if key == default else ''
+        # Numeric choices and model/path values are never translated.
+        ui.deliver(f'  {key}) {ui.text(label, True)}{log_marker}',
+                   f'  {key}) {ui.text(label)}{marker}')
     while True:
-        ans = input("Selection: ").strip()
+        ans = ui_input(message('prompt.selection')).strip()
         if not ans and default is not None:
             return default
         if any(ans == key for key, _ in options):
             return ans
-        print("Invalid selection.")
+        ui_emit('prompt.invalid_selection')
 
 
 def require_macos_tools() -> None:
@@ -457,8 +597,8 @@ def kobo_mounts() -> List[Path]:
 
 def wait_for_single_kobo(role: str) -> Path:
     print()
-    print(f"Waiting for the {role} Kobo...")
-    print("Connect exactly ONE Kobo to the Mac and choose Connect on the Kobo.")
+    ui_emit('device.waiting', role=role)
+    ui_emit('device.connect_one')
     while True:
         mounts = kobo_mounts()
         if len(mounts) > 1:
@@ -466,7 +606,7 @@ def wait_for_single_kobo(role: str) -> Path:
                 "More than one Kobo is mounted. Disconnect all but the requested device."
             )
         if len(mounts) == 1:
-            print(f"Detected Kobo volume: {mounts[0]}")
+            ui_emit('device.detected', path=mounts[0])
             return mounts[0]
         time.sleep(2)
 
@@ -742,7 +882,7 @@ def verify_expected_model(info: DeviceInfo, expected: str, role: str) -> None:
     print('KOReader logs can come from a previous clone; they do not prove the physical model.')
     if detected and detected.casefold() != expected.casefold():
         print(f'WARNING: model hint is {detected}; physical model entered is {expected}.')
-    if not prompt_yes_no(f'Confirm the connected {role} is {expected}?'):
+    if not prompt_yes_no(message('confirm.device', role=role, model=expected)):
         raise MigrationCancelled('Migration cancelled during device confirmation. No target files were modified.')
     print(f'Operator confirmed {role}: {expected}')
 
@@ -796,14 +936,14 @@ def ensure_target_space(target_mount: Path, source_size: int, existing_target_si
 
 
 def log_status(message: str) -> None:
-    print(f"[{datetime.now().strftime('%H:%M:%S')}] {message}", flush=True)
+    current_ui().write(message, prefix=f"[{datetime.now().strftime('%H:%M:%S')}] ")
 
 
 class ByteProgress:
     def __init__(self, label: str, total: int):
         self.label, self.total, self.done = label, total, 0
         self.started = self.last = time.monotonic()
-        log_status(f'{label}: starting ({human_bytes(total)})')
+        log_status(message('progress.start', label=label, size=human_bytes(total)))
 
     def update(self, count: int, final: bool = False) -> None:
         self.done += count
@@ -815,15 +955,16 @@ class ByteProgress:
         percent = self.done / self.total * 100 if self.total else 100
         remaining = max(self.total - self.done, 0) / rate if rate > 0 else None
         eta = f'{remaining:.0f}s' if remaining is not None else 'unknown'
-        log_status(f'{self.label}: {percent:.1f}% | {human_bytes(self.done)}/{human_bytes(self.total)} '
-                   f'| {human_bytes(int(rate))}/s | elapsed {elapsed:.0f}s | ETA {eta}')
+        log_status(message('progress.bytes', label=self.label, percent=f'{percent:.1f}',
+                           done=human_bytes(self.done), total=human_bytes(self.total),
+                           rate=human_bytes(int(rate)), elapsed=f'{elapsed:.0f}', eta=eta))
         self.last = now
 
 
 def sha256_file(path: Path, chunk_size: int = 1024 * 1024) -> str:
     h = hashlib.sha256()
     size = path.stat().st_size
-    progress = ByteProgress(f'Hashing {path.name}', size) if size >= 32 * 1024 * 1024 else None
+    progress = ByteProgress(message('progress.hash_file', name=path.name), size) if size >= 32 * 1024 * 1024 else None
     with path.open("rb") as f:
         while True:
             chunk = f.read(chunk_size)
@@ -855,9 +996,8 @@ def print_progress(label: str, done: int, total: int) -> None:
         pct = min(1.0, done / total)
     filled = int(width * pct)
     bar = "#" * filled + "-" * (width - filled)
-    print(f"\r{label} [{bar}] {pct * 100:5.1f}% ({done}/{total})", end="", flush=True)
-    if done >= total:
-        print()
+    ui_emit('progress.files', label=label, bar=bar, percent=f'{pct * 100:5.1f}',
+            done=done, total=total, prefix='\r', end='\n' if done >= total else '')
 
 
 def validate_tree_symlinks(root: Path) -> None:
@@ -943,7 +1083,7 @@ def build_manifest(
                 "sha256": h.hexdigest(),
                 "size": info.file_size,
             }
-            print_progress("Hashing archive", idx, len(entries))
+            print_progress(message('progress.hash_archive'), idx, len(entries))
 
     manifest = {
         "strict_source": strict_source,
@@ -1079,7 +1219,7 @@ def verify_restored_tree(target_koreader: Path, manifest: dict) -> None:
         actual = sha256_file(p)
         if actual != meta["sha256"]:
             raise MigrationError(f"Restore verification failed; checksum mismatch: {rel}")
-        print_progress("Verifying target", idx, len(items))
+        print_progress(message('progress.verify_target'), idx, len(items))
 
     print("Full SHA-256 target verification: OK")
 
@@ -1340,7 +1480,7 @@ def hash_payload(mount: Path, files: dict) -> dict:
         if path.stat().st_size != meta['size']:
             raise MigrationError(f'Source changed during scan: {rel}')
         result[rel] = {**meta, 'sha256': sha256_file(path)}
-        print_progress('Hashing source payload', idx, len(files))
+        print_progress(message('progress.hash_payload'), idx, len(files))
     return {'files': result}
 
 
@@ -1353,7 +1493,7 @@ def create_payload_archive(mount: Path, files: dict, archive: Path) -> dict:
             with path.open('rb') as src, zf.open(rel, 'w', force_zip64=True) as dst:
                 copy_with_progress(src, dst, f'Archiving {rel}', meta['size'])
             digest = hashlib.sha256()
-            progress = ByteProgress(f'Verifying archive {rel}', meta['size']) if meta['size'] >= 32 * 1024 * 1024 else None
+            progress = ByteProgress(message('progress.verify_file', name=rel), meta['size']) if meta['size'] >= 32 * 1024 * 1024 else None
             with zf.open(rel) as member:
                 for chunk in iter(lambda: member.read(1024 * 1024), b''):
                     digest.update(chunk)
@@ -1363,7 +1503,7 @@ def create_payload_archive(mount: Path, files: dict, archive: Path) -> dict:
                 progress.update(0, final=True)
             if digest.hexdigest() != meta['sha256']:
                 raise MigrationError(f'Source changed during archive: {rel}')
-            print_progress('Archiving payload', idx, len(files))
+            print_progress(message('progress.archive_payload'), idx, len(files))
     manifest.update({'tool_version': VERSION, 'created_at': iso_now(),
                      'archive_sha256': sha256_file(archive)})
     archive.with_suffix('.manifest.json').write_text(json.dumps(manifest, indent=2), encoding='utf-8')
@@ -1445,7 +1585,7 @@ def restore_payload(target: Path, archive: Path, files: dict, journal: dict) -> 
                 copy_with_progress(src, dst, f'Copying {rel}', meta['size'])
             if path.stat().st_size != meta['size'] or sha256_file(path) != meta['sha256']:
                 raise MigrationError(f'Payload verification failed: {rel}')
-            print_progress('Copying and verifying payload', idx, len(files))
+            print_progress(message('progress.copy_payload'), idx, len(files))
 
 
 def rollback_payload(target: Path, backup: Optional[Path], previous: dict, journal: dict) -> None:
@@ -1728,6 +1868,7 @@ class RunState:
         self.directory = directory
         self.data = {'schema_version': 1, 'tool_version': VERSION, 'run_id': run_id,
                      'operation': operation, 'status': 'running', 'phase': 'starting',
+                     'ui_locale': current_ui().bundle.tag,
                      'pid': os.getpid(), 'started_at': iso_now(), 'updated_at': iso_now(),
                      'target_modified': False, 'dependencies': []}
         self.update()
@@ -1840,7 +1981,7 @@ def verify_saved_archive(archive: Path, manifest: dict, kind: str) -> None:
             if info.file_size != meta['size']:
                 raise MigrationError(f'Saved ZIP size mismatch: {rel}')
             digest = hashlib.sha256()
-            progress = ByteProgress('Verifying ' + rel, meta['size']) if meta['size'] >= 32 * 1024 * 1024 else None
+            progress = ByteProgress(message('progress.verify_file', name=rel), meta['size']) if meta['size'] >= 32 * 1024 * 1024 else None
             with zf.open(member_name) as member:
                 for chunk in iter(lambda: member.read(1024 * 1024), b''):
                     digest.update(chunk)
@@ -1850,7 +1991,7 @@ def verify_saved_archive(archive: Path, manifest: dict, kind: str) -> None:
                 progress.update(0, final=True)
             if digest.hexdigest() != meta['sha256']:
                 raise MigrationError(f'Saved ZIP checksum mismatch: {rel}')
-            print_progress('Verifying saved members', index, len(files))
+            print_progress(message('progress.verify_members'), index, len(files))
     log_status(f'Saved archive verified: {archive.name}')
 
 
@@ -1951,7 +2092,7 @@ def build_difference_report(target: Path, source_files: dict, plan: dict, books:
                       'source_bytes': 0 if label == 'target_only' else sum(e.get('size', 0) for e in entries),
                       'target_bytes': sum((e.get('target_size') or e.get('size', 0)) for e in entries)}
                for label, entries in categories.items()}
-    return {'schema_version': 1, 'created_at': iso_now(), 'summary': summary,
+    return {'schema_version': 1, 'created_at': iso_now(), 'ui_locale': current_ui().bundle.tag, 'summary': summary,
             'files': categories, 'book_groups': list(groups.values()),
             'scope': scan_options, 'notes': ['Target-only files are retained; mirror deletion is not enabled.',
             'Discovery uses the same supported extensions and selected roots; this is not a complete disk inventory.']}
@@ -1959,16 +2100,18 @@ def build_difference_report(target: Path, source_files: dict, plan: dict, books:
 
 def write_difference(run: Path, difference: dict):
     atomic_json(run / 'difference.json', difference)
-    lines = ['MIGRATION DIFFERENCE REPORT', 'Target-only files will be retained.', '']
+    ui = current_ui()
+    lines = [ui.text(message('difference.title')), ui.text(message('difference.retain')), '']
     for label, entries in difference['files'].items():
         summary = difference['summary'][label]
-        lines.append(f'{label.upper()}: {summary["count"]} files; {human_bytes(summary["bytes"])}')
+        category = message('difference.' + label)
+        lines.append(ui.text(message('difference.section', label=category, count=summary['count'],
+                                     size=human_bytes(summary['bytes']))))
         lines.extend('  ' + entry['path'] for entry in entries)
         lines.append('')
+        ui_emit('difference.section', label=category, count=summary['count'], size=human_bytes(summary['bytes']))
     (run / 'difference.txt').write_text('\n'.join(lines), encoding='utf-8')
-    for label, data in difference['summary'].items():
-        print(f'  {label}: {data["count"]} files, {human_bytes(data["bytes"])}')
-    print(f'Difference reports: {run / "difference.txt"} and difference.json')
+    ui_emit('difference.paths', path=run / 'difference.txt')
 
 
 def run_catalog(project: Path) -> List[dict]:
@@ -2028,23 +2171,23 @@ def cleanup_plan(project: Path, keep_successful: int = 2) -> dict:
 
 
 def print_catalog(records: List[dict]):
-    print('RUN ID | STATUS | OPERATION | SIZE')
+    ui_emit('catalog.heading')
     for record in records:
         print(f'{record["run_id"]} | {record["status"]} | {record["operation"]} | {human_bytes(record["bytes"])}')
     if not records:
-        print('No saved runs.')
+        ui_emit('catalog.empty')
 
 
 def cleanup_command(project: Path, keep: int, selected: List[str]) -> int:
     def show(plan):
-        print('CLEANUP PREVIEW (no deletion unless runs are explicitly selected and confirmed)')
+        ui_emit('cleanup.heading')
         if plan['candidates']:
             print_catalog(plan['candidates'])
         else:
-            print('No eligible cleanup candidates.')
-        print(f'Reclaimable: {human_bytes(plan["reclaimable_bytes"])}')
+            ui_emit('cleanup.empty')
+        ui_emit('cleanup.reclaimable', size=human_bytes(plan['reclaimable_bytes']))
         for record in plan['protected']:
-            print(f'Protected {record["run_id"]}: {record["reason"]}')
+            ui_emit('cleanup.protected', run_id=record['run_id'], reason=record['reason'])
     if not selected:
         show(cleanup_plan(project, keep))
         return 0
@@ -2055,9 +2198,9 @@ def cleanup_command(project: Path, keep: int, selected: List[str]) -> int:
         if len(set(selected)) != len(selected) or not set(selected) <= allowed:
             raise MigrationError('Requested runs are not eligible for cleanup; nothing deleted.')
         expected = 'DELETE ' + ','.join(sorted(selected))
-        print(f'Type exactly "{expected}" to delete these whole batches permanently.')
-        if input('Confirmation: ').strip() != expected:
-            print('Cleanup cancelled; nothing deleted.')
+        ui_emit('cleanup.confirm', expected=expected, severity='warning')
+        if ui_input(message('prompt.confirmation')).strip() != expected:
+            ui_emit('cleanup.cancelled')
             return 0
         # Recompute protection at the final step; the project lock blocks new dependents.
         allowed = {r['run_id'] for r in cleanup_plan(project, keep)['candidates']}
@@ -2069,7 +2212,7 @@ def cleanup_command(project: Path, keep: int, selected: List[str]) -> int:
                 raise MigrationError('Refusing cleanup of a batch containing symlinks.')
         for run_id in selected:
             shutil.rmtree(resolve_saved_run(project, run_id))
-            print(f'Deleted whole batch: {run_id}')
+            ui_emit('cleanup.deleted', run_id=run_id)
     return 0
 
 
@@ -2086,8 +2229,18 @@ def reconcile_interrupted_runs(project: Path):
 
 
 def main() -> int:
-    global CURRENT_RUN, CURRENT_LOCKS
     args = parse_args()
+    with ui_session(args.locale_bundle):
+        try:
+            return run_main(args)
+        except MigrationError as exc:
+            ui_emit('error.summary', detail=str(exc), channel='stderr', severity='error')
+            exc.ui_reported = True
+            raise
+
+
+def run_main(args) -> int:
+    global CURRENT_RUN, CURRENT_LOCKS
     if getattr(args, 'list_locales', False):
         bundle = args.locale_bundle
         lines = [bundle.render('cli.locales_heading')]
@@ -2098,7 +2251,7 @@ def main() -> int:
         preview_locale_ui(args.locale_bundle)
         return 0
     if getattr(args, 'locale', 'en') != 'en':
-        locale_console_write('NOTE: Locale foundation only; migration and maintenance output remains English.\n', sys.stderr)
+        ui_emit('ui.partial_notice', channel='stderr')
     if args.self_test:
         self_test()
         return 0
@@ -2125,35 +2278,36 @@ def main() -> int:
         try:
             with log_path.open('x', encoding='utf-8', buffering=1) as log:
                 stdout, stderr = sys.stdout, sys.stderr
-                sys.stdout, sys.stderr = LogTee(stdout, log), LogTee(stderr, log)
-                try:
-                    print(f'KOReader Kobo Migration Tool v{VERSION}; run {run_id}')
-                    print(f'Log: {log_path}')
-                    if operation == 'restore-target':
-                        code = restore_saved_target(args, project, directory, run_id, log_path)
-                    elif operation == 'saved-source':
-                        code = migrate_saved_source(args, project, directory, run_id, log_path)
-                    else:
-                        code = migrate(args, directory, run_id, log_path)
-                    status = {2: 'rolled-back', 3: 'needs-recovery'}.get(code)
-                    if status is None:
-                        status = 'audited' if args.dry_run or state.data.get('dry_run') else 'success'
-                    state.finish(status, exit_code=code)
-                    return code
-                except MigrationCancelled as exc:
-                    log_status(str(exc))
-                    state.finish('cancelled', exit_code=0)
-                    return 0
-                except KeyboardInterrupt:
-                    log_status('Interrupted by user. Review the run status and preceding device messages.')
-                    state.finish('needs-recovery' if state.data['target_modified'] else 'interrupted', exit_code=130)
-                    return 130
-                except BaseException as exc:
-                    print(f'Run stopped: {type(exc).__name__}: {exc}')
-                    state.finish('needs-recovery' if state.data['target_modified'] else 'failed', exit_code=1)
-                    raise
-                finally:
-                    sys.stdout, sys.stderr = stdout, stderr
+                with ui_session(args.locale_bundle, log, stdout, stderr):
+                    sys.stdout, sys.stderr = LogTee(stdout, log), LogTee(stderr, log)
+                    try:
+                        ui_emit('run.banner', version=VERSION, run_id=run_id)
+                        ui_emit('run.log_path', path=log_path)
+                        if operation == 'restore-target':
+                            code = restore_saved_target(args, project, directory, run_id, log_path)
+                        elif operation == 'saved-source':
+                            code = migrate_saved_source(args, project, directory, run_id, log_path)
+                        else:
+                            code = migrate(args, directory, run_id, log_path)
+                        status = {2: 'rolled-back', 3: 'needs-recovery'}.get(code)
+                        if status is None:
+                            status = 'audited' if args.dry_run or state.data.get('dry_run') else 'success'
+                        state.finish(status, exit_code=code)
+                        return code
+                    except MigrationCancelled as exc:
+                        ui_emit('run.cancelled', detail=str(exc))
+                        state.finish('cancelled', exit_code=0)
+                        return 0
+                    except KeyboardInterrupt:
+                        ui_emit('run.interrupted', severity='warning')
+                        state.finish('needs-recovery' if state.data['target_modified'] else 'interrupted', exit_code=130)
+                        return 130
+                    except BaseException as exc:
+                        ui_emit('run.stopped', kind=type(exc).__name__, detail=str(exc), severity='error')
+                        state.finish('needs-recovery' if state.data['target_modified'] else 'failed', exit_code=1)
+                        raise
+                    finally:
+                        sys.stdout, sys.stderr = stdout, stderr
         finally:
             CURRENT_LOCKS.close()
             CURRENT_RUN, CURRENT_LOCKS = None, None
@@ -2236,7 +2390,7 @@ def migrate_saved_source(args, project: Path, run: Path, run_id: str, log_path: 
     run_phase('waiting-for-target', mode=mode, dry_run=dry_run)
     print(f'Using verified saved SOURCE {saved.name}: {source_expected} -> TARGET')
     print('Only connect TARGET. Original source device is not required.')
-    if not prompt_yes_no('Continue using this saved source snapshot?'):
+    if not prompt_yes_no(message('confirm.saved_source')):
         raise MigrationCancelled('Migration cancelled. No target files were modified.')
     return migrate_target(args, run, run_id, log_path, mode, dry_run, mode in {'full', 'koreader'},
                           books, fonts, conflict, info, source_expected, target_expected, target_slug,
@@ -2281,7 +2435,7 @@ def restore_saved_target(args, project: Path, run: Path, run_id: str, log_path: 
         raise MigrationError('Exact target restore requires a known model and original device fingerprint.')
     print(f'RESTORE TARGET SNAPSHOT from {saved.name}: {expected}')
     print('This restores the old TARGET state, not the SOURCE migration snapshot.')
-    input(f'Plug in the original TARGET ({expected}), then press Return...')
+    ui_input(message('prompt.restore_target', model=expected))
     mount = wait_for_single_kobo('RESTORE TARGET')
     acquire_device(mount, device_fingerprint(mount)[0])
     confirm_device(mount, original.fingerprint_sha256)
@@ -2328,7 +2482,7 @@ def restore_saved_target(args, project: Path, run: Path, run_id: str, log_path: 
     atomic_json(run / 'target-snapshot.json', {'schema_version': 1, 'role': 'target', 'device': asdict(info),
         'confirmed_model': expected, 'replaced_koreader': replacing_kr, 'had_koreader': kr.is_dir(), 'had_adds': kr.parent.exists(), 'koreader': artifact_entry(undo_kr),
         'payload': artifact_entry(undo_payload), 'planned_paths': sorted(set(touched) | set(restored))})
-    if not prompt_yes_no('Proceed with restoring this TARGET snapshot (including listed removals)?'):
+    if not prompt_yes_no(message('confirm.restore_target')):
         safe_eject(mount)
         raise MigrationCancelled('Target restore cancelled. No target files were modified.')
     journal = {'touched': [], 'created_dirs': [], '_mount': mount}
@@ -2420,8 +2574,8 @@ def migrate(args, backup_dir: Path, run_id: str, log_path: Path) -> int:
             raise MigrationError('KOREADER only migrates the entire KOReader directory. Use FULL or LIBRARY to copy books/fonts.')
         books, fonts = False, False
     else:
-        books = args.books if args.books is not None else prompt_yes_no('Include ebooks and reading data?', default=True)
-        fonts = args.fonts if args.fonts is not None else prompt_yes_no('Include root fonts/?', default=False)
+        books = args.books if args.books is not None else prompt_yes_no(message('confirm.books'), default=True)
+        fonts = args.fonts if args.fonts is not None else prompt_yes_no(message('confirm.fonts'), default=False)
     if not full and not books and not fonts:
         raise MigrationError('LIBRARY requires books and/or fonts.')
     conflict = select_conflict_policy(mode, args.conflict)
@@ -2433,9 +2587,9 @@ def migrate(args, backup_dir: Path, run_id: str, log_path: Path) -> int:
         print('Local scan reports and execution logs will be saved.')
     print('Disconnect both Kobos. Connect only the requested device.')
     print('Archives may contain credentials; keep them private.')
-    if not prompt_yes_no('Continue with SOURCE -> TARGET migration?'):
+    if not prompt_yes_no(message('confirm.continue')):
         raise MigrationCancelled('Migration cancelled. No target files were modified.')
-    input('Plug in SOURCE, then press Return...')
+    ui_input(message('prompt.source'))
     source_mount = wait_for_single_kobo('SOURCE')
     ensure_local_backup(backup_dir, source_mount.resolve())
     source_kr = checked_path(source_mount, '.adds/koreader', allow_metadata=True)
@@ -2509,7 +2663,7 @@ def migrate_target(args, backup_dir, run_id, log_path, mode, dry_run, full, book
                    conflict, source_info, source_expected, target_expected, target_slug,
                    source_zip, source_manifest_path, source_manifest, payload_zip,
                    payload_manifest, scanned, source_diag, scan_report, report_path):
-    input('Plug in TARGET, then press Return...')
+    ui_input(message('prompt.target'))
     target_mount = wait_for_single_kobo('TARGET')
     ensure_local_backup(backup_dir, target_mount.resolve())
     target_kr = checked_path(target_mount, '.adds/koreader', allow_metadata=True)
@@ -2525,7 +2679,7 @@ def migrate_target(args, backup_dir, run_id, log_path, mode, dry_run, full, book
     require_device_fingerprint(target_info)
     target_expected = confirm_role_model(target_info, target_expected, 'TARGET')
     run_phase('planning-target', target_model=target_expected)
-    if full and not prompt_yes_no('Confirm the SOURCE KOReader build is compatible with this TARGET hardware?', default=False):
+    if full and not prompt_yes_no(message('confirm.compatibility'), default=False):
         raise MigrationCancelled('Runtime compatibility not confirmed. No target files were modified.')
     if (source_info.fingerprint_sha256 and target_info.fingerprint_sha256
             and source_info.fingerprint_sha256 == target_info.fingerprint_sha256):
@@ -2596,7 +2750,7 @@ def migrate_target(args, backup_dir, run_id, log_path, mode, dry_run, full, book
     run_phase('awaiting-final-confirmation')
     print(f'Target FULL replacement: {full}; payload writes: {len(plan["copy"])}')
     print('Only planned paths are affected; unrelated library files are retained.')
-    if not prompt_yes_no('Proceed with the planned migration?'):
+    if not prompt_yes_no(message('confirm.migration')):
         safe_eject(target_mount)
         raise MigrationCancelled('Migration cancelled. No target files were modified. Target safely ejected; backups retained.')
     journal = {'touched': [], 'created_dirs': [], '_mount': target_mount}
@@ -2673,11 +2827,11 @@ def migrate_target(args, backup_dir, run_id, log_path, mode, dry_run, full, book
             return 3
         print('Automatic rollback succeeded. Target left connected for inspection.')
         return 2
-    print(f'MIGRATION SUCCESSFUL. Result: {result_path}')
+    ui_emit('migration.success', path=result_path)
     print(f'Missing literal references after migration: {len(after["missing_references"])}')
     run_phase('ejecting-target')
     safe_eject(target_mount)
-    print('DONE. You may unplug the target Kobo.')
+    ui_emit('migration.done')
     return 0
 
 
@@ -2688,5 +2842,6 @@ if __name__ == "__main__":
         print("\nCancelled by user.")
         raise SystemExit(130)
     except MigrationError as exc:
-        print(f"\nERROR: {exc}", file=sys.stderr)
+        if not getattr(exc, "ui_reported", False):
+            print(f"\nERROR: {exc}", file=sys.stderr)
         raise SystemExit(1)
