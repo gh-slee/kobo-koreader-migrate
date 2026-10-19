@@ -19,7 +19,7 @@ This is the shared project guidance for coding agents. Human usage belongs in RE
 - Never evaluate device Lua or execute copied plugins. Keep path, ZIP, symlink, integrity, lock and rollback protections intact.
 - Keep normal cancellation distinct from migration and recovery errors. Do not selectively preserve hardware settings or merge reading metadata without an implemented, tested policy.
 - Keep the stable filename kobo-koreader-migrate.py; record versions in code/logs/JSON. Generated data stays in runs/<run-id>/ under the selected project root.
-- KM-014 slices 1/2/3 route shared prompts/menus, device/space checks, migration/restore/recovery workflows, selected refusals and progress/report labels to localized console output and English logs. Keep structured exception args English; label unconverted diagnostic details without translating them. Low-level errors, detailed scan/comparison and maintenance text remain pending. Use explicit IDs, never post-process rendered strings; full translation/human review is incomplete.
+- Runtime UI after locale loading uses explicit catalog IDs for owned errors/prompts/progress/warnings/cleanup reasons and custom parser checks. Keep exception args, saved warning/reason strings, machine tokens and diagnostic logs English. Preserve structured children through diagnostic_detail/join_diagnostics; never infer IDs from rendered text. Raw external diagnostics, Python parser/traceback text and locale-bootstrap failures are deliberate original-text boundaries. Human wording/hardware acceptance remains pending.
 
 ## Verify changes
 

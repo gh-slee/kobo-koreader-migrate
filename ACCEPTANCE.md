@@ -150,3 +150,14 @@ Status: Ready for controlled testing of this slice; KM-014 remains In progress. 
 - In temporary fixtures, compare status/exit codes and affected paths across all three locales. SOURCE remains unchanged; changed-device guards allow no further writes; retained snapshots must stay available.
 - Pre-run interruption should print one localized message, retain exit 130 and clear the UI context. An interrupt before locale parsing can still use English.
 - Low-level errors, detailed scan/comparison output, maintenance reasons/errors and startup/argparse messages are still pending extraction. Record manual wording feedback separately; this slice does not complete full translation or hardware acceptance.
+
+## Combined localization acceptance (3.3.0-dev.6)
+
+Status: KM-014/KM-015/KM-016 Ready for test. Complete the implementation and run automated checks first; combine human language and functional acceptance in one final round. Prior merges/CI and the editorial pass do not sign off these tickets.
+
+- Review all 371 entries in each en/zh-Hant/zh-Hans catalog, with special attention to negation, default-No, backup-before-overwrite, retained files, snapshot restore versus rollback/manual recovery and exact DELETE RUN_ID. Keep y/yes/n/no and numeric choices unchanged.
+- Exercise owned errors, per-file progress, cleanup protection reasons, warnings and custom CLI refusals. Compare console and English log, including preserved Unicode paths. Ensure no duplicate output or typed-answer logging.
+- Confirm English JSON/exception/warning/reason/lock-label data and actual bool values stay equivalent across languages. A raw warning loaded from older JSON must remain raw without guessing a translation ID.
+- Validate final default-No, same/changed-device guards, malformed archives, insufficient space, lock refusal and successful/blocked/failed rollback using disposable fixtures. Do not induce failures on real readers.
+- Expect safe English bootstrap diagnostics when catalogs cannot load, original Python-generated argparse/traceback messages, technical tokens and raw external diagnostics. These are deliberate boundaries, not unreviewed translation gaps.
+- Finish the existing mode, difference, saved-source, exact-restore, cleanup-preview and package checklists using the final reviewed build. Record human results together and retain recovery backups until sign-off.

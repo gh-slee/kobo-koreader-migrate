@@ -1,6 +1,6 @@
 # Development tracker
 
-Last reconciled: **2026-10-19**. Development version: **3.3.0-dev.5** (KM-014 slice 3); published experimental pre-release: **3.3.0-dev.2**. Broader physical acceptance remains pending.
+Last reconciled: **2026-10-19**. Development version: **3.3.0-dev.6** (owned-runtime localization completion); published experimental pre-release: **3.3.0-dev.2**. Broader physical acceptance remains pending.
 
 Status vocabulary: `Queued`, `In progress`, `Ready for test`, `Blocked`, `Done`, `Deferred`. KM-011, KM-005, KM-001 and KM-003 are implemented and ready for user testing; ticket-wide human sign-off remains pending despite scoped KOREADER success. Entries represent planned work, not permission to operate physical devices or delete backups.
 
@@ -17,7 +17,7 @@ Acceptance for every ticket must include standalone CLI operation without AI API
 3. **KM-001**: migrate/restore from verified saved archives.
 4. **KM-003**: backup management and cleanup preview.
 
-These four tickets await human testing/sign-off. See ACCEPTANCE.md. KM-013 is implemented and Ready for test for locale selection, localized help and read-only UI samples. KM-014 is In progress: shared routing, menu/device/space and core workflow/recovery slices 1/2/3 are ready for testing in 3.3.0-dev.5. Remaining workflow extraction and KM-015 through KM-017 full catalogs/review/expansion work are pending; full translation is not available. Other Queued work is not authorized by this release.
+These four tickets await human testing/sign-off. See ACCEPTANCE.md. KM-013 is implemented and Ready for test for locale selection, localized help and read-only UI samples. KM-014 owned-runtime extraction, KM-015 three-catalog editorial work and KM-016 validator/regression work are Ready for test in 3.3.0-dev.6. Human wording and end-to-end acceptance are deferred to the combined final round. Bootstrap/framework/external output remains an explicit original-text boundary; KM-017 language-expansion guidance is queued. Other Queued work is not authorized by this release.
 
 ## Backlog
 
@@ -36,9 +36,9 @@ These four tickets await human testing/sign-off. See ACCEPTANCE.md. KM-013 is im
 | KM-011 | P1 | Ready for test | Execution lock and run status | Prevent concurrent runs targeting the same project/device; recover stale lock safely; durable status transitions (running, success, cancelled, failed, rolled-back, needs-recovery), distinguish interruption from success, update on every exit. Logs alone are insufficient for status. |
 | KM-012 | P2 | Queued | Maintainable project structure and Git hygiene | Tracker, agent instructions, README and portable tests are now present. Git ignore policy, changelog and project-owned macOS fixture test were added with 3.1.0. Public-release privacy guard, documentation, CI and PR helper are implemented. Shared AGENTS.md guidance and native ignored Codex override now separate public project rules from private maintainer context. |
 | KM-013 | P1 | Ready for test | i18n locale foundation | en, zh-Hant, zh-Hans; explicit/env locale resolution, reviewed aliases, JSON catalogs, safe named placeholders/plurals and English fallback; no runtime LLM or network. |
-| KM-014 | P1 | In progress | Localized CLI and English diagnostic output | Separate console/log rendering, localize owned help/prompts/progress/errors and human report labels, stable English machine schemas and additive ui_locale metadata; preserve all migration safety. Slices 1/2 integrate shared prompts, menus, basic device/model/space checks, progress/run/catalog/difference surfaces; remaining detailed diagnostics/errors/workflow text is inventoried in docs/DEVELOPMENT.md. |
-| KM-015 | P1 | Queued | Initial three reviewed translations | Complete English, Traditional Chinese and Simplified Chinese catalogs; consistent terminology, exact destructive confirmation tokens and human-reviewed safety prompts. |
-| KM-016 | P1 | Queued | Locale validation and multilingual regression | Schema/duplicate-key/coverage/placeholder/control-character checks, exact publication allowlist extensions and CI; equivalent migration/device outcomes in all three locales. |
+| KM-014 | P1 | Ready for test | Localized CLI and English diagnostic output | Separate console/log rendering, localize owned help/prompts/progress/errors and human report labels, stable English machine schemas and additive ui_locale metadata; preserve all migration safety. Owned runtime extraction completed in 3.3.0-dev.6; source coverage prevents uncatalogued runtime errors/status lines. Bootstrap/framework/external boundaries and final acceptance are documented in docs/DEVELOPMENT.md. |
+| KM-015 | P1 | Ready for test | Initial three reviewed translations | Complete English, Traditional Chinese and Simplified Chinese catalogs; consistent terminology and exact destructive confirmation tokens. Three-catalog editorial pass completed; human safety-wording sign-off awaits combined acceptance. |
+| KM-016 | P1 | Ready for test | Locale validation and multilingual regression | Schema/duplicate-key/coverage/placeholder/control-character checks, exact publication allowlist extensions and CI; equivalent migration/device outcomes in all three locales. |
 | KM-017 | P2 | Queued | Translation contribution and expansion guide | Document CLI selection, packaging, aliases, fallback, supported plural rules and acceptance; new languages require reviewed registry/catalog changes and privacy checks. |
 | KM-018 | P1 | Ready for test | Local source package preparation and verification | Package only guarded files from an explicit Git commit; require complete locale assets, verify ZIP bytes against Git, smoke-test a temporary extraction, check local doc links, generate SHA256SUMS and local metadata; no overwrite, network, device access or publication. Development change; absent from the published 3.3.0-dev.2 asset. |
 
@@ -85,7 +85,7 @@ Local guidance validation passed: 116 fixture tests, self-test, three-locale val
 
 ## Internationalization design and implementation status
 
-Status: KM-013 locale foundation is implemented in 3.3.0-dev.1 and Ready for test. Help/static samples support en/zh-Hant/zh-Hans. Development 3.3.0-dev.5 also routes core workflow/recovery and selected refusals, menus/basic device/model/space checks and shared confirmations/progress/run/catalog/difference messages to localized console output with English diagnostics; remaining workflow messages are still English. The rest of this design describes the target full i18n scope, not completed runtime behavior.
+Status: KM-013 locale foundation is implemented in 3.3.0-dev.1 and Ready for test. Help/static samples support en/zh-Hant/zh-Hans. Development 3.3.0-dev.6 catalogs all owned runtime text with English diagnostics; bootstrap/framework/external messages retain original text by design. The rest of this design describes the target full i18n scope, not completed runtime behavior.
 
 ### Initial language scope
 
@@ -263,4 +263,12 @@ Status: Ready for controlled testing as part of In progress KM-014, development 
 
 Safety acceptance: numeric/yes-no defaults, device/fingerprint guards, backup/capacity/integrity checks, paths and machine schemas remain stable. Exit 2 still means failed but rolled back; 3 means recovery required. Synthetic failure/changed-device tests must show the same file results/statuses in all three languages. Fixtures do not authorize real device or recovery-backup operations.
 
-Remaining extraction: low-level errors, startup/argparse diagnostics, cleanup protection reasons/maintenance errors and detailed scan/comparison/per-file output. Raw labels cover integrated exception/warning/diskutil sites only. KM-015 human review and full coverage remain pending. Local validation passed 175 tests (nine new), self-test, 3x248 locale validation, publication worktree/history checks and whitespace checks. New hosted CI is unavailable before publication; human wording/hardware acceptance is pending.
+Remaining extraction: low-level errors, startup/argparse diagnostics, cleanup protection reasons/maintenance errors and detailed scan/comparison/per-file output. Raw labels cover integrated exception/warning/diskutil sites only. KM-015 human review and full coverage remain pending. Slice 3 merged as PR #8 after 175 local tests/self-test/3x248 locales/privacy checks. All 12 push/PR jobs and six merged-main jobs (39262795019) passed. These are automated results for slice 3 only; human wording/hardware acceptance is pending.
+
+## Localization completion and combined acceptance (3.3.0-dev.6)
+
+KM-014/KM-015/KM-016: Ready for test. The owner requested completing localization first and validating everything together at the end. No per-slice human sign-off is inferred. Adds 123 IDs (371 entries per locale), including all remaining owned runtime errors, maintenance/cleanup reasons, per-file output, scan/plugin warnings, self-test notices and custom argument checks. Editorial wording is reviewed independently for each catalog; final human wording acceptance remains pending.
+
+Stored exception args, warning/reason strings, lock labels, paths, machine tokens and JSON schemas remain English/original. Structured diagnostic joining preserves localized children without changing English logs. Exact confirmation syntax and safety/backup/capacity/integrity/lock/rollback decisions are unchanged. Combined local validation passed 184 tests (nine new), self-test, 3x371 locale checks, worktree/history privacy and whitespace checks, 73 public doc file links and 30 bash examples. Changed Python parses with 3.9 grammar; hosted CI for this new scope remains pending.
+
+Deliberate original-text boundaries: safe locale-bootstrap failures/fallback notices, Python-generated argparse/tracebacks and external process/database diagnostics. This does not promise translation of user data or Python itself. KM-017 expansion guidance and unrelated queued features remain outside this implementation. Combined human acceptance and physical FULL/library/recovery testing remain pending.
