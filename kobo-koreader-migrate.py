@@ -48,7 +48,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, Iterable, List, Optional, Tuple
 
-VERSION = "3.3.0-dev.4"
+VERSION = "3.3.0-dev.5"
 DEFAULT_BACKUP_DIR = Path(__file__).resolve().parent
 VOLUME_ROOT = Path("/Volumes")
 
@@ -462,6 +462,123 @@ UI_MESSAGE_FIELDS = {
     'space.target_backup': set(),
     'space.pre_restore': set(),
     'migration.options': {'books', 'conflict', 'fonts', 'mode'},
+    'diagnostic.raw': {'detail'},
+    'device.flushing': set(),
+    'device.ejecting': {'path'},
+    'device.eject_output': {'detail'},
+    'device.ejected': set(),
+    'archive.build_manifest': set(),
+    'archive.verify_count': {'count'},
+    'archive.verified': set(),
+    'recovery.modified_failure': set(),
+    'recovery.starting': set(),
+    'recovery.no_original': set(),
+    'recovery.runtime_success': set(),
+    'recovery.runtime_restored': set(),
+    'recovery.payload_success': set(),
+    'identity.cloned': set(),
+    'identity.preserved': set(),
+    'identity.new': set(),
+    'identity.applied': {'label'},
+    'saved_source.using': {'run_id', 'model'},
+    'saved_source.connect': set(),
+    'restore.heading': {'run_id', 'model'},
+    'restore.scope': set(),
+    'restore.plan': {'remove_count', 'runtime', 'restore_count'},
+    'restore.original': {'path'},
+    'restore.remove_created': {'path'},
+    'restore.preview': set(),
+    'restore.failed': {'detail'},
+    'restore.rollback_blocked': {'detail'},
+    'restore.rollback_errors': {'detail'},
+    'restore.rolled_back': set(),
+    'restore.success': set(),
+    'workflow.preview': set(),
+    'workflow.local_reports': set(),
+    'workflow.disconnect': set(),
+    'workflow.private_archives': set(),
+    'diagnostic.metadata_mode': {'mode'},
+    'diagnostic.statistics': {'detail'},
+    'diagnostic.source_missing': {'count'},
+    'workflow.payload': {'count', 'size'},
+    'workflow.category': {'count', 'category'},
+    'diagnostic.warning': {'detail'},
+    'workflow.scan_report': {'path'},
+    'diagnostic.plugins': {'warnings', 'count'},
+    'diagnostic.plugin_warning': {'detail'},
+    'preview.archive_runtime': {'path'},
+    'preview.archive_payload': {'path'},
+    'workflow.unplug_source': set(),
+    'workflow.target_preflight': set(),
+    'workflow.target_comparison': set(),
+    'workflow.payload_plan': {'skip', 'overwrite', 'copy', 'keep'},
+    'workflow.metadata_skipped': {'count'},
+    'preview.replace_runtime': {'path'},
+    'preview.backup_runtime': {'path'},
+    'preview.overwrite': set(),
+    'preview.create': set(),
+    'preview.payload_path': {'action', 'path'},
+    'preview.complete': {'path'},
+    'workflow.verify_source': set(),
+    'workflow.backup_runtime': set(),
+    'workflow.backup_payload': set(),
+    'workflow.final_plan': {'count', 'runtime'},
+    'workflow.retain_unrelated': set(),
+    'recovery.status_error': {'detail'},
+    'recovery.migration_failed': {'kind', 'detail'},
+    'recovery.blocked': {'detail'},
+    'recovery.reconnect': set(),
+    'recovery.error': {'detail'},
+    'recovery.keep_connected': set(),
+    'recovery.complete': set(),
+    'diagnostic.after_missing': {'count'},
+    'run.pre_interrupt': set(),
+    'error.same_device': set(),
+    'error.disconnected': set(),
+    'error.device_changed': set(),
+    'error.identity_missing': set(),
+    'error.target_space': set(),
+    'error.library_space': set(),
+    'error.source_cycle': set(),
+    'error.source_descriptor': set(),
+    'error.source_reference_mode': set(),
+    'error.library_snapshot': set(),
+    'error.full_snapshot': set(),
+    'error.runtime_archive_missing': set(),
+    'error.saved_scope': set(),
+    'error.full_captured_books': set(),
+    'error.koreader_snapshot_scope': set(),
+    'error.payload_categories': set(),
+    'error.library_selection': set(),
+    'error.source_model_missing': set(),
+    'error.source_model_mismatch': set(),
+    'error.target_snapshot': set(),
+    'error.original_backup_missing': set(),
+    'error.restore_unneeded': set(),
+    'error.change_journal': set(),
+    'error.change_paths': set(),
+    'error.restore_identity': set(),
+    'error.runtime_directory': set(),
+    'error.conflict_mode': set(),
+    'error.full_books': set(),
+    'error.full_scope': set(),
+    'error.koreader_scope': set(),
+    'error.target_directory': set(),
+    'error.full_keep_target': set(),
+    'error.source_runtime_checksum': set(),
+    'error.source_payload_checksum': set(),
+    'error.statistics_changed': set(),
+    'cancel.device': set(),
+    'cancel.migration': set(),
+    'cancel.restore': set(),
+    'cancel.compatibility': set(),
+    'cancel.final': set(),
+    'error.backup_space': {'label', 'path'},
+    'phase.started': {'label'},
+    'phase.running': {'seconds', 'label'},
+    'phase.finished': {'seconds', 'label'},
+    'archive.creating': set(),
+    'archive.restoring': set(),
 }
 CURRENT_UI = ContextVar('kobo_migration_ui', default=None)
 
@@ -488,6 +605,13 @@ class UIMessage(str):
 
 def message(key, **values):
     return UIMessage(key, **values)
+
+
+def exception_detail(exc):
+    """Render owned structured errors; preserve and label unconverted diagnostics."""
+    if len(exc.args) == 1 and isinstance(exc.args[0], UIMessage):
+        return exc.args[0]
+    return message('diagnostic.raw', detail=str(exc))
 
 
 class UIOutput:
@@ -652,12 +776,12 @@ def run_with_spinner(cmd: List[str], label: str, env: Optional[dict] = None) -> 
     with tempfile.TemporaryFile(mode='w+t') as stdout, tempfile.TemporaryFile(mode='w+t') as stderr:
         proc = subprocess.Popen(cmd, stdout=stdout, stderr=stderr, text=True, env=env)
         started = last = time.monotonic()
-        log_status(f'{label}: started')
+        log_status(message('phase.started', label=label))
         try:
             while proc.poll() is None:
                 now = time.monotonic()
                 if now - last >= 5:
-                    log_status(f'{label}: still running, elapsed {now - started:.0f}s')
+                    log_status(message('phase.running', label=label, seconds=f"{now-started:.0f}"))
                     last = now
                 time.sleep(0.12)
         except BaseException:
@@ -668,7 +792,7 @@ def run_with_spinner(cmd: List[str], label: str, env: Optional[dict] = None) -> 
                 proc.kill()
                 proc.wait()
             raise
-        log_status(f'{label}: finished after {time.monotonic() - started:.1f}s')
+        log_status(message('phase.finished', label=label, seconds=time.monotonic()-started))
         if proc.returncode != 0:
             stderr.seek(0)
             stdout.seek(0)
@@ -687,18 +811,18 @@ def run_checked(cmd: List[str]) -> str:
 
 
 def safe_eject(mount: Path) -> None:
-    print("Flushing filesystem writes...")
+    ui_emit('device.flushing')
     run_checked(["sync"])
     time.sleep(2)
-    print(f"Safely ejecting {mount} ...")
+    ui_emit('device.ejecting', path=mount)
     out = run_checked(["diskutil", "eject", str(mount)])
     if out:
-        print(out)
+        ui_emit('device.eject_output', detail=message('diagnostic.raw', detail=out))
     for _ in range(20):
         if not mount.exists():
             break
         time.sleep(0.5)
-    print("Ejected successfully.")
+    ui_emit('device.ejected')
 
 
 def canonical_model(name: Optional[str]) -> Optional[str]:
@@ -919,13 +1043,13 @@ def verify_expected_model(info: DeviceInfo, expected: str, role: str) -> None:
     if detected and detected.casefold() != expected.casefold():
         ui_emit('device.model_mismatch', hint=detected, model=expected, severity='warning')
     if not prompt_yes_no(message('confirm.device', role=role, model=expected)):
-        raise MigrationCancelled('Migration cancelled during device confirmation. No target files were modified.')
+        raise MigrationCancelled(message('cancel.device'))
     ui_emit('device.model_confirmed', role=role, model=expected)
 
 
 def require_device_fingerprint(info: DeviceInfo) -> None:
     if not info.fingerprint_sha256:
-        raise MigrationError('Cannot establish device identity from .kobo/version; refusing migration.')
+        raise MigrationError(message('error.identity_missing'))
 
 
 def ensure_source_structure(mount: Path) -> None:
@@ -949,9 +1073,7 @@ def ensure_backup_space(backup_dir: Path, required_bytes: int, label: str) -> No
     need = int(required_bytes * 1.10) + 100 * 1024 * 1024
     ui_emit('space.backup', label=label, free=human_bytes(free), need=human_bytes(need))
     if free < need:
-        raise MigrationError(
-            f"Not enough free space in {backup_dir} for a safe {label} backup."
-        )
+        raise MigrationError(message('error.backup_space', path=backup_dir, label=label))
 
 
 def ensure_target_space(target_mount: Path, source_size: int, existing_target_size: int) -> None:
@@ -961,7 +1083,7 @@ def ensure_target_space(target_mount: Path, source_size: int, existing_target_si
     need = int(source_size * 1.10) + 50 * 1024 * 1024
     ui_emit('space.target', free=human_bytes(free), effective=human_bytes(effective), need=human_bytes(need))
     if effective < need:
-        raise MigrationError("Target Kobo does not have enough free space.")
+        raise MigrationError(message('error.target_space'))
 
 
 def log_status(message: str) -> None:
@@ -1082,7 +1204,7 @@ def build_manifest(
     strict_source: bool = True,
 ) -> dict:
     validate_koreader_zip(zip_path)
-    print("Building SHA-256 manifest from archive...")
+    ui_emit('archive.build_manifest')
     files: Dict[str, dict] = {}
     with zipfile.ZipFile(zip_path, "r") as zf:
         names = set(zf.namelist())
@@ -1158,7 +1280,7 @@ def create_archive(
     env["COPYFILE_DISABLE"] = "1"
     run_with_spinner(
         ["ditto", "-c", "-k", "--keepParent", str(source_koreader), str(zip_path)],
-        "Creating ZIP",
+        message('archive.creating'),
         env=env,
     )
 
@@ -1237,7 +1359,7 @@ def verify_restored_tree(target_koreader: Path, manifest: dict) -> None:
 
     files = manifest["files"]
     items = list(files.items())
-    print(f"Full target verification: {len(items):,} files")
+    ui_emit('archive.verify_count', count=len(items))
 
     for idx, (rel, meta) in enumerate(items, 1):
         p = target_koreader / rel
@@ -1250,7 +1372,7 @@ def verify_restored_tree(target_koreader: Path, manifest: dict) -> None:
             raise MigrationError(f"Restore verification failed; checksum mismatch: {rel}")
         print_progress(message('progress.verify_target'), idx, len(items))
 
-    print("Full SHA-256 target verification: OK")
+    ui_emit('archive.verified')
 
 
 def restore_zip(zip_path: Path, target_adds: Path) -> None:
@@ -1259,7 +1381,7 @@ def restore_zip(zip_path: Path, target_adds: Path) -> None:
     env["COPYFILE_DISABLE"] = "1"
     run_with_spinner(
         ["ditto", "-x", "-k", str(zip_path), str(target_adds)],
-        "Restoring ZIP",
+        message('archive.restoring'),
         env=env,
     )
 
@@ -1271,8 +1393,8 @@ def rollback_target(
     target_backup_manifest: Optional[dict],
 ) -> None:
     print()
-    print("!!! Migration failed after target modification.")
-    print("Starting automatic rollback...")
+    ui_emit('recovery.modified_failure', severity='error')
+    ui_emit('recovery.starting')
 
     if target_backup_zip is not None:
         validate_koreader_zip(target_backup_zip)
@@ -1281,13 +1403,13 @@ def rollback_target(
     if target_koreader.exists():
         remove_tree(target_koreader)
     if target_backup_zip is None:
-        print('Target had no original KOReader tree; incomplete restore was removed.')
+        ui_emit('recovery.no_original')
         return
     restore_zip(target_backup_zip, target_adds)
     if target_backup_manifest is not None:
         verify_restored_tree(target_koreader, target_backup_manifest)
-    print("Automatic rollback: SUCCESS")
-    print("The target has been restored to its pre-migration KOReader backup.")
+    ui_emit('recovery.runtime_success')
+    ui_emit('recovery.runtime_restored')
 
 
 def choose_identity_mode(target_device_id: Optional[str]) -> str:
@@ -1313,17 +1435,17 @@ def apply_identity_mode(target_koreader: Path, mode: str, target_device_id: Opti
     settings = target_koreader / "settings.reader.lua"
 
     if mode == "clone":
-        print("KOReader device_id: cloned from source.")
+        ui_emit('identity.cloned')
         return read_device_id(settings)
 
     if mode == "preserve":
         if not target_device_id:
             raise MigrationError("Target device_id was not available to preserve.")
         new_id = target_device_id
-        label = "preserved target device_id"
+        label = message('identity.preserved')
     elif mode == "new":
         new_id = uuid.uuid4().hex.upper()
-        label = "new device_id"
+        label = message('identity.new')
     else:
         raise MigrationError(f"Unknown identity mode: {mode}")
 
@@ -1331,7 +1453,7 @@ def apply_identity_mode(target_koreader: Path, mode: str, target_device_id: Opti
     check = read_device_id(settings)
     if check != new_id:
         raise MigrationError("Failed to verify updated device_id.")
-    print(f"KOReader identity: {label} applied successfully.")
+    ui_emit('identity.applied', label=label)
     return new_id
 
 
@@ -1641,7 +1763,7 @@ def rollback_payload(target: Path, backup: Optional[Path], previous: dict, journ
     for directory in reversed(journal['created_dirs']):
         if directory.exists() and not any(directory.iterdir()):
             directory.rmdir()
-    print('Payload rollback: SUCCESS')
+    ui_emit('recovery.payload_success')
 
 
 def device_diagnostics(mount: Path) -> dict:
@@ -1706,9 +1828,9 @@ def ensure_local_backup(backup_dir: Path, mount: Path) -> None:
 
 def confirm_device(mount: Path, fingerprint: Optional[str]) -> None:
     if not mount.is_dir() or not (mount / '.kobo').is_dir():
-        raise MigrationError('Device disconnected; reconnect the same target before manual recovery.')
+        raise MigrationError(message('error.disconnected'))
     if fingerprint and device_fingerprint(mount)[0] != fingerprint:
-        raise MigrationError('Connected device changed; refusing to modify it.')
+        raise MigrationError(message('error.device_changed'))
 
 
 
@@ -2262,8 +2384,12 @@ def main() -> int:
     with ui_session(args.locale_bundle):
         try:
             return run_main(args)
+        except KeyboardInterrupt as exc:
+            ui_emit('run.pre_interrupt', severity='warning')
+            exc.ui_reported = True
+            raise
         except MigrationError as exc:
-            ui_emit('error.summary', detail=str(exc), channel='stderr', severity='error')
+            ui_emit('error.summary', detail=exception_detail(exc), channel='stderr', severity='error')
             exc.ui_reported = True
             raise
 
@@ -2324,7 +2450,7 @@ def run_main(args) -> int:
                         state.finish(status, exit_code=code)
                         return code
                     except MigrationCancelled as exc:
-                        ui_emit('run.cancelled', detail=str(exc))
+                        ui_emit('run.cancelled', detail=exception_detail(exc))
                         state.finish('cancelled', exit_code=0)
                         return 0
                     except KeyboardInterrupt:
@@ -2332,7 +2458,7 @@ def run_main(args) -> int:
                         state.finish('needs-recovery' if state.data['target_modified'] else 'interrupted', exit_code=130)
                         return 130
                     except BaseException as exc:
-                        ui_emit('run.stopped', kind=type(exc).__name__, detail=str(exc), severity='error')
+                        ui_emit('run.stopped', kind=type(exc).__name__, detail=exception_detail(exc), severity='error')
                         state.finish('needs-recovery' if state.data['target_modified'] else 'failed', exit_code=1)
                         raise
                     finally:
@@ -2348,7 +2474,7 @@ def migrate_saved_source(args, project: Path, run: Path, run_id: str, log_path: 
     selected_mode = None
     while (saved / 'source-reference.json').exists():
         if saved.name in seen or len(seen) >= 20:
-            raise MigrationError('Saved source reference cycle or excessive depth.')
+            raise MigrationError(message('error.source_cycle'))
         seen.add(saved.name)
         reference = read_json(saved / 'source-reference.json')
         selected_mode = selected_mode or reference.get('mode')
@@ -2357,10 +2483,10 @@ def migrate_saved_source(args, project: Path, run: Path, run_id: str, log_path: 
     run_phase('verifying-saved-source', dependencies=dependencies)
     descriptor = source_descriptor(saved)
     if descriptor.get('role') != 'source' or descriptor.get('mode') not in {'full', 'koreader', 'library'}:
-        raise MigrationError('Invalid saved source descriptor.')
+        raise MigrationError(message('error.source_descriptor'))
     original_mode = descriptor['mode']
     if selected_mode not in {None, 'full', 'koreader', 'library'}:
-        raise MigrationError('Invalid saved source reference mode.')
+        raise MigrationError(message('error.source_reference_mode'))
     mode = args.mode or selected_mode or original_mode
     if mode == 'audit':
         mode = original_mode
@@ -2368,22 +2494,22 @@ def migrate_saved_source(args, project: Path, run: Path, run_id: str, log_path: 
     else:
         dry_run = args.dry_run
     if mode == 'library' and original_mode != 'library':
-        raise MigrationError('LIBRARY reuse requires a LIBRARY-captured snapshot; FULL central metadata is stored in the runtime archive.')
+        raise MigrationError(message('error.library_snapshot'))
     if mode == 'full' and original_mode != 'full':
-        raise MigrationError('FULL requires a source snapshot captured in FULL mode.')
+        raise MigrationError(message('error.full_snapshot'))
     if mode in {'full', 'koreader'} and not descriptor.get('koreader'):
-        raise MigrationError('Saved run has no full KOReader archive.')
+        raise MigrationError(message('error.runtime_archive_missing'))
     if args.include_dir or args.exclude_dir or args.extra_extension:
-        raise MigrationError('Saved snapshots use their captured discovery scope; recapture to change it.')
+        raise MigrationError(message('error.saved_scope'))
     if mode == 'full' and (args.books is False or not args.reading_data):
-        raise MigrationError('FULL always includes captured books and reading data.')
+        raise MigrationError(message('error.full_captured_books'))
     if mode == 'koreader' and (args.books is True or args.fonts is True):
-        raise MigrationError('KOREADER copies only the entire KOReader directory.')
+        raise MigrationError(message('error.koreader_snapshot_scope'))
     source_zip, source_manifest = load_artifact(saved, descriptor.get('koreader'), 'koreader') if mode != 'library' else (None, None)
     payload_zip, payload_manifest = load_artifact(saved, descriptor.get('payload'), 'payload') if mode != 'koreader' else (None, None)
     payload_manifest = payload_manifest or {'files': {}}
     if any(meta.get('category') not in {'books', 'sidecars', 'central_metadata', 'fonts'} for meta in payload_manifest['files'].values()):
-        raise MigrationError('Source payload categories are missing or invalid; recapture the source.')
+        raise MigrationError(message('error.payload_categories'))
     if mode == 'full' and args.fonts is False:
         payload_manifest = {**payload_manifest, 'files': {p: m for p, m in payload_manifest['files'].items() if m.get('category') != 'fonts'}}
     if mode == 'library':
@@ -2394,17 +2520,17 @@ def migrate_saved_source(args, project: Path, run: Path, run_id: str, log_path: 
             allowed -= {'sidecars', 'central_metadata'}
         payload_manifest = {**payload_manifest, 'files': {p: m for p, m in payload_manifest['files'].items() if m.get('category') in allowed}}
         if not books and not fonts:
-            raise MigrationError('LIBRARY requires books and/or fonts.')
+            raise MigrationError(message('error.library_selection'))
     else:
         books, fonts = mode == 'full', mode == 'full' and args.fonts is not False
     conflict = select_conflict_policy(mode, args.conflict)
     info = DeviceInfo(**descriptor['device'])
     source_expected = canonical_model(descriptor.get('confirmed_model') or info.detected_model)
     if not source_expected:
-        raise MigrationError('Saved source must have a confirmed or detected model label.')
+        raise MigrationError(message('error.source_model_missing'))
     require_device_fingerprint(info)
     if args.source_model and canonical_model(args.source_model).casefold() != source_expected.casefold():
-        raise MigrationError('--source-model does not match the saved SOURCE label.')
+        raise MigrationError(message('error.source_model_mismatch'))
     target_expected = args.target_model
     target_slug = 'target'
     source_diag = descriptor.get('source_diagnostics', {})
@@ -2417,10 +2543,10 @@ def migrate_saved_source(args, project: Path, run: Path, run_id: str, log_path: 
     # Reference verified originals; no multi-GiB duplication of source archives.
     atomic_json(run / 'source-reference.json', {'run_id': saved.name, 'mode': mode})
     run_phase('waiting-for-target', mode=mode, dry_run=dry_run)
-    print(f'Using verified saved SOURCE {saved.name}: {source_expected} -> TARGET')
-    print('Only connect TARGET. Original source device is not required.')
+    ui_emit('saved_source.using', run_id=saved.name, model=source_expected)
+    ui_emit('saved_source.connect')
     if not prompt_yes_no(message('confirm.saved_source')):
-        raise MigrationCancelled('Migration cancelled. No target files were modified.')
+        raise MigrationCancelled(message('cancel.migration'))
     return migrate_target(args, run, run_id, log_path, mode, dry_run, mode in {'full', 'koreader'},
                           books, fonts, conflict, info, source_expected, target_expected, target_slug,
                           source_zip, source_manifest_path, source_manifest, payload_zip,
@@ -2440,30 +2566,30 @@ def restore_saved_target(args, project: Path, run: Path, run_id: str, log_path: 
     run_phase('verifying-target-snapshot', dependencies=[saved.name], dry_run=args.dry_run)
     descriptor = read_json(saved / 'target-snapshot.json')
     if descriptor.get('role') != 'target':
-        raise MigrationError('Saved snapshot must be a TARGET pre-migration snapshot.')
+        raise MigrationError(message('error.target_snapshot'))
     if descriptor.get('replaced_koreader') and descriptor.get('had_koreader') and not descriptor.get('koreader'):
-        raise MigrationError('Original KOReader backup is missing.')
+        raise MigrationError(message('error.original_backup_missing'))
     changes = read_json(saved / 'target-changes.json')
     prior_state = read_json(saved / 'run.json')
     if not prior_state.get('target_modified'):
-        raise MigrationError('That run did not modify its target; no target restore is needed.')
+        raise MigrationError(message('error.restore_unneeded'))
     original = DeviceInfo(**descriptor['device'])
     kr_archive, kr_manifest = load_artifact(saved, descriptor.get('koreader'), 'koreader')
     payload_archive, payload_manifest = load_artifact(saved, descriptor.get('payload'), 'payload')
     previous = payload_manifest['files'] if payload_manifest else {}
     touched = changes.get('touched', [])
     if not isinstance(touched, list) or any(not isinstance(p, str) for p in touched):
-        raise MigrationError('Invalid saved change journal.')
+        raise MigrationError(message('error.change_journal'))
     allowed_paths = set(descriptor.get('planned_paths', []))
     if not set(touched) <= allowed_paths:
-        raise MigrationError('Change journal includes paths not in the saved target plan.')
+        raise MigrationError(message('error.change_paths'))
     removed = [p for p in touched if p not in previous]
     restored = {p: m for p, m in previous.items() if p in touched}
     expected = canonical_model(descriptor.get('confirmed_model') or original.detected_model)
     if not expected or not original.fingerprint_sha256:
-        raise MigrationError('Exact target restore requires a known model and original device fingerprint.')
-    print(f'RESTORE TARGET SNAPSHOT from {saved.name}: {expected}')
-    print('This restores the old TARGET state, not the SOURCE migration snapshot.')
+        raise MigrationError(message('error.restore_identity'))
+    ui_emit('restore.heading', run_id=saved.name, model=expected)
+    ui_emit('restore.scope')
     ui_input(message('prompt.restore_target', model=expected))
     mount = wait_for_single_kobo('RESTORE TARGET')
     acquire_device(mount, device_fingerprint(mount)[0])
@@ -2473,7 +2599,7 @@ def restore_saved_target(args, project: Path, run: Path, run_id: str, log_path: 
     verify_expected_model(info, expected, 'RESTORE TARGET')
     kr = checked_path(mount, '.adds/koreader', allow_metadata=True)
     if kr.exists() and not kr.is_dir():
-        raise MigrationError('KOReader must be a directory.')
+        raise MigrationError(message('error.runtime_directory'))
     if kr.is_dir():
         validate_tree_symlinks(kr)
     current_files = {}
@@ -2484,16 +2610,16 @@ def restore_saved_target(args, project: Path, run: Path, run_id: str, log_path: 
         if path.exists():
             current_files[rel] = {'size': path.stat().st_size, 'category': previous.get(rel, {}).get('category', 'backup')}
     replacing_kr = bool(descriptor.get('replaced_koreader'))
-    print(f'Restore runtime: {replacing_kr}; payload restore: {len(restored)}; remove prior-created files: {len(removed)}')
+    ui_emit('restore.plan', runtime=replacing_kr, restore_count=len(restored), remove_count=len(removed))
     for rel in sorted(restored):
-        print(f'  Restore original: {rel}')
+        ui_emit('restore.original', path=rel)
     for rel in sorted(removed):
-        print(f'  Remove file created by that migration: {rel}')
+        ui_emit('restore.remove_created', path=rel)
     restore_plan = {'operation': 'restore-target', 'from_run': saved.name,
                     'restore_paths': sorted(restored), 'remove_created_paths': removed}
     atomic_json(run / 'restore-plan.json', restore_plan)
     if args.dry_run:
-        print('DRY RUN: snapshot verified; no TARGET files changed.')
+        ui_emit('restore.preview')
         safe_eject(mount)
         return 0
     ensure_backup_space(run, (info.total_bytes if replacing_kr else 0) + sum(m['size'] for m in current_files.values()), message('space.pre_restore'))
@@ -2513,7 +2639,7 @@ def restore_saved_target(args, project: Path, run: Path, run_id: str, log_path: 
         'payload': artifact_entry(undo_payload), 'planned_paths': sorted(set(touched) | set(restored))})
     if not prompt_yes_no(message('confirm.restore_target')):
         safe_eject(mount)
-        raise MigrationCancelled('Target restore cancelled. No target files were modified.')
+        raise MigrationCancelled(message('cancel.restore'))
     journal = {'touched': [], 'created_dirs': [], '_mount': mount}
     kr_modified = False
     try:
@@ -2525,7 +2651,7 @@ def restore_saved_target(args, project: Path, run: Path, run_id: str, log_path: 
                 remove_tree(kr)
             if descriptor.get('had_koreader'):
                 if kr_archive is None:
-                    raise MigrationError('Original KOReader backup is missing.')
+                    raise MigrationError(message('error.original_backup_missing'))
                 kr.parent.mkdir(parents=True, exist_ok=True)
                 restore_zip(kr_archive, kr.parent)
                 verify_restored_tree(kr, kr_manifest)
@@ -2544,12 +2670,12 @@ def restore_saved_target(args, project: Path, run: Path, run_id: str, log_path: 
             kr.parent.rmdir()
         atomic_json(run / 'restore-result.json', {**restore_plan, 'completed_at': iso_now(), 'tool_version': VERSION})
     except (Exception, KeyboardInterrupt) as exc:
-        print(f'Target restore failed: {exc}')
+        ui_emit('restore.failed', detail=exception_detail(exc), severity='error')
         errors = []
         try:
             confirm_device(mount, original.fingerprint_sha256)
         except Exception as error:
-            print(f'Rollback blocked: {error}')
+            ui_emit('restore.rollback_blocked', detail=exception_detail(error), severity='error')
             return 3
         try:
             rollback_payload(mount, undo_payload, undo_files, journal)
@@ -2561,19 +2687,19 @@ def restore_saved_target(args, project: Path, run: Path, run_id: str, log_path: 
             except Exception as error:
                 errors.append(str(error))
         if errors:
-            print('Rollback errors: ' + '; '.join(errors))
+            ui_emit('restore.rollback_errors', detail=message('diagnostic.raw', detail='; '.join(errors)), severity='error')
             return 3
-        print('Restore failed; automatic rollback restored the pre-restore state.')
+        ui_emit('restore.rolled_back')
         return 2
     safe_eject(mount)
-    print('TARGET SNAPSHOT RESTORE SUCCESSFUL.')
+    ui_emit('restore.success')
     return 0
 
 
 def select_conflict_policy(mode: str, requested: Optional[str]) -> str:
     if mode in {'full', 'koreader'}:
         if requested == 'keep-target':
-            raise MigrationError('--conflict keep-target is only supported by LIBRARY or AUDIT. FULL backs up and overwrites source-matching paths.')
+            raise MigrationError(message('error.conflict_mode'))
         return 'overwrite'
     if mode == 'audit':
         return requested or 'overwrite'
@@ -2593,31 +2719,31 @@ def migrate(args, backup_dir: Path, run_id: str, log_path: Path) -> int:
     full = mode in {'full', 'koreader', 'audit'}
     if mode == 'full':
         if args.books is False or not args.reading_data:
-            raise MigrationError('FULL always includes ebooks and reading data. Use KOREADER for directory only, or LIBRARY for selective files.')
+            raise MigrationError(message('error.full_books'))
         if args.include_dir or args.exclude_dir:
-            raise MigrationError('FULL scans the complete supported library. Use LIBRARY or AUDIT for scoped scans.')
+            raise MigrationError(message('error.full_scope'))
         books = True
         fonts = args.fonts if args.fonts is not None else True
     elif mode == 'koreader':
         if args.books is True or args.fonts is True:
-            raise MigrationError('KOREADER only migrates the entire KOReader directory. Use FULL or LIBRARY to copy books/fonts.')
+            raise MigrationError(message('error.koreader_scope'))
         books, fonts = False, False
     else:
         books = args.books if args.books is not None else prompt_yes_no(message('confirm.books'), default=True)
         fonts = args.fonts if args.fonts is not None else prompt_yes_no(message('confirm.fonts'), default=False)
     if not full and not books and not fonts:
-        raise MigrationError('LIBRARY requires books and/or fonts.')
+        raise MigrationError(message('error.library_selection'))
     conflict = select_conflict_policy(mode, args.conflict)
     source_expected, target_expected = getattr(args, 'source_model', None), getattr(args, 'target_model', None)
     source_slug, target_slug = 'source', 'target'
     ui_emit('migration.options', mode=mode.upper(), books=books, fonts=fonts, conflict=conflict)
     if dry_run:
-        print('DRY RUN / AUDIT: no Kobo files or backup archives will be created, replaced or deleted.')
-        print('Local scan reports and execution logs will be saved.')
-    print('Disconnect both Kobos. Connect only the requested device.')
-    print('Archives may contain credentials; keep them private.')
+        ui_emit('workflow.preview')
+        ui_emit('workflow.local_reports')
+    ui_emit('workflow.disconnect')
+    ui_emit('workflow.private_archives')
     if not prompt_yes_no(message('confirm.continue')):
-        raise MigrationCancelled('Migration cancelled. No target files were modified.')
+        raise MigrationCancelled(message('cancel.migration'))
     ui_input(message('prompt.source'))
     source_mount = wait_for_single_kobo('SOURCE')
     ensure_local_backup(backup_dir, source_mount.resolve())
@@ -2633,25 +2759,25 @@ def migrate(args, backup_dir: Path, run_id: str, log_path: Path) -> int:
     require_device_fingerprint(source_info)
     source_expected = confirm_role_model(source_info, source_expected, 'SOURCE')
     source_diag = device_diagnostics(source_mount)
-    print(f'Source metadata mode: {source_diag["metadata_mode"]}')
-    print(f'Source statistics: {source_diag["statistics"]}')
-    print(f'Source missing literal references: {len(source_diag["missing_references"])}')
+    ui_emit('diagnostic.metadata_mode', mode=source_diag["metadata_mode"])
+    ui_emit('diagnostic.statistics', detail=source_diag["statistics"])
+    ui_emit('diagnostic.source_missing', count=len(source_diag["missing_references"]))
     scanned, scan_report = scan_payload(source_mount, books, fonts,
         include_metadata=args.reading_data, include_dirs=args.include_dir,
         exclude_dirs=args.exclude_dir, extra_extensions=args.extra_extension)
     # In FULL, the KOReader ZIP already includes all central metadata.
     if full:
         scanned = {rel: meta for rel, meta in scanned.items() if not rel.startswith('.adds/koreader/')}
-    print(f'Payload: {len(scanned):,} files, {human_bytes(sum(m["size"] for m in scanned.values()))}')
+    ui_emit('workflow.payload', count=len(scanned), size=human_bytes(sum(m["size"] for m in scanned.values())))
     for category in ('books', 'sidecars', 'central_metadata', 'fonts', 'unrecognized', 'skipped_symlinks'):
-        print(f'  {category}: {len(scan_report[category]):,}')
+        ui_emit('workflow.category', category=category, count=len(scan_report[category]))
     for warning in scan_report['warnings']:
-        print(f'WARNING: {warning}')
+        ui_emit('diagnostic.warning', detail=message('diagnostic.raw', detail=warning), severity='warning')
     report_path = backup_dir / f'koreader-scan-{run_id}.json'
     scan_report.update({'tool_version': VERSION, 'mode': mode, 'source_diagnostics': source_diag,
                         'scan_options': {'include_dirs': args.include_dir, 'exclude_dirs': args.exclude_dir, 'extra_extensions': args.extra_extension}})
     report_path.write_text(json.dumps(scan_report, indent=2, ensure_ascii=False), encoding='utf-8')
-    print(f'Scan report: {report_path}')
+    ui_emit('workflow.scan_report', path=report_path)
     source_zip = backup_dir / f'koreader-{source_slug}-{run_id}.zip'
     source_manifest_path = source_zip.with_suffix('.manifest.json')
     payload_zip = backup_dir / f'library-{source_slug}-{run_id}.zip'
@@ -2661,18 +2787,18 @@ def migrate(args, backup_dir: Path, run_id: str, log_path: Path) -> int:
     ensure_backup_space(backup_dir, required, message('space.source_backup'))
     if full:
         plugins, warnings = basic_plugin_audit(source_kr)
-        print(f'Plugin structural audit: {len(plugins)} plugins; {len(warnings)} warnings.')
+        ui_emit('diagnostic.plugins', count=len(plugins), warnings=len(warnings))
         for warning in warnings:
-            print(f'  {warning}')
+            ui_emit('diagnostic.plugin_warning', detail=message('diagnostic.raw', detail=warning), severity='warning')
         if dry_run:
-            print(f'Would archive full KOReader: {source_zip}')
+            ui_emit('preview.archive_runtime', path=source_zip)
         else:
             source_manifest = create_archive(source_kr, source_zip, source_manifest_path,
                 source_info, plugins, warnings)
     if scanned:
         if dry_run:
             payload_manifest = hash_payload(source_mount, scanned)
-            print(f'Would archive payload: {payload_zip}')
+            ui_emit('preview.archive_payload', path=payload_zip)
         else:
             payload_manifest = create_payload_archive(source_mount, scanned, payload_zip)
     if not dry_run:
@@ -2680,7 +2806,7 @@ def migrate(args, backup_dir: Path, run_id: str, log_path: Path) -> int:
                              source_zip if full else None, payload_zip if scanned else None, confirmed_model=source_expected)
     run_phase('waiting-for-target')
     safe_eject(source_mount)
-    print('Unplug SOURCE now.')
+    ui_emit('workflow.unplug_source')
     return migrate_target(args, backup_dir, run_id, log_path, mode, dry_run, full, books, fonts,
                           conflict, source_info, source_expected, target_expected, target_slug,
                           source_zip if full else None, source_manifest_path if full else None,
@@ -2698,7 +2824,7 @@ def migrate_target(args, backup_dir, run_id, log_path, mode, dry_run, full, book
     target_kr = checked_path(target_mount, '.adds/koreader', allow_metadata=True)
     target_adds = target_mount / '.adds'
     if target_kr.exists() and not target_kr.is_dir():
-        raise MigrationError('Target KOReader path is not a directory.')
+        raise MigrationError(message('error.target_directory'))
     if target_kr.is_dir():
         validate_tree_symlinks(target_kr)
     acquire_device(target_mount, device_fingerprint(target_mount)[0])
@@ -2709,22 +2835,21 @@ def migrate_target(args, backup_dir, run_id, log_path, mode, dry_run, full, book
     target_expected = confirm_role_model(target_info, target_expected, 'TARGET')
     run_phase('planning-target', target_model=target_expected)
     if full and not prompt_yes_no(message('confirm.compatibility'), default=False):
-        raise MigrationCancelled('Runtime compatibility not confirmed. No target files were modified.')
+        raise MigrationCancelled(message('cancel.compatibility'))
     if (source_info.fingerprint_sha256 and target_info.fingerprint_sha256
             and source_info.fingerprint_sha256 == target_info.fingerprint_sha256):
-        raise MigrationError('SOURCE and TARGET have the same Kobo fingerprint.')
-    log_status('TARGET preflight: no target files have been modified.')
+        raise MigrationError(message('error.same_device'))
+    log_status(message('workflow.target_preflight'))
     target_diag = device_diagnostics(target_mount)
-    log_status('TARGET diagnostics complete; starting library comparison.')
+    log_status(message('workflow.target_comparison'))
     plan = plan_payload(target_mount, payload_manifest, conflict)
-    print(f'Payload plan: {len(plan["copy"])} copy, {len(plan["skip"])} identical skipped, '
-          f'{len(plan["existing"])} overwritten, {len(plan["conflicts_kept"])} kept on target.')
+    ui_emit('workflow.payload_plan', copy=len(plan["copy"]), skip=len(plan["skip"]), overwrite=len(plan["existing"]), keep=len(plan["conflicts_kept"]))
     kept_books = [rel for rel in plan['conflicts_kept']
                   if payload_manifest['files'][rel].get('category') == 'books']
     if full and kept_books:
-        raise MigrationError('FULL cannot keep conflicting target ebooks while cloning source metadata. Use LIBRARY with keep-target, or FULL with overwrite.')
+        raise MigrationError(message('error.full_keep_target'))
     if plan['metadata_skipped']:
-        print(f'WARNING: {len(plan["metadata_skipped"])} metadata files skipped to protect retained target books.')
+        ui_emit('workflow.metadata_skipped', count=len(plan["metadata_skipped"]), severity="warning")
     difference = build_difference_report(target_mount, payload_manifest['files'], plan, books, fonts, scan_report.get('scan_options', {}))
     write_difference(backup_dir, difference)
     copy_size = sum(m['size'] for m in plan['copy'].values())
@@ -2735,7 +2860,7 @@ def migrate_target(args, backup_dir, run_id, log_path, mode, dry_run, full, book
         need = int(copy_size * 1.1) + 50 * 1024 * 1024
         ui_emit('space.library', free=human_bytes(free), need=human_bytes(need))
         if free < need:
-            raise MigrationError('Not enough target space for the library copy.')
+            raise MigrationError(message('error.library_space'))
     ensure_backup_space(backup_dir, (target_info.total_bytes if full else 0)
                         + sum(m['size'] for m in plan['existing'].values()), message('space.target_backup'))
     identity_mode = choose_identity_mode(read_device_id(target_kr / 'settings.reader.lua')) if full else None
@@ -2748,32 +2873,32 @@ def migrate_target(args, backup_dir, run_id, log_path, mode, dry_run, full, book
     report_path.write_text(json.dumps(scan_report, indent=2, ensure_ascii=False), encoding='utf-8')
     if dry_run:
         if full:
-            print(f'Would cleanly replace: {target_kr}')
-            print(f'Would back up current KOReader: {target_zip}')
+            ui_emit('preview.replace_runtime', path=target_kr)
+            ui_emit('preview.backup_runtime', path=target_zip)
         for rel in plan['copy']:
-            print(f'Would {"overwrite (backup first)" if rel in plan["existing"] else "create"}: {rel}')
-        print(f'No Kobo files were modified. Detailed plan: {report_path}')
+            ui_emit('preview.payload_path', action=message('preview.overwrite' if rel in plan['existing'] else 'preview.create'), path=rel)
+        ui_emit('preview.complete', path=report_path)
         safe_eject(target_mount)
         return 0
     confirm_device(target_mount, target_info.fingerprint_sha256)
     # Validate saved archives before any target writes.
-    log_status('Verifying local source archive checksums before target writes...')
+    log_status(message('workflow.verify_source'))
     if full:
         if sha256_file(source_zip) != source_manifest['archive']['sha256']:
-            raise MigrationError('Source KOReader archive checksum changed.')
+            raise MigrationError(message('error.source_runtime_checksum'))
         validate_koreader_zip(source_zip)
     if scanned and sha256_file(payload_zip) != payload_manifest['archive_sha256']:
-        raise MigrationError('Source payload archive checksum changed.')
+        raise MigrationError(message('error.source_payload_checksum'))
     target_manifest, actual_target_zip = None, None
     if full and target_kr.is_dir():
         plugins, warnings = basic_plugin_audit(target_kr)
-        log_status('Backing up the existing TARGET KOReader tree...')
+        log_status(message('workflow.backup_runtime'))
         target_manifest = create_archive(target_kr, target_zip, target_manifest_path,
                                         target_info, plugins, warnings, strict_source=False)
         actual_target_zip = target_zip
     previous, actual_payload_backup = {}, None
     if plan['existing']:
-        log_status('Backing up TARGET payload files that will be overwritten...')
+        log_status(message('workflow.backup_payload'))
         previous = create_payload_archive(target_mount, plan['existing'], payload_backup)['files']
         actual_payload_backup = payload_backup
     atomic_json(backup_dir / 'target-snapshot.json', {'schema_version': 1, 'role': 'target',
@@ -2781,11 +2906,11 @@ def migrate_target(args, backup_dir, run_id, log_path, mode, dry_run, full, book
         'koreader': artifact_entry(actual_target_zip), 'payload': artifact_entry(actual_payload_backup),
         'planned_paths': list(plan['copy'])})
     run_phase('awaiting-final-confirmation')
-    print(f'Target FULL replacement: {full}; payload writes: {len(plan["copy"])}')
-    print('Only planned paths are affected; unrelated library files are retained.')
+    ui_emit('workflow.final_plan', runtime=full, count=len(plan["copy"]))
+    ui_emit('workflow.retain_unrelated')
     if not prompt_yes_no(message('confirm.migration')):
         safe_eject(target_mount)
-        raise MigrationCancelled('Migration cancelled. No target files were modified. Target safely ejected; backups retained.')
+        raise MigrationCancelled(message('cancel.final'))
     journal = {'touched': [], 'created_dirs': [], '_mount': target_mount}
     persist_target_changes(journal)
     kr_modified = False
@@ -2801,7 +2926,7 @@ def migrate_target(args, backup_dir, run_id, log_path, mode, dry_run, full, book
             kr_modified = True
             if target_kr.exists():
                 if not target_kr.is_dir():
-                    raise MigrationError('Target KOReader path is not a directory.')
+                    raise MigrationError(message('error.target_directory'))
                 remove_tree(target_kr)
             restore_zip(source_zip, target_adds)
             remove_stale_caches(target_kr)
@@ -2814,7 +2939,7 @@ def migrate_target(args, backup_dir, run_id, log_path, mode, dry_run, full, book
             restore_payload(target_mount, payload_zip, plan['copy'], journal)
         after = device_diagnostics(target_mount)
         if full and 'statistics' in source_diag and after['statistics'] != source_diag['statistics']:
-            raise MigrationError('Statistics rows/check status differ after FULL migration.')
+            raise MigrationError(message('error.statistics_changed'))
         result = {'tool_version': VERSION, 'mode': mode, 'completed_at': iso_now(),
             'source_model': source_expected, 'target_model': target_expected,
             'source_archive': str(source_zip) if full else None,
@@ -2832,14 +2957,14 @@ def migrate_target(args, backup_dir, run_id, log_path, mode, dry_run, full, book
         try:
             run_phase('rolling-back')
         except OSError as status_error:
-            log_status(f'Could not update status before rollback: {status_error}')
-        print(f'Migration failed: {type(exc).__name__}: {exc}')
+            log_status(message('recovery.status_error', detail=exception_detail(status_error)))
+        ui_emit('recovery.migration_failed', kind=type(exc).__name__, detail=exception_detail(exc), severity='error')
         errors = []
         try:
             confirm_device(target_mount, target_info.fingerprint_sha256)
         except Exception as guard_exc:
-            print(f'Automatic rollback blocked: {guard_exc}')
-            print('Reconnect the original target and recover using the saved backups.')
+            ui_emit('recovery.blocked', detail=exception_detail(guard_exc), severity='error')
+            ui_emit('recovery.reconnect')
             return 3
         try:
             rollback_payload(target_mount, actual_payload_backup, previous, journal)
@@ -2855,13 +2980,13 @@ def migrate_target(args, backup_dir, run_id, log_path, mode, dry_run, full, book
                 errors.append(f'KOReader: {error}')
         if errors:
             for error in errors:
-                print(f'ROLLBACK ERROR: {error}')
-            print('Keep the target connected for inspection/manual recovery.')
+                ui_emit('recovery.error', detail=message('diagnostic.raw', detail=error), severity='error')
+            ui_emit('recovery.keep_connected')
             return 3
-        print('Automatic rollback succeeded. Target left connected for inspection.')
+        ui_emit('recovery.complete')
         return 2
     ui_emit('migration.success', path=result_path)
-    print(f'Missing literal references after migration: {len(after["missing_references"])}')
+    ui_emit('diagnostic.after_missing', count=len(after["missing_references"]))
     run_phase('ejecting-target')
     safe_eject(target_mount)
     ui_emit('migration.done')
@@ -2871,8 +2996,9 @@ def migrate_target(args, backup_dir, run_id, log_path, mode, dry_run, full, book
 if __name__ == "__main__":
     try:
         raise SystemExit(main())
-    except KeyboardInterrupt:
-        print("\nCancelled by user.")
+    except KeyboardInterrupt as exc:
+        if not getattr(exc, "ui_reported", False):
+            print("\nCancelled by user.")
         raise SystemExit(130)
     except MigrationError as exc:
         if not getattr(exc, "ui_reported", False):

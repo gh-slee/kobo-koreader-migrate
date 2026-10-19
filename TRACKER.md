@@ -1,6 +1,6 @@
 # Development tracker
 
-Last reconciled: **2026-10-18**. Development version: **3.3.0-dev.4** (KM-014 slice 2); published experimental pre-release: **3.3.0-dev.2**. Broader physical acceptance remains pending.
+Last reconciled: **2026-10-19**. Development version: **3.3.0-dev.5** (KM-014 slice 3); published experimental pre-release: **3.3.0-dev.2**. Broader physical acceptance remains pending.
 
 Status vocabulary: `Queued`, `In progress`, `Ready for test`, `Blocked`, `Done`, `Deferred`. KM-011, KM-005, KM-001 and KM-003 are implemented and ready for user testing; ticket-wide human sign-off remains pending despite scoped KOREADER success. Entries represent planned work, not permission to operate physical devices or delete backups.
 
@@ -17,7 +17,7 @@ Acceptance for every ticket must include standalone CLI operation without AI API
 3. **KM-001**: migrate/restore from verified saved archives.
 4. **KM-003**: backup management and cleanup preview.
 
-These four tickets await human testing/sign-off. See ACCEPTANCE.md. KM-013 is implemented and Ready for test for locale selection, localized help and read-only UI samples. KM-014 is In progress: shared routing and menu/device/space slices 1/2 are ready for testing in 3.3.0-dev.4. Remaining workflow extraction and KM-015 through KM-017 full catalogs/review/expansion work are pending; full translation is not available. Other Queued work is not authorized by this release.
+These four tickets await human testing/sign-off. See ACCEPTANCE.md. KM-013 is implemented and Ready for test for locale selection, localized help and read-only UI samples. KM-014 is In progress: shared routing, menu/device/space and core workflow/recovery slices 1/2/3 are ready for testing in 3.3.0-dev.5. Remaining workflow extraction and KM-015 through KM-017 full catalogs/review/expansion work are pending; full translation is not available. Other Queued work is not authorized by this release.
 
 ## Backlog
 
@@ -85,7 +85,7 @@ Local guidance validation passed: 116 fixture tests, self-test, three-locale val
 
 ## Internationalization design and implementation status
 
-Status: KM-013 locale foundation is implemented in 3.3.0-dev.1 and Ready for test. Help/static samples support en/zh-Hant/zh-Hans. Development 3.3.0-dev.4 also routes menus/basic device/model/space checks and shared confirmations/progress/run/catalog/difference messages to localized console output with English diagnostics; remaining workflow messages are still English. The rest of this design describes the target full i18n scope, not completed runtime behavior.
+Status: KM-013 locale foundation is implemented in 3.3.0-dev.1 and Ready for test. Help/static samples support en/zh-Hant/zh-Hans. Development 3.3.0-dev.5 also routes core workflow/recovery and selected refusals, menus/basic device/model/space checks and shared confirmations/progress/run/catalog/difference messages to localized console output with English diagnostics; remaining workflow messages are still English. The rest of this design describes the target full i18n scope, not completed runtime behavior.
 
 ### Initial language scope
 
@@ -115,7 +115,7 @@ SOURCE and TARGET must remain visibly identifiable in translated text, e.g. a tr
 
 ### Proposed CLI and locale resolution
 
-Locale selection/help/list commands now work in 3.3.0-dev.1. Migration commands accept the preference; shared presentation is partially localized in 3.3.0-dev.4 while unconverted workflow/diagnostic text remains English:
+Locale selection/help/list commands now work in 3.3.0-dev.1. Migration commands accept the preference; shared presentation and core workflow/recovery are partially localized in 3.3.0-dev.5 while unconverted low-level/per-file/maintenance text remains English:
 
 ```bash
 python3 kobo-koreader-migrate.py --locale en --help
@@ -255,4 +255,12 @@ Status: Ready for controlled testing as part of In progress KM-014, development 
 
 Detailed errors, metadata/plugin diagnostics, raw diagnostic labelling and remaining workflow messages are the next extraction work; KM-015 human wording review is pending. No physical-device acceptance or publication/backup deletion permission follows from this ticket.
 
-Local slice 2 evidence: 166 tests passed (12 new menu/inspection cases), self-test, 3x131 locale validation and publication worktree/history checks. Hosted CI, human wording review and hardware acceptance for this slice remain pending.
+Slice 2 merged as PR #7 after 166 local tests/3x131 locale checks and all 12 push/PR jobs passed. All six [merged-main jobs](https://github.com/gh-slee/kobo-koreader-migrate/actions/runs/39183640983) also passed. This establishes automated evidence for slice 2 only; human wording review and hardware acceptance remain pending.
+
+## KM-014 slice 3 — workflow, recovery and selected refusals
+
+Status: Ready for controlled testing as part of In progress KM-014, development 3.3.0-dev.5. Adds 117 IDs (248 entries per locale) for migration/saved-source/target-restore plans, backup/verification/eject/identity notices, archive heartbeats, recovery guidance, five cancellation reasons and 36 selected refusals. Structured exceptions keep English string args; display rendering uses IDs and labels raw unconverted details without replacing text.
+
+Safety acceptance: numeric/yes-no defaults, device/fingerprint guards, backup/capacity/integrity checks, paths and machine schemas remain stable. Exit 2 still means failed but rolled back; 3 means recovery required. Synthetic failure/changed-device tests must show the same file results/statuses in all three languages. Fixtures do not authorize real device or recovery-backup operations.
+
+Remaining extraction: low-level errors, startup/argparse diagnostics, cleanup protection reasons/maintenance errors and detailed scan/comparison/per-file output. Raw labels cover integrated exception/warning/diskutil sites only. KM-015 human review and full coverage remain pending. Local validation passed 175 tests (nine new), self-test, 3x248 locale validation, publication worktree/history checks and whitespace checks. New hosted CI is unavailable before publication; human wording/hardware acceptance is pending.

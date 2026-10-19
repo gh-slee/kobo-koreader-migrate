@@ -1,12 +1,20 @@
 # Changelog
 
+## 3.3.0-dev.5 — unreleased — KM-014 workflow and recovery slice 3
+
+- Translate core migration/saved-source/target-restore plans, archive/backup/verification/eject/identity notices, recovery guidance, five cancellation reasons and 36 selected refusals through the console/English-log adapter.
+- Add 117 static entries/explicit placeholder contracts per locale (248 total), including archive subprocess heartbeats. Preserve exception string args in English; render structured IDs only at presentation and label unconverted integrated diagnostic details without changing the original log text.
+- Report pre-run interruption once while retaining exit 130. Preserve migration decisions, identity guards, write/rollback branches, capacity/integrity checks, machine schemas and confirmation defaults.
+- Add nine synthetic error/recovery regressions covering successful/blocked/failed rollback, exact-restore undo/guard, raw Unicode diagnostics, preserved English args and refusal before device access. Local validation passed 175 tests (nine new), self-test, 3x248 locale validation and publication worktree/history/whitespace checks. Hosted CI/human wording/hardware acceptance remain pending.
+- Low-level/maintenance errors and detailed scanner/comparison output still need extraction. This is not full translation, hardware acceptance or a new published release.
+
 ## 3.3.0-dev.4 — unreleased — KM-014 menus and inspection slice 2
 
 - Translate mode/identity/conflict menus, physical-model hints/confirmation, inspection fields and backup/target capacity reports through the shared console/English-log adapter.
 - Add a LIBRARY capacity summary while retaining its existing free-space formula and refusal before TARGET backup/writes. Preserve numeric choices/defaults, unavailable identity retry, FULL/KOREADER conflict restrictions and physical-model confirmation.
 - Add 37 static messages per locale (131 total); retain model/version/path/serial-hint values and stable machine tokens. Localize display-only yes/no/unknown labels.
 - Remove the plugin-specific AI Assistant configuration indicator from console output and diagnostic logs; retain legacy snapshot metadata, generic plugin audits and whole-runtime file verification.
-- Add synthetic multilingual menu/default/inspection/model and capacity-boundary regressions. Local validation passed 166 tests (12 new), self-test, 3x131 locale and privacy checks. Hosted CI and human review remain pending. Detailed errors/metadata/plugin/remaining workflow text is not fully translated; no new public release or hardware acceptance.
+- Add synthetic multilingual menu/default/inspection/model and capacity-boundary regressions. Local validation passed 166 tests (12 new), self-test, 3x131 locale and privacy checks. Subsequently merged as PR #7 with all 12 push/PR and six merged-main CI jobs passed. Human review remains pending. Detailed errors/metadata/plugin/remaining workflow text is not fully translated; no new public release or hardware acceptance.
 
 
 ## 3.3.0-dev.3 — unreleased — KM-014 shared output routing slice 1
