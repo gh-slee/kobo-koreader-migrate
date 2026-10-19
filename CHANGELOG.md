@@ -1,5 +1,13 @@
 # Changelog
 
+## 3.3.0-dev.4 — unreleased — KM-014 menus and inspection slice 2
+
+- Translate mode/identity/conflict menus, physical-model hints/confirmation, inspection fields and backup/target capacity reports through the shared console/English-log adapter.
+- Add a LIBRARY capacity summary while retaining its existing free-space formula and refusal before TARGET backup/writes. Preserve numeric choices/defaults, unavailable identity retry, FULL/KOREADER conflict restrictions and physical-model confirmation.
+- Add 38 static messages per locale (132 total); retain model/version/path/serial-hint values and stable machine tokens. Localize display-only yes/no/unknown labels.
+- Add synthetic multilingual menu/default/inspection/model and capacity-boundary regressions. Local validation passed 165 tests (11 new), self-test, 3x132 locale and privacy checks. Hosted CI and human review remain pending. Detailed errors/metadata/plugin/remaining workflow text is not fully translated; no new public release or hardware acceptance.
+
+
 ## 3.3.0-dev.3 — unreleased — KM-014 shared output routing slice 1
 
 - Introduce explicit message IDs/parameter contracts and scoped console/English-log rendering. Integrated messages bypass the legacy tee, preserve output channels, flush progress, support non-UTF-8 consoles and never log typed answers.

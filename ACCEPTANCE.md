@@ -127,4 +127,14 @@ Status: Ready for controlled testing of this slice; full KM-014 remains In progr
 - In controlled migration tests, inspect console versus the saved log: integrated owned messages should be localized on screen and occur once in English in the log. Raw diagnostics, user/device data and unconverted messages are preserved; Unicode filenames can appear in both. Responses typed at prompts must not be recorded.
 - Check localized difference.txt against stable difference.json category/path/action data. ui_locale may be present in modern records; older records without it must remain usable.
 - Rendering/fallback, ascii-console safety, all-mode equivalence, saved-source/restore, final default-No, rollback after writes and context/exit-state regressions use temporary fixtures. Do not induce failures on real readers or corrupt a real recovery backup for this test.
-- Record manual feedback separately. Mode/identity/conflict menu descriptions, detailed diagnostics/errors and remaining workflow messages still need extraction; do not label this full interface translation or full hardware acceptance.
+- Record manual feedback separately. For slice 1, menu/device extraction was still pending. Slice 2 adds menus/basic inspection; detailed metadata/plugin diagnostics/errors and remaining workflow messages still need extraction; do not label this full interface translation or full hardware acceptance.
+
+## KM-014 slice 2: menus and inspection (3.3.0-dev.4)
+
+Status: Ready for controlled testing of this slice; full KM-014 remains In progress, with human wording and hardware acceptance pending. Use only disposable data for induced failures; no real Kobo is required for the synthetic tests.
+
+- Review all three languages for mode/identity/conflict menus. Numeric choices/defaults must match: FULL default; preserve identity when available, new otherwise; unavailable preserve must retry; keep-target remains unsupported for FULL/KOREADER.
+- Inspect a synthetic device with known and unknown values. Labels/yes/no/unknown should localize; model/version/path/serial-hint/size/count values must remain intact. English logs must not contain translated owned labels or duplicate entries.
+- Review physical-model hints and mismatch warnings. A log hint never proves the hardware model; the following confirmation still defaults to No.
+- Capacity reports should show the same values in all languages. Synthetic tests cover backup/target thresholds one byte below, exactly at and one byte above the requirement; replaced-runtime space is still counted. LIBRARY low space must refuse before TARGET backup/writes.
+- Detailed errors/metadata/plugin diagnostics and other workflow notices are not fully translated. Existing release assets and older saved runs must remain usable; this slice is not a new public release or full translation/hardware sign-off.

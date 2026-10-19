@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-KOReader Kobo Migration Tool v3.3.0-dev.3
+KOReader Kobo Migration Tool v3.3.0-dev.4
 macOS, standard library only.
 
 Supported workflow:
@@ -48,7 +48,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, Iterable, List, Optional, Tuple
 
-VERSION = "3.3.0-dev.3"
+VERSION = "3.3.0-dev.4"
 DEFAULT_BACKUP_DIR = Path(__file__).resolve().parent
 VOLUME_ROOT = Path("/Volumes")
 
@@ -425,6 +425,44 @@ UI_MESSAGE_FIELDS = {
     'prompt.restore_target': {'model'}, 'device.waiting': {'role'},
     'device.connect_one': set(), 'device.detected': {'path'},
     'migration.success': {'path'}, 'migration.done': set(),
+    'menu.mode': set(),
+    'menu.full': set(),
+    'menu.koreader': set(),
+    'menu.library': set(),
+    'menu.audit': set(),
+    'menu.identity': set(),
+    'menu.identity_preserve': set(),
+    'menu.identity_unavailable': set(),
+    'menu.identity_new': set(),
+    'menu.identity_clone': set(),
+    'menu.identity_retry': set(),
+    'menu.conflict': set(),
+    'menu.overwrite': set(),
+    'menu.keep_target': set(),
+    'inspection.title': {'role'},
+    'inspection.mount': {'path'},
+    'inspection.model': {'model'},
+    'inspection.version': {'version'},
+    'inspection.files': {'count'},
+    'inspection.size': {'size'},
+    'inspection.identity': {'present'},
+    'inspection.assistant': {'present'},
+    'inspection.serial': {'hint'},
+    'value.yes': set(),
+    'value.no': set(),
+    'value.unknown': set(),
+    'prompt.physical_model': {'role', 'suffix'},
+    'device.model_retry': set(),
+    'device.log_hint': set(),
+    'device.model_mismatch': {'hint', 'model'},
+    'device.model_confirmed': {'model', 'role'},
+    'space.backup': {'free', 'label', 'need'},
+    'space.target': {'effective', 'free', 'need'},
+    'space.library': {'free', 'need'},
+    'space.source_backup': set(),
+    'space.target_backup': set(),
+    'space.pre_restore': set(),
+    'migration.options': {'books', 'conflict', 'fonts', 'mode'},
 }
 CURRENT_UI = ContextVar('kobo_migration_ui', default=None)
 
@@ -847,17 +885,17 @@ def inspect_device(mount: Path) -> DeviceInfo:
 
 def display_device_info(info: DeviceInfo, label: str) -> None:
     print()
-    print(f"{label} device inspection")
-    print("-" * 60)
-    print(f"Mount:              {info.mount}")
-    print(f"Model hint (logs):   {info.detected_model or 'Unknown'}")
-    print(f"KOReader version:   {info.koreader_version or 'Unknown'}")
-    print(f"KOReader files:     {info.file_count:,}")
-    print(f"KOReader size:      {human_bytes(info.total_bytes)}")
-    print(f"device_id present:  {'yes' if info.device_id_present else 'no'}")
-    print(f"AI Assistant cfg:   {'yes' if info.ai_assistant_config else 'no'}")
+    ui_emit('inspection.title', role=label)
+    print('-' * 60)
+    ui_emit('inspection.mount', path=info.mount)
+    ui_emit('inspection.model', model=info.detected_model or message('value.unknown'))
+    ui_emit('inspection.version', version=info.koreader_version or message('value.unknown'))
+    ui_emit('inspection.files', count=info.file_count)
+    ui_emit('inspection.size', size=human_bytes(info.total_bytes))
+    ui_emit('inspection.identity', present=message('value.yes' if info.device_id_present else 'value.no'))
+    ui_emit('inspection.assistant', present=message('value.yes' if info.ai_assistant_config else 'value.no'))
     if info.serial_hint:
-        print(f"Device serial hint: {info.serial_hint}")
+        ui_emit('inspection.serial', hint=info.serial_hint)
 
 
 def confirm_role_model(info: DeviceInfo, requested: Optional[str], role: str) -> str:
@@ -867,10 +905,10 @@ def confirm_role_model(info: DeviceInfo, requested: Optional[str], role: str) ->
         hint = canonical_model(info.detected_model)
         suffix = f" [{hint}]" if hint else ""
         while not expected:
-            value = input(f"Physical {role} model (check the device's settings){suffix}: ").strip()
+            value = ui_input(message('prompt.physical_model', role=role, suffix=suffix)).strip()
             expected = canonical_model(value) if value else hint
             if not expected:
-                print('Enter a model name, or cancel with Ctrl-C.')
+                ui_emit('device.model_retry')
     if len(expected) > 80 or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9 ._()+-]*", expected):
         raise MigrationError('Model names must be short plain ASCII labels, e.g. Kobo Clara BW.')
     verify_expected_model(info, expected, role)
@@ -879,12 +917,12 @@ def confirm_role_model(info: DeviceInfo, requested: Optional[str], role: str) ->
 
 def verify_expected_model(info: DeviceInfo, expected: str, role: str) -> None:
     detected = canonical_model(info.detected_model)
-    print('KOReader logs can come from a previous clone; they do not prove the physical model.')
+    ui_emit('device.log_hint')
     if detected and detected.casefold() != expected.casefold():
-        print(f'WARNING: model hint is {detected}; physical model entered is {expected}.')
+        ui_emit('device.model_mismatch', hint=detected, model=expected, severity='warning')
     if not prompt_yes_no(message('confirm.device', role=role, model=expected)):
         raise MigrationCancelled('Migration cancelled during device confirmation. No target files were modified.')
-    print(f'Operator confirmed {role}: {expected}')
+    ui_emit('device.model_confirmed', role=role, model=expected)
 
 
 def require_device_fingerprint(info: DeviceInfo) -> None:
@@ -911,10 +949,7 @@ def ensure_backup_space(backup_dir: Path, required_bytes: int, label: str) -> No
     free = shutil.disk_usage(backup_dir).free
     # Conservative because ZIP may not compress much.
     need = int(required_bytes * 1.10) + 100 * 1024 * 1024
-    print(
-        f"{label} backup-space check: "
-        f"{human_bytes(free)} free; ~{human_bytes(need)} recommended."
-    )
+    ui_emit('space.backup', label=label, free=human_bytes(free), need=human_bytes(need))
     if free < need:
         raise MigrationError(
             f"Not enough free space in {backup_dir} for a safe {label} backup."
@@ -926,11 +961,7 @@ def ensure_target_space(target_mount: Path, source_size: int, existing_target_si
     # Existing target will be removed before restore, so its size becomes reusable.
     effective = free + existing_target_size
     need = int(source_size * 1.10) + 50 * 1024 * 1024
-    print(
-        f"Target-space check: {human_bytes(free)} currently free; "
-        f"{human_bytes(effective)} effective after replacing old KOReader; "
-        f"~{human_bytes(need)} recommended."
-    )
+    ui_emit('space.target', free=human_bytes(free), effective=human_bytes(effective), need=human_bytes(need))
     if effective < need:
         raise MigrationError("Target Kobo does not have enough free space.")
 
@@ -1265,17 +1296,17 @@ def choose_identity_mode(target_device_id: Optional[str]) -> str:
     default = "1" if target_device_id else "2"
     options = []
     if target_device_id:
-        options.append(("1", "Preserve TARGET KOReader device_id (recommended)"))
+        options.append(("1", message('menu.identity_preserve')))
     else:
-        options.append(("1", "Preserve TARGET device_id (unavailable: none found)"))
+        options.append(("1", message('menu.identity_unavailable')))
     options += [
-        ("2", "Generate a NEW KOReader device_id on the target"),
-        ("3", "Clone SOURCE device_id exactly"),
+        ("2", message('menu.identity_new')),
+        ("3", message('menu.identity_clone')),
     ]
     while True:
-        choice = choose("Target KOReader identity:", options, default=default)
+        choice = choose(message('menu.identity'), options, default=default)
         if choice == "1" and not target_device_id:
-            print("No target device_id was found; choose option 2 or 3.")
+            ui_emit('menu.identity_retry', severity='warning')
             continue
         return {"1": "preserve", "2": "new", "3": "clone"}[choice]
 
@@ -2467,7 +2498,7 @@ def restore_saved_target(args, project: Path, run: Path, run_id: str, log_path: 
         print('DRY RUN: snapshot verified; no TARGET files changed.')
         safe_eject(mount)
         return 0
-    ensure_backup_space(run, (info.total_bytes if replacing_kr else 0) + sum(m['size'] for m in current_files.values()), 'pre-restore')
+    ensure_backup_space(run, (info.total_bytes if replacing_kr else 0) + sum(m['size'] for m in current_files.values()), message('space.pre_restore'))
     ensure_target_space(mount, (sum(m['size'] for m in kr_manifest['files'].values()) if kr_manifest else 0)
                         + sum(m['size'] for m in restored.values()), info.total_bytes if replacing_kr else 0)
     undo_kr, undo_manifest = None, None
@@ -2549,17 +2580,17 @@ def select_conflict_policy(mode: str, requested: Optional[str]) -> str:
     if mode == 'audit':
         return requested or 'overwrite'
     return requested or {'1': 'overwrite', '2': 'keep-target'}[choose(
-        'Different payload files at an existing path:',
-        [('1', 'Back up and overwrite with SOURCE'), ('2', 'Keep TARGET file')], default='1')]
+        message('menu.conflict'),
+        [('1', message('menu.overwrite')), ('2', message('menu.keep_target'))], default='1')]
 
 
 def migrate(args, backup_dir: Path, run_id: str, log_path: Path) -> int:
     mode = args.mode or {'1': 'full', '2': 'koreader', '3': 'library', '4': 'audit'}[choose(
-        'Choose migration mode:',
-        [('1', 'FULL: entire KOReader + ebooks + reading data + root fonts'),
-         ('2', 'KOREADER: entire KOReader directory only'),
-         ('3', 'LIBRARY: ebooks, reading data and/or root fonts only'),
-         ('4', 'AUDIT: inspect and report only')], default='1')]
+        message('menu.mode'),
+        [('1', message('menu.full')),
+         ('2', message('menu.koreader')),
+         ('3', message('menu.library')),
+         ('4', message('menu.audit'))], default='1')]
     dry_run = args.dry_run or mode == 'audit'
     full = mode in {'full', 'koreader', 'audit'}
     if mode == 'full':
@@ -2581,7 +2612,7 @@ def migrate(args, backup_dir: Path, run_id: str, log_path: Path) -> int:
     conflict = select_conflict_policy(mode, args.conflict)
     source_expected, target_expected = getattr(args, 'source_model', None), getattr(args, 'target_model', None)
     source_slug, target_slug = 'source', 'target'
-    print(f'Mode: {mode.upper()}; ebooks: {books}; root fonts: {fonts}; conflict policy: {conflict}')
+    ui_emit('migration.options', mode=mode.upper(), books=books, fonts=fonts, conflict=conflict)
     if dry_run:
         print('DRY RUN / AUDIT: no Kobo files or backup archives will be created, replaced or deleted.')
         print('Local scan reports and execution logs will be saved.')
@@ -2629,7 +2660,7 @@ def migrate(args, backup_dir: Path, run_id: str, log_path: Path) -> int:
     source_manifest = None
     payload_manifest = {'files': {}}
     required = (source_info.total_bytes if full else 0) + sum(m['size'] for m in scanned.values())
-    ensure_backup_space(backup_dir, required, 'source combined')
+    ensure_backup_space(backup_dir, required, message('space.source_backup'))
     if full:
         plugins, warnings = basic_plugin_audit(source_kr)
         print(f'Plugin structural audit: {len(plugins)} plugins; {len(warnings)} warnings.')
@@ -2701,10 +2732,14 @@ def migrate_target(args, backup_dir, run_id, log_path, mode, dry_run, full, book
     copy_size = sum(m['size'] for m in plan['copy'].values())
     if full:
         ensure_target_space(target_mount, source_info.total_bytes + copy_size, target_info.total_bytes)
-    elif shutil.disk_usage(target_mount).free < int(copy_size * 1.1) + 50 * 1024 * 1024:
-        raise MigrationError('Not enough target space for the library copy.')
+    else:
+        free = shutil.disk_usage(target_mount).free
+        need = int(copy_size * 1.1) + 50 * 1024 * 1024
+        ui_emit('space.library', free=human_bytes(free), need=human_bytes(need))
+        if free < need:
+            raise MigrationError('Not enough target space for the library copy.')
     ensure_backup_space(backup_dir, (target_info.total_bytes if full else 0)
-                        + sum(m['size'] for m in plan['existing'].values()), 'target combined')
+                        + sum(m['size'] for m in plan['existing'].values()), message('space.target_backup'))
     identity_mode = choose_identity_mode(read_device_id(target_kr / 'settings.reader.lua')) if full else None
     target_id = read_device_id(target_kr / 'settings.reader.lua') if full else None
     target_zip = backup_dir / f'koreader-{target_slug}-pre-migration-{run_id}.zip'
