@@ -53,7 +53,7 @@ Tests use temporary synthetic devices and mock USB/eject operations. On macOS, a
 
 Add meaningful tests for changed behavior and safety boundaries. Documentation-only work needs relative-link/anchor checks, CLI/example verification, shell syntax checks and publication privacy review. The publication helper independently runs its mandatory full checks before uploading.
 
-Run scripts/check_locales.py after any catalog/registry change. The development catalogs each contain 94 extracted message entries (36 in the published 3.3.0-dev.2 foundation); validation does not substitute for human translation review. Keep mode tokens, flags, JSON schemas and destructive confirmation semantics language-independent.
+Run scripts/check_locales.py after any catalog/registry change. The development catalogs each contain 131 extracted message entries (36 in the published 3.3.0-dev.2 foundation); validation does not substitute for human translation review. Keep mode tokens, flags, JSON schemas and destructive confirmation semantics language-independent.
 
 ## Validation and release status
 
@@ -63,7 +63,7 @@ The development branch adds an offline [source-package helper](MAINTAINING.md#lo
 
 [PR #1](https://github.com/gh-slee/kobo-koreader-migrate/pull/1) merged into main on 2026-10-16 as [564234e](https://github.com/gh-slee/kobo-koreader-migrate/commit/564234e2256bb6a64085cc10a4d3c5535322313e). Its [main-branch CI run](https://github.com/gh-slee/kobo-koreader-migrate/actions/runs/38918881111) passed all six macOS/Ubuntu Python 3.9, 3.12 and 3.14 jobs. Linux checks fixtures only. The pre-merge documentation commit dedc884 passed 117 local tests plus self-test and locale validation, and all twelve push/PR CI jobs.
 
-New changes require fresh validation. Temporary fixtures and the real macOS ditto round trip do not establish hardware compatibility. KM-011/KM-005/KM-001/KM-003/KM-013 remain Ready for test; see [manual acceptance](../ACCEPTANCE.md). KM-014 shared output routing is in progress with slice 1 ready for controlled testing; full extraction and KM-015 catalog review remain pending. Follow the current [CI runs](https://github.com/gh-slee/kobo-koreader-migrate/actions) and [open pull requests](https://github.com/gh-slee/kobo-koreader-migrate/pulls) for subsequent changes.
+New changes require fresh validation. Temporary fixtures and the real macOS ditto round trip do not establish hardware compatibility. KM-011/KM-005/KM-001/KM-003/KM-013 remain Ready for test; see [manual acceptance](../ACCEPTANCE.md). KM-014 shared output routing is in progress with slices 1/2 ready for controlled testing; full extraction and KM-015 catalog review remain pending. Follow the current [CI runs](https://github.com/gh-slee/kobo-koreader-migrate/actions) and [open pull requests](https://github.com/gh-slee/kobo-koreader-migrate/pulls) for subsequent changes.
 
 ## Coding agents
 
@@ -123,15 +123,25 @@ UI_MESSAGE_FIELDS inventories the integrated IDs and exact named parameters. Can
 
 | Integrated IDs / surface | Remaining extraction |
 | --- | --- |
-| prompt.*, confirm.* | Physical model free-text prompt; mode/identity/conflict menu questions and option descriptions |
+| prompt.*, confirm.*, menu.* | Detailed errors and remaining operation-specific prompts; menus/model text prompt added in slice 2 |
 | progress.* | Spinner/scan/comparison phase sentences and per-file diagnostic lines |
 | run.*, error.summary | Detailed MigrationError text, caught-failure/rollback explanations and pre-run interrupt output |
 | catalog.*, cleanup.* | Cleanup protection reasons and detailed maintenance errors |
 | difference.* | Machine JSON notes remain English; paths/action tokens unchanged |
-| device.waiting/connect_one/detected, migration.success/done | Device inspection, space/metadata/plugin diagnostics, restore completion and remaining workflow notices |
+| device.*, inspection.*, space.*, value.*, migration.success/done/options | Detailed metadata/plugin diagnostics, restore completion and remaining workflow notices; basic inspection/space added in slice 2 |
 
 run.json and difference.json gain optional ui_locale metadata. No status/category/phase tokens or recovery schemas are renamed; old runs remain accepted. difference.txt is localized human presentation. Full message extraction, consistent raw-diagnostic labelling and full human catalog review are later KM-014/KM-015 work, not completed by this slice. All text is static UTF-8 JSON and ordinary offline Python code; there is no runtime translator or AI dependency.
 
 Synthetic regressions compare all four modes, saved-source reuse, exact target restore, final default-No, rollback after writes, cleanup tokens and exit states across the three locales. Stream tests cover English logs, Unicode/ascii output, no duplicate tee entries, fallback, parameter contracts and context cleanup. These do not establish physical-device acceptance or human translation sign-off. New hosted CI results require publication of this branch.
 
-Local slice evidence: 154 tests passed (16 new shared-output/workflow tests), self-test, all 94 messages in each of three catalogs and publication worktree/history checks. The existing main CI applies to the merged baseline; hosted CI for this local slice remains pending.
+Local slice evidence: 154 tests passed (16 new shared-output/workflow tests), self-test, all 94 messages in each of three catalogs and publication worktree/history checks. Slice 1 merged as PR #6; [merged-main CI](https://github.com/gh-slee/kobo-koreader-migrate/actions/runs/39179925642) passed all six macOS/Ubuntu Python matrix jobs. This is evidence for slice 1, not later commits.
+
+## Menu and inspection integration (KM-014 slice 2)
+
+Development 3.3.0-dev.4 adds 37 explicit message contracts (131 catalog entries per locale). Mode/identity/conflict headings and labels, physical-model hints/retry/confirmation, inspection fields and capacity summaries use the shared adapter. English diagnostic wording is retained for existing fields; LIBRARY adds a capacity summary. The plugin-specific configuration indicator is removed from both output streams and catalogs; legacy DeviceInfo/manifest metadata remains compatible. Generic plugin audits and whole-runtime archive/verification still cover plugin settings without executing Lua. No message is matched/replaced after rendering.
+
+Model names, versions, paths, masked serial hints, sizes and operation tokens stay unchanged. Display-only yes/no/unknown values are nested message references; DeviceInfo and machine JSON still contain the original data. New static catalogs have full extracted-ID coverage but require human wording review. Number/unit formatting remains the existing representation; this slice does not introduce cultural date/number formats.
+
+Input defaults, policy tokens and unavailable identity retries retain their existing branches. Space formulas, reclamation assumptions, margins and '<' comparisons stay unchanged; the LIBRARY expression is named for display without changing its value or its position before TARGET backup/writes. Raw error details, metadata/plugin diagnostics, caught-failure/rollback descriptions and remaining phase notices are still pending extraction. No full KM-014/KM-015/manual hardware sign-off is implied.
+
+Local slice 2 evidence: 166 tests passed (12 new menu/inspection cases), self-test, 3x131 locale validation and publication worktree/history checks. Hosted CI, human wording review and hardware acceptance for this slice remain pending.

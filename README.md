@@ -147,7 +147,7 @@ SOURCE is ejected before TARGET is requested. Writes require final confirmation;
 
 ## Language support
 
-English (`en`), Traditional Chinese (`zh-Hant`) and Simplified Chinese (`zh-Hans`) are registered. The published 3.3.0-dev.2 ZIP translates help and static previews only. **Development 3.3.0-dev.3 adds partial runtime translation** for shared confirmations, progress, run status, catalog/cleanup headings and difference reports. Detailed device diagnostics, menu descriptions and remaining workflow messages are still English; tool-owned diagnostic log text stays English. Keep `locales/` beside the script, even for English.
+English (`en`), Traditional Chinese (`zh-Hant`) and Simplified Chinese (`zh-Hans`) are registered. The published 3.3.0-dev.2 ZIP translates help and static previews only. **Development 3.3.0-dev.4 adds partial runtime translation** for mode/identity/conflict menus, basic device/model/space checks, shared confirmations, progress, run status, catalog/cleanup headings and difference reports. Detailed metadata/plugin diagnostics, errors and remaining workflow messages are still English; tool-owned diagnostic log text stays English. Keep `locales/` beside the script, even for English.
 
 [Language selection and fallback](docs/USAGE.md#language-support). Translation wording and full interface localization still need review and follow-up work. Machine values such as statuses/modes and exact DELETE confirmations do not change with language; filenames and user data are preserved.
 

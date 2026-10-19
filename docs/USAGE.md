@@ -93,10 +93,10 @@ Those names are examples, not a tested hardware pair. An incorrect or stale log 
 | Language | CLI tag | Available now | Still pending |
 | --- | --- | --- | --- |
 | English | `en` | Complete current migration UI, help and samples | Review of future message extraction |
-| Traditional Chinese | `zh-Hant` | Help/samples; development build also translates shared confirmations, progress and run/catalog/difference labels | Detailed diagnostics, mode/identity/conflict menus and remaining workflow/error text; human wording review |
-| Simplified Chinese | `zh-Hans` | Help/samples; development build also translates shared confirmations, progress and run/catalog/difference labels | Detailed diagnostics, mode/identity/conflict menus and remaining workflow/error text; human wording review |
+| Traditional Chinese | `zh-Hant` | Help/samples; development build also translates shared prompts, mode/identity/conflict menus, device/model/space checks and progress/run/catalog/difference labels | Detailed metadata/plugin diagnostics and remaining workflow/error text; human wording review |
+| Simplified Chinese | `zh-Hans` | Help/samples; development build also translates shared prompts, mode/identity/conflict menus, device/model/space checks and progress/run/catalog/difference labels | Detailed metadata/plugin diagnostics and remaining workflow/error text; human wording review |
 
-Development 3.3.0-dev.3 contains 94 validated messages per locale; the published 3.3.0-dev.2 ZIP has the original 36-message help/sample foundation. Translation wording still needs human review. Choosing a language changes no migration decisions. Owned diagnostic log text and machine-schema values stay English. Raw operating-system diagnostics, book paths, identifiers and other user/device data are preserved as received; an English log can contain non-English data. Additional locales will follow the registry/catalog workflow after the initial foundation is accepted.
+Development 3.3.0-dev.4 contains 131 validated messages per locale; the published 3.3.0-dev.2 ZIP has the original 36-message help/sample foundation. Translation wording still needs human review. Choosing a language changes no migration decisions. Owned diagnostic log text and machine-schema values stay English. Raw operating-system diagnostics, book paths, identifiers and other user/device data are preserved as received; an English log can contain non-English data. Additional locales will follow the registry/catalog workflow after the initial foundation is accepted.
 
 These commands need no Kobo and do not create runs/logs/backups or inspect existing run data:
 
@@ -107,7 +107,7 @@ python3 kobo-koreader-migrate.py --locale zh-Hans --preview-ui
 python3 scripts/check_locales.py
 ```
 
-`--preview-ui` displays a static translated mode menu and confirmation examples, then exits. It never asks for approval or starts an operation. The actual interactive mode menu remains English. Python argparse headings/usage diagnostics can also remain English. `--preview-ui`/`--list-locales` cannot be combined with migration operations/settings.
+`--preview-ui` displays a static translated mode menu and confirmation examples, then exits. It never asks for approval or starts an operation. Development 3.3.0-dev.4 also localizes the actual mode, identity and conflict menus while preserving numeric keys/defaults and mode tokens; the published 3.3.0-dev.2 ZIP does not. Python argparse headings/usage diagnostics can also remain English. `--preview-ui`/`--list-locales` cannot be combined with migration operations/settings.
 
 
 Locale priority is `--locale`, then `KOBO_MIGRATE_LOCALE`, then the first nonempty terminal variable among `LANGUAGE`, `LC_ALL`, `LC_MESSAGES`, `LANG`, then English. Ordered colon-separated language preferences are supported. Common aliases include `en_US.UTF-8` -> `en`, `zh_TW.UTF-8`/`zh-HK`/`zh-MO` -> `zh-Hant`, and `zh_CN.UTF-8`/`zh-SG` -> `zh-Hans`. An explicit script wins over a conflicting region. Bare `zh` is ambiguous and falls back to English with guidance to choose a script; an unsupported explicit `--locale` is a usage error before device/run access.
@@ -118,7 +118,7 @@ The locale validator requires complete coverage of all extracted message IDs for
 
 Integrated confirmations still accept only y/yes/n/no (case-insensitive); empty input keeps the displayed default and invalid input retries. A question with `[y/N]` still defaults to No. Numeric menu keys and exact `DELETE RUN_ID` syntax remain unchanged. Do not infer support for Chinese affirmative answers. The adapter logs English prompts but never records typed answers.
 
-In development builds, run.json and difference.json have an additive `ui_locale` field. Statuses, operations, phases, category keys, fingerprints and archive paths remain stable; older records without ui_locale remain readable. difference.txt uses the selected locale while retaining stable action tokens and original file paths. Cleanup reasons and detailed exception text can still be English.
+In development builds, run.json and difference.json have an additive `ui_locale` field. Statuses, operations, phases, category keys, fingerprints and archive paths remain stable; older records without ui_locale remain readable. difference.txt uses the selected locale while retaining stable action tokens and original file paths. Cleanup reasons and detailed exception text can still be English. Basic device/model/space checks are translated in development 3.3.0-dev.4; their diagnostic log text remains English. Model/version/path values and serial hints are preserved; labels and yes/no/unknown display values are localized. SOURCE/TARGET roles stay visible. Device inspection uses generic runtime information without a plugin-specific configuration indicator. FULL/KOREADER still include plugin files in the whole-runtime archive and file verification.
 
 ## Books, metadata and fonts
 
@@ -264,3 +264,11 @@ Keep `locales/` with the script, including for English. Device migration require
 - Live-device safety and usability still need physical testing and human sign-off. Current feature status is recorded rather than assumed.
 
 Planned work includes interrupted-transfer recovery, optional exact library mirroring, content-assisted discovery, reading-data conflict reports, portable hardware settings, settings-only migration and a separate archive verifier. These remain backlog items until implemented/tested.
+
+## Menu and inspection translation (development slice 2)
+
+Mode choices remain 1=FULL, 2=KOREADER, 3=LIBRARY and 4=AUDIT; empty input defaults to FULL. Identity choices remain 1=preserve TARGET, 2=new and 3=clone SOURCE. The identity default is preserve when available and new otherwise; selecting unavailable preserve retries. LIBRARY conflict choices remain 1=back up/overwrite and 2=keep TARGET. FULL/KOREADER still refuse keep-target.
+
+A log model hint may be stale. Check the physical reader and confirm its model/build compatibility, even when the hint matches. Empty input in the physical-model text field can select its displayed hint, but the subsequent yes/no confirmation still defaults to No. Names remain plain ASCII model labels and are not translated.
+
+Backup capacity remains 110% of estimated bytes plus 100 MiB. Runtime replacement capacity remains 110% of source/runtime+payload bytes plus 50 MiB, using current free bytes plus the replaced runtime's size. LIBRARY retains its existing 110% copy-size plus 50 MiB check and now displays a summary before rejecting insufficient space. These margins and refusals are language-independent; additional report text does not free space or authorize writes.
