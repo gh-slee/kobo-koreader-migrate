@@ -139,3 +139,14 @@ Status: Ready for controlled testing of this slice; full KM-014 remains In progr
 - Review physical-model hints and mismatch warnings. A log hint never proves the hardware model; the following confirmation still defaults to No.
 - Capacity reports should show the same values in all languages. Synthetic tests cover backup/target thresholds one byte below, exactly at and one byte above the requirement; replaced-runtime space is still counted. LIBRARY low space must refuse before TARGET backup/writes.
 - Detailed errors/metadata/plugin diagnostics and other workflow notices are not fully translated. Existing release assets and older saved runs must remain usable; this slice is not a new public release or full translation/hardware sign-off.
+
+## KM-014 slice 3: workflow and recovery (3.3.0-dev.5)
+
+Status: Ready for controlled testing of this slice; KM-014 remains In progress. Use synthetic/disposable data for failure paths. Successful CI/merge is not human wording or hardware sign-off.
+
+- Review en/zh-Hant/zh-Hans migration, saved-source and exact-target-restore plans, final scope, backup/verification/eject/identity notices and archive heartbeats. Original paths/numbers/category tokens and confirmation defaults must remain intact.
+- Compare translated console output with the English log. Selected refusal/cancellation reasons should translate; exception string/JSON values stay English. Raw diagnostic labels should preserve the complete original detail, including Unicode paths, without duplicate tee output.
+- Run the synthetic recovery tests: refusal before device access, write failure with successful rollback (exit 2), changed-device rollback refusal and secondary rollback failure (exit 3), and exact-target-restore failure with undo or identity guard. Do not induce these failures on a real reader.
+- In temporary fixtures, compare status/exit codes and affected paths across all three locales. SOURCE remains unchanged; changed-device guards allow no further writes; retained snapshots must stay available.
+- Pre-run interruption should print one localized message, retain exit 130 and clear the UI context. An interrupt before locale parsing can still use English.
+- Low-level errors, detailed scan/comparison output, maintenance reasons/errors and startup/argparse messages are still pending extraction. Record manual wording feedback separately; this slice does not complete full translation or hardware acceptance.
