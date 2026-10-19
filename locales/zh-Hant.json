@@ -119,7 +119,6 @@
     "inspection.files": "KOReader 檔案數：{count:,d}",
     "inspection.size": "KOReader 大小：{size}",
     "inspection.identity": "是否有 device_id：{present}",
-    "inspection.assistant": "是否有 AI Assistant 設定：{present}",
     "inspection.serial": "裝置序號提示：{hint}",
     "value.yes": "是",
     "value.no": "否",

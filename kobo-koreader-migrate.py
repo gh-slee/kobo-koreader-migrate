@@ -89,7 +89,7 @@ class DeviceInfo:
     fingerprint_sha256: Optional[str]
     serial_hint: Optional[str]
     device_id_present: bool
-    ai_assistant_config: bool
+    ai_assistant_config: bool  # Legacy snapshot metadata; not a dedicated UI check.
     file_count: int
     total_bytes: int
 
@@ -446,7 +446,6 @@ UI_MESSAGE_FIELDS = {
     'inspection.files': {'count'},
     'inspection.size': {'size'},
     'inspection.identity': {'present'},
-    'inspection.assistant': {'present'},
     'inspection.serial': {'hint'},
     'value.yes': set(),
     'value.no': set(),
@@ -893,7 +892,6 @@ def display_device_info(info: DeviceInfo, label: str) -> None:
     ui_emit('inspection.files', count=info.file_count)
     ui_emit('inspection.size', size=human_bytes(info.total_bytes))
     ui_emit('inspection.identity', present=message('value.yes' if info.device_id_present else 'value.no'))
-    ui_emit('inspection.assistant', present=message('value.yes' if info.ai_assistant_config else 'value.no'))
     if info.serial_hint:
         ui_emit('inspection.serial', hint=info.serial_hint)
 

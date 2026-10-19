@@ -251,8 +251,8 @@ Local slice validation passed 154 tests (16 new UI routing/workflow cases), self
 
 ## KM-014 slice 2 — menus and basic inspection
 
-Status: Ready for controlled testing as part of In progress KM-014, development 3.3.0-dev.4. Adds translated mode/identity/conflict menus, physical-model hints/confirmation and basic device/space summaries, including a LIBRARY capacity line. Adds 38 entries per locale (132 total) with explicit placeholder contracts. Existing defaults, retries, model/fingerprint checks, space formulas and all device decisions remain unchanged.
+Status: Ready for controlled testing as part of In progress KM-014, development 3.3.0-dev.4. Adds translated mode/identity/conflict menus, physical-model hints/confirmation and basic device/space summaries, including a LIBRARY capacity line. Adds 37 entries per locale (131 total) with explicit placeholder contracts. The plugin-specific configuration indicator is removed from console/logs; legacy saved metadata, generic plugin audits and whole-runtime verification remain compatible. Existing defaults, retries, model/fingerprint checks, space formulas and all device decisions remain unchanged.
 
 Detailed errors, metadata/plugin diagnostics, raw diagnostic labelling and remaining workflow messages are the next extraction work; KM-015 human wording review is pending. No physical-device acceptance or publication/backup deletion permission follows from this ticket.
 
-Local slice 2 evidence: 165 tests passed (11 new menu/inspection cases), self-test, 3x132 locale validation and publication worktree/history checks. Hosted CI, human wording review and hardware acceptance for this slice remain pending.
+Local slice 2 evidence: 166 tests passed (12 new menu/inspection cases), self-test, 3x131 locale validation and publication worktree/history checks. Hosted CI, human wording review and hardware acceptance for this slice remain pending.

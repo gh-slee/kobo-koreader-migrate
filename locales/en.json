@@ -120,7 +120,6 @@
     "inspection.files": "KOReader files:     {count:,d}",
     "inspection.size": "KOReader size:      {size}",
     "inspection.identity": "device_id present:  {present}",
-    "inspection.assistant": "AI Assistant cfg:   {present}",
     "inspection.serial": "Device serial hint: {hint}",
     "value.yes": "yes",
     "value.no": "no",

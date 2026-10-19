@@ -135,6 +135,7 @@ Status: Ready for controlled testing of this slice; full KM-014 remains In progr
 
 - Review all three languages for mode/identity/conflict menus. Numeric choices/defaults must match: FULL default; preserve identity when available, new otherwise; unavailable preserve must retry; keep-target remains unsupported for FULL/KOREADER.
 - Inspect a synthetic device with known and unknown values. Labels/yes/no/unknown should localize; model/version/path/serial-hint/size/count values must remain intact. English logs must not contain translated owned labels or duplicate entries.
+- Confirm there is no AI Assistant configuration indicator in any console locale or the English log, whether that plugin configuration exists or not. Plugin files must still be included in FULL/KOREADER runtime archives and integrity verification; no plugin is executed. Older saved metadata remains readable.
 - Review physical-model hints and mismatch warnings. A log hint never proves the hardware model; the following confirmation still defaults to No.
 - Capacity reports should show the same values in all languages. Synthetic tests cover backup/target thresholds one byte below, exactly at and one byte above the requirement; replaced-runtime space is still counted. LIBRARY low space must refuse before TARGET backup/writes.
 - Detailed errors/metadata/plugin diagnostics and other workflow notices are not fully translated. Existing release assets and older saved runs must remain usable; this slice is not a new public release or full translation/hardware sign-off.

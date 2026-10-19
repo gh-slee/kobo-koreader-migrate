@@ -105,7 +105,8 @@ class MenuInspectionTests(base.MigrationTestCase):
                 self.assertIn(value, log.getvalue())
             self.assertIn('SOURCE device inspection', log.getvalue())
             self.assertIn('device_id present:  yes', log.getvalue())
-            self.assertIn('AI Assistant cfg:   no', log.getvalue())
+            self.assertNotIn('AI Assistant', out.getvalue())
+            self.assertNotIn('AI Assistant', log.getvalue())
             if tag != 'en':
                 self.assertNotIn('Model hint (logs)', out.getvalue())
                 self.assertNotIn('device_id present', out.getvalue())
@@ -119,8 +120,39 @@ class MenuInspectionTests(base.MigrationTestCase):
             self.assertIn('Model hint (logs):   Unknown', log.getvalue())
             self.assertIn('KOReader version:   Unknown', log.getvalue())
             self.assertNotIn('Device serial hint', log.getvalue())
+            self.assertNotIn('AI Assistant', out.getvalue())
+            self.assertNotIn('AI Assistant', log.getvalue())
             if tag != 'en':
                 self.assertIn('未知', out.getvalue())
+
+    def test_plugin_configuration_stays_in_verified_runtime_archive_without_special_ui(self):
+        source = self.root / 'source'
+        kr = self.make_koreader(source, b'synthetic runtime', 'SOURCE')
+        rel = 'plugins/assistant.koplugin/configuration.lua'
+        contents = b'error("Synthetic configuration must never be executed")'
+        base.write_file(kr / rel, contents)
+        base.write_file(kr / 'plugins/assistant.koplugin/main.lua', b'return {}')
+        base.write_file(kr / 'plugins/assistant.koplugin/_meta.lua', b'return {}')
+        before = base.tree_contents(kr)
+        archive, manifest = self.archive_koreader(source, 'synthetic-runtime.zip')
+        self.assertTrue(manifest['source']['ai_assistant_config'])
+        self.assertIn('assistant.koplugin', manifest['plugins'])
+        self.assertFalse(manifest['plugin_structural_warnings'])
+        self.assertEqual(manifest['files'][rel]['sha256'], m.hashlib.sha256(contents).hexdigest())
+        target = self.root / 'target'
+        (target / '.adds').mkdir(parents=True)
+        with mock.patch.object(m, 'run_with_spinner', side_effect=base.fake_ditto):
+            m.restore_zip(archive, target / '.adds')
+        m.verify_restored_tree(target / '.adds/koreader', manifest)
+        self.assertEqual((target / '.adds/koreader' / rel).read_bytes(), contents)
+        self.assertEqual(base.tree_contents(kr), before)
+        info = m.inspect_device(source)
+        for tag in ('en', 'zh-Hant', 'zh-Hans'):
+            out, log, session = self.streams(tag)
+            with session:
+                m.display_device_info(info, 'SOURCE')
+            self.assertNotIn('AI Assistant', out.getvalue())
+            self.assertNotIn('AI Assistant', log.getvalue())
 
     def test_physical_model_confirmation_still_defaults_to_no_despite_log_hint(self):
         info = m.DeviceInfo('Synthetic', 'Kobo Clara 2E', None, 'fixture', None, False, False, 0, 0)

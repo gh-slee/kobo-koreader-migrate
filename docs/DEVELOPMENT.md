@@ -53,7 +53,7 @@ Tests use temporary synthetic devices and mock USB/eject operations. On macOS, a
 
 Add meaningful tests for changed behavior and safety boundaries. Documentation-only work needs relative-link/anchor checks, CLI/example verification, shell syntax checks and publication privacy review. The publication helper independently runs its mandatory full checks before uploading.
 
-Run scripts/check_locales.py after any catalog/registry change. The development catalogs each contain 132 extracted message entries (36 in the published 3.3.0-dev.2 foundation); validation does not substitute for human translation review. Keep mode tokens, flags, JSON schemas and destructive confirmation semantics language-independent.
+Run scripts/check_locales.py after any catalog/registry change. The development catalogs each contain 131 extracted message entries (36 in the published 3.3.0-dev.2 foundation); validation does not substitute for human translation review. Keep mode tokens, flags, JSON schemas and destructive confirmation semantics language-independent.
 
 ## Validation and release status
 
@@ -138,10 +138,10 @@ Local slice evidence: 154 tests passed (16 new shared-output/workflow tests), se
 
 ## Menu and inspection integration (KM-014 slice 2)
 
-Development 3.3.0-dev.4 adds 38 explicit message contracts (132 catalog entries per locale). Mode/identity/conflict headings and labels, physical-model hints/retry/confirmation, inspection fields and capacity summaries use the shared adapter. English diagnostic wording is retained for existing fields; LIBRARY adds a capacity summary. No message is matched/replaced after rendering.
+Development 3.3.0-dev.4 adds 37 explicit message contracts (131 catalog entries per locale). Mode/identity/conflict headings and labels, physical-model hints/retry/confirmation, inspection fields and capacity summaries use the shared adapter. English diagnostic wording is retained for existing fields; LIBRARY adds a capacity summary. The plugin-specific configuration indicator is removed from both output streams and catalogs; legacy DeviceInfo/manifest metadata remains compatible. Generic plugin audits and whole-runtime archive/verification still cover plugin settings without executing Lua. No message is matched/replaced after rendering.
 
 Model names, versions, paths, masked serial hints, sizes and operation tokens stay unchanged. Display-only yes/no/unknown values are nested message references; DeviceInfo and machine JSON still contain the original data. New static catalogs have full extracted-ID coverage but require human wording review. Number/unit formatting remains the existing representation; this slice does not introduce cultural date/number formats.
 
 Input defaults, policy tokens and unavailable identity retries retain their existing branches. Space formulas, reclamation assumptions, margins and '<' comparisons stay unchanged; the LIBRARY expression is named for display without changing its value or its position before TARGET backup/writes. Raw error details, metadata/plugin diagnostics, caught-failure/rollback descriptions and remaining phase notices are still pending extraction. No full KM-014/KM-015/manual hardware sign-off is implied.
 
-Local slice 2 evidence: 165 tests passed (11 new menu/inspection cases), self-test, 3x132 locale validation and publication worktree/history checks. Hosted CI, human wording review and hardware acceptance for this slice remain pending.
+Local slice 2 evidence: 166 tests passed (12 new menu/inspection cases), self-test, 3x131 locale validation and publication worktree/history checks. Hosted CI, human wording review and hardware acceptance for this slice remain pending.
