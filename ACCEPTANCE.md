@@ -1,8 +1,24 @@
 # Manual acceptance and sign-off
 
-The [3.3.0-dev.2 experimental pre-release](https://github.com/gh-slee/kobo-koreader-migrate/releases/tag/v3.3.0-dev.2) was published on 2026-10-18. A connected-device KOREADER transfer, verified target recovery and basic KOReader operation have scoped confirmation; the full physical/manual checklist is not signed off. The base migration acceptance work from 3.2.0 remains pending. KM-011, KM-005, KM-001, KM-003 and KM-013 remain Ready for test. Publication is not acceptance. Automated tests use synthetic fixtures and do not replace this checklist.
+Current source is **1.0.0-rc.1**, an unpublished candidate continuing the [3.3.0-dev.6 experimental package](https://github.com/gh-slee/kobo-koreader-migrate/releases/tag/v3.3.0-dev.6), published on 2026-10-19. A KOREADER transfer from that package passed full manifest verification, TARGET identity preservation and safe eject; startup and opening an existing TARGET book were explicitly confirmed. FULL preview safely refused insufficient space before writes. These are scoped results, not ticket-wide sign-off or stable acceptance. Earlier recovery evidence remains historical. Private device reports/backups stay local. See the [numbering policy](docs/MAINTAINING.md#versioning-and-first-stable-release).
 
 Run commands from the repository root, or pass `--backup-dir` consistently if using a separate private output root. Stop any older migration worker first. Use disposable test books and retain all recovery snapshots until acceptance is complete.
+
+## First stable release gates
+
+Target sequence: `1.0.0-rc.1` (unpublished), later candidates if needed, then `1.0.0` after sign-off. Version labels do not complete acceptance. These gates cover the existing scope, not the entire future backlog.
+
+| Gate | Required evidence | Current state |
+| --- | --- | --- |
+| FULL and LIBRARY | Controlled end-to-end copying with adequate capacity; original paths, books, adjacent/central reading data, fonts, identical/overwrite handling and retained TARGET-only content checked. | Pending physical acceptance; synthetic coverage and FULL low-space refusal observed. |
+| KOREADER | Whole runtime replacement, identity preservation, file hashes, safe eject and basic operation. Review the relevant controls/plugins and confirm candidate equivalence before stable sign-off. | Scoped transfer/startup/book-opening confirmed for published 3.3.0-dev.6; wider checks pending. |
+| Saved-source and restoration | Human rehearsal of previews and a controlled exact restore with before/after evidence and retained undo backups; old supported snapshots remain usable. | Synthetic and historical scoped recovery evidence exists; final combined sign-off pending. |
+| Locks, cancellation and cleanup | Busy/stale ownership, default-No, durable states, eligibility/protection and exact typed confirmation. Use disposable fixtures for deletion and induced faults. | Automated coverage exists; human acceptance pending. |
+| Languages | Review all three catalogs, particularly destructive scope, negation, default-No and exact input tokens; verify localized console versus English diagnostics. | 371 entries per locale and automated/editorial checks complete; human wording sign-off pending. |
+| Candidate and distribution | Exact candidate commit passes supported CI, locales, tests, self-test, privacy/history, documentation and independently extracted package checks. Downloaded published bytes must match reviewed assets. | Local candidate tests/checks passed; exact-commit package, hosted CI and publication verification remain pending. Older CI does not certify this candidate. |
+| Public contract and release | Confirm support/compatibility limits, final changelog/package instructions, reviewed release scope and explicit publication approval. | Policy documented; stable publication pending. |
+
+Never unplug a real reader or corrupt/delete its recovery data to induce a failure. Use synthetic disposable data for rollback/fault/deletion scenarios. A FULL capacity refusal is safety evidence, not FULL migration acceptance. Do not require all Kobo models/plugins to be tested: state the actual supported/tested scope and remaining limits precisely. Retain real backups until their recovery value is no longer needed and separate deletion is authorized.
 
 ## Offline checks (no Kobo connected)
 
@@ -87,7 +103,7 @@ Record version, tested macOS/Python versions, hardware model pair, modes tested,
 
 ## KM-013: locale foundation (3.3.0-dev.1)
 
-Status: Ready for test. This is partial i18n support, not complete migration-interface translation. No Kobo is needed for these checks. Keep locales/ beside the script.
+Status: Ready for human test. This section describes the original locale foundation; completed owned-runtime localization is included in 3.3.0-dev.6 and the candidate source. No Kobo is needed for these foundation checks. Keep locales/ beside the script.
 
 ```bash
 python3 kobo-koreader-migrate.py --list-locales
@@ -105,7 +121,7 @@ python3 scripts/check_locales.py
 
 ## KM-018: local source package preparation (no Kobo)
 
-Status: Ready for test on the development branch; this helper is not part of the already published 3.3.0-dev.2 ZIP. Run from a clone containing the helper after committing the reviewed changes:
+Status: Ready for human test. The helper is included in the published 3.3.0-dev.6 ZIP and the current candidate source; it was absent from the older 3.3.0-dev.2 ZIP. Run from a clone containing the helper after committing the reviewed changes:
 
 ```bash
 python3 scripts/prepare_release.py prepare --ref HEAD
@@ -120,7 +136,7 @@ python3 scripts/prepare_release.py prepare --ref HEAD
 
 ## KM-014 slice 1: shared routing (3.3.0-dev.3)
 
-Status: Ready for controlled testing of this slice; full KM-014 remains In progress and KM-015 human wording review is pending. The published pre-release ZIP does not contain this change.
+Historical slice status: this describes 3.3.0-dev.3 at implementation time. The published 3.3.0-dev.6 ZIP and current candidate include completed owned-runtime extraction; human wording review remains pending. Use the combined acceptance and first-stable gates for current status.
 
 - In a disposable project root, use --list-runs/--cleanup in en, zh-Hant and zh-Hans. Headings/instructions should match the selected locale; run IDs/status tokens and protection reasons retain their technical/English values. Preview creates no deletion.
 - Review translated SOURCE/TARGET confirmation wording and [y/N]/[Y/n] defaults. Only y/yes/n/no are accepted; numeric choices and exact DELETE RUN_ID remain unchanged. Use synthetic disposable batches for any cleanup deletion test.
@@ -131,7 +147,7 @@ Status: Ready for controlled testing of this slice; full KM-014 remains In progr
 
 ## KM-014 slice 2: menus and inspection (3.3.0-dev.4)
 
-Status: Ready for controlled testing of this slice; full KM-014 remains In progress, with human wording and hardware acceptance pending. Use only disposable data for induced failures; no real Kobo is required for the synthetic tests.
+Historical slice status for 3.3.0-dev.4: extraction was still in progress at this point. The later 3.3.0-dev.6 package and candidate source include completed extraction; human wording/hardware acceptance remains pending. Use only disposable data for induced failures; no real Kobo is required for the synthetic tests.
 
 - Review all three languages for mode/identity/conflict menus. Numeric choices/defaults must match: FULL default; preserve identity when available, new otherwise; unavailable preserve must retry; keep-target remains unsupported for FULL/KOREADER.
 - Inspect a synthetic device with known and unknown values. Labels/yes/no/unknown should localize; model/version/path/serial-hint/size/count values must remain intact. English logs must not contain translated owned labels or duplicate entries.
@@ -142,7 +158,7 @@ Status: Ready for controlled testing of this slice; full KM-014 remains In progr
 
 ## KM-014 slice 3: workflow and recovery (3.3.0-dev.5)
 
-Status: Ready for controlled testing of this slice; KM-014 remains In progress. Use synthetic/disposable data for failure paths. Successful CI/merge is not human wording or hardware sign-off.
+Historical slice status for 3.3.0-dev.5: extraction was still in progress at this point. The later 3.3.0-dev.6 package and candidate source include completed extraction. Use synthetic/disposable data for failure paths. Successful CI/merge is not human wording or hardware sign-off.
 
 - Review en/zh-Hant/zh-Hans migration, saved-source and exact-target-restore plans, final scope, backup/verification/eject/identity notices and archive heartbeats. Original paths/numbers/category tokens and confirmation defaults must remain intact.
 - Compare translated console output with the English log. Selected refusal/cancellation reasons should translate; exception string/JSON values stay English. Raw diagnostic labels should preserve the complete original detail, including Unicode paths, without duplicate tee output.
