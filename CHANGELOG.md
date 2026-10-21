@@ -1,14 +1,22 @@
 # Changelog
 
-## 3.3.0-dev.6 — unreleased — owned-runtime localization completion
+## 1.0.0-rc.1 — unreleased — first-stable numbering transition
+
+- Begin the first stable release sequence at 1.0.0-rc.1, continuing the 3.3.0-dev.6 implementation. This is a one-time numbering reset; 1.x sorts below historical 3.x versions. Existing tags/assets remain unchanged; the candidate is not published.
+- Keep CLI behavior, schema versions, offline operation, backups, identity and migration safeguards unchanged. Add a synthetic cross-version saved-source/restore regression using higher-numbered 3.x metadata.
+- Reconcile current package links and localization status, document version/backup compatibility and consolidate explicit first-stable acceptance gates. Record only generic scoped device evidence; private reports and real backups remain local.
+- Local candidate validation: 185 synthetic tests (including the cross-version regression and actual macOS ditto fixture), self-test, 3x371 locale checks, index/worktree/history privacy, 84 documentation file links, 30 anchors and 30 shell examples passed. Hosted CI and final release acceptance remain pending.
+- Stable publication still requires remaining acceptance, exact-candidate checks and separate approval. No new device operation or remote publication is part of this change.
+
+## 3.3.0-dev.6 — 2026-10-19 — published experimental pre-release
 
 - Catalog all remaining owned runtime errors, per-file status/progress, maintenance/cleanup reasons, scan/plugin warnings, self-test notices and custom argument-combination checks. Add 123 explicit message contracts (371 entries per locale).
 - Preserve English exception/reason/warning/lock-label strings and machine records while displaying structured translations. Keep grouped recovery details structured; display-only booleans localize without changing English logs or stored bool values.
 - Complete an independent editorial terminology pass for the three catalogs. Human wording and end-to-end acceptance are deferred to the combined final round; bootstrap/framework/external diagnostics retain original text by design.
-- Add source-coverage and temporary-fixture regressions for protection rules, data equivalence, warnings, per-file comparison, unsafe archives, CLI refusals, command/recovery details and lock refusal. Combined local validation passed 184 tests (nine new), self-test, 3x371 locales and privacy/whitespace checks, plus 73 doc file links and 30 shell examples. New hosted CI and combined human acceptance remain pending; no real Kobo or backup deletion is involved.
-- No new release, runtime dependency, migration mode or change to confirmation/write/rollback safety decisions.
+- Add source-coverage and temporary-fixture regressions for protection rules, data equivalence, warnings, per-file comparison, unsafe archives, CLI refusals, command/recovery details and lock refusal. Combined local validation passed 184 tests (nine new), self-test, 3x371 locales and privacy/whitespace checks, plus 73 doc file links and 30 shell examples. All six exact merged-main jobs subsequently passed. The published package later passed a connected-device KOREADER transfer with full manifest verification, TARGET identity preservation and safe eject; startup and opening an existing book were confirmed. FULL preview refused insufficient space before writes. Broader human/hardware acceptance remains pending; private device data and backups are excluded from public records.
+- Published as an experimental pre-release after approval, with a source ZIP and SHA256SUMS only. No runtime dependency, migration mode or confirmation/write/rollback safety decision changed.
 
-## 3.3.0-dev.5 — unreleased — KM-014 workflow and recovery slice 3
+## 3.3.0-dev.5 — internal snapshot included in 3.3.0-dev.6 — KM-014 workflow and recovery slice 3
 
 - Translate core migration/saved-source/target-restore plans, archive/backup/verification/eject/identity notices, recovery guidance, five cancellation reasons and 36 selected refusals through the console/English-log adapter.
 - Add 117 static entries/explicit placeholder contracts per locale (248 total), including archive subprocess heartbeats. Preserve exception string args in English; render structured IDs only at presentation and label unconverted integrated diagnostic details without changing the original log text.
@@ -16,7 +24,7 @@
 - Add nine synthetic error/recovery regressions covering successful/blocked/failed rollback, exact-restore undo/guard, raw Unicode diagnostics, preserved English args and refusal before device access. Local validation passed 175 tests (nine new), self-test, 3x248 locale validation and publication worktree/history/whitespace checks. Subsequently merged as PR #8 with all 12 push/PR and six merged-main jobs passed. Human wording/hardware acceptance remains pending.
 - Low-level/maintenance errors and detailed scanner/comparison output still need extraction. This is not full translation, hardware acceptance or a new published release.
 
-## 3.3.0-dev.4 — unreleased — KM-014 menus and inspection slice 2
+## 3.3.0-dev.4 — internal snapshot included in 3.3.0-dev.6 — KM-014 menus and inspection slice 2
 
 - Translate mode/identity/conflict menus, physical-model hints/confirmation, inspection fields and backup/target capacity reports through the shared console/English-log adapter.
 - Add a LIBRARY capacity summary while retaining its existing free-space formula and refusal before TARGET backup/writes. Preserve numeric choices/defaults, unavailable identity retry, FULL/KOREADER conflict restrictions and physical-model confirmation.
@@ -25,7 +33,7 @@
 - Add synthetic multilingual menu/default/inspection/model and capacity-boundary regressions. Local validation passed 166 tests (12 new), self-test, 3x131 locale and privacy checks. Subsequently merged as PR #7 with all 12 push/PR and six merged-main CI jobs passed. Human review remains pending. Detailed errors/metadata/plugin/remaining workflow text is not fully translated; no new public release or hardware acceptance.
 
 
-## 3.3.0-dev.3 — unreleased — KM-014 shared output routing slice 1
+## 3.3.0-dev.3 — internal snapshot included in 3.3.0-dev.6 — KM-014 shared output routing slice 1
 
 - Introduce explicit message IDs/parameter contracts and scoped console/English-log rendering. Integrated messages bypass the legacy tee, preserve output channels, flush progress, support non-UTF-8 consoles and never log typed answers.
 - Integrate shared confirmations, progress, run status, catalog/cleanup headings and difference labels; retain English string compatibility for existing helpers. Add 58 static messages per locale (94 total); full workflow extraction and human wording review remain pending.
@@ -34,7 +42,7 @@
 - Local validation: 154 tests (16 new shared-output/workflow cases), self-test, 3x94 locale and publication checks passed. Hosted CI and human translation/hardware acceptance remain pending.
 - This is a local development slice, not a new published release or completion of KM-014/KM-015/manual hardware acceptance.
 
-## Unreleased — maintainer tooling and documentation
+## Maintainer tooling and documentation — included in 3.3.0-dev.6
 
 - Add offline `scripts/prepare_release.py` prepare/verify commands for explicit Git commits: guarded committed files only, complete runtime/locale assets, ZIP-to-Git byte verification, temporary-extraction smoke checks and local documentation links, SHA256SUMS and local preparation records.
 - Add synthetic source-package safety regressions and CI package preparation. Existing output directories are not overwritten; the helper has no upload, tag or device-operation commands.

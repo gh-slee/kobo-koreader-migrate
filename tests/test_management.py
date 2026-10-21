@@ -91,6 +91,28 @@ class ManagedWorkflowTests(base.MigrationTestCase):
         self.assertTrue((run/'koreader-before-restore.zip').is_file())
         self.assertTrue((run/'restore-result.json').is_file())
 
+    def test_numbering_reset_reuses_and_restores_supported_higher_version_snapshots(self):
+        source, target = self.prepare_devices()
+        source_before, target_before = base.tree_contents(source), base.tree_contents(target)
+        project = self.root/'project'
+        with mock.patch.object(m, 'VERSION', '3.3.0-dev.6'):
+            self.execute(project, [source, target], ['--mode', 'full'])
+        saved = self.latest(project)
+        self.assertEqual(m.read_json(saved/'run.json')['tool_version'], '3.3.0-dev.6')
+        artifacts = {p.name: p.read_bytes() for p in saved.iterdir()
+                     if p.suffix == '.zip' or p.name.endswith('.manifest.json')}
+        base.write_file(target/'Books/book.epub', b'changed after migration')
+        code, calls = self.execute(project, [target], ['--from-run', saved.name])
+        self.assertEqual((code, calls), (0, 1))
+        self.assertEqual((target/'Books/book.epub').read_bytes(), b'new book')
+        self.assertEqual(m.read_json(self.latest(project)/'run.json')['tool_version'], m.VERSION)
+        code, calls = self.execute(project, [target], ['--restore-run', saved.name])
+        self.assertEqual((code, calls), (0, 1))
+        self.assertEqual(base.tree_contents(target), target_before)
+        self.assertEqual(base.tree_contents(source), source_before)
+        self.assertEqual({name: (saved/name).read_bytes() for name in artifacts}, artifacts)
+        self.assertEqual(m.read_json(saved/'run.json')['tool_version'], '3.3.0-dev.6')
+
     def test_restore_dry_run_never_changes_device(self):
         source, target = self.prepare_devices()
         project=self.root/'project'

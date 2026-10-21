@@ -1,6 +1,6 @@
 # Development tracker
 
-Last reconciled: **2026-10-19**. Development version: **3.3.0-dev.6** (owned-runtime localization completion); published experimental pre-release: **3.3.0-dev.2**. Broader physical acceptance remains pending.
+Last reconciled: **2026-10-20**. Candidate source version: **1.0.0-rc.1** (unpublished; first-stable numbering reset). Latest published experimental pre-release: **3.3.0-dev.6**. Broader physical/manual acceptance remains pending. See [first-stable release gates](ACCEPTANCE.md#first-stable-release-gates) and the [version policy](docs/MAINTAINING.md#versioning-and-first-stable-release).
 
 Status vocabulary: `Queued`, `In progress`, `Ready for test`, `Blocked`, `Done`, `Deferred`. KM-011, KM-005, KM-001 and KM-003 are implemented and ready for user testing; ticket-wide human sign-off remains pending despite scoped KOREADER success. Entries represent planned work, not permission to operate physical devices or delete backups.
 
@@ -18,6 +18,15 @@ Acceptance for every ticket must include standalone CLI operation without AI API
 4. **KM-003**: backup management and cleanup preview.
 
 These four tickets await human testing/sign-off. See ACCEPTANCE.md. KM-013 is implemented and Ready for test for locale selection, localized help and read-only UI samples. KM-014 owned-runtime extraction, KM-015 three-catalog editorial work and KM-016 validator/regression work are Ready for test in 3.3.0-dev.6. Human wording and end-to-end acceptance are deferred to the combined final round. Bootstrap/framework/external output remains an explicit original-text boundary; KM-017 language-expansion guidance is queued. Other Queued work is not authorized by this release.
+
+## First stable milestone: 1.0.0
+
+Scope is the existing four modes, migration/backup/recovery safeguards and three locales. Do not add queued resume, mirroring, hardware-policy, discovery, GUI or platform-expansion work just to complete this milestone. Gates are maintained in [ACCEPTANCE.md](ACCEPTANCE.md#first-stable-release-gates).
+
+- The 3.3.0-dev.6 package passed a connected-device KOREADER transfer, full file verification, identity preservation and safe eject; the operator confirmed startup and opening an existing TARGET book. This is scoped acceptance only.
+- FULL preview safely refused insufficient space. A successful physical FULL transfer is still pending; use a capacity-sufficient, controlled test setup rather than deleting real data to force a pass.
+- Human language, broader mode/recovery/maintenance and device-control acceptance remain pending. Do not mark entire existing tickets Done from the scoped result.
+- 1.0.0-rc.1 is an unpublished candidate, not an approval to publish or a claim that the stable gates passed. Higher-numbered historical tags/assets and real recovery backups remain retained.
 
 ## Backlog
 
@@ -40,7 +49,7 @@ These four tickets await human testing/sign-off. See ACCEPTANCE.md. KM-013 is im
 | KM-015 | P1 | Ready for test | Initial three reviewed translations | Complete English, Traditional Chinese and Simplified Chinese catalogs; consistent terminology and exact destructive confirmation tokens. Three-catalog editorial pass completed; human safety-wording sign-off awaits combined acceptance. |
 | KM-016 | P1 | Ready for test | Locale validation and multilingual regression | Schema/duplicate-key/coverage/placeholder/control-character checks, exact publication allowlist extensions and CI; equivalent migration/device outcomes in all three locales. |
 | KM-017 | P2 | Queued | Translation contribution and expansion guide | Document CLI selection, packaging, aliases, fallback, supported plural rules and acceptance; new languages require reviewed registry/catalog changes and privacy checks. |
-| KM-018 | P1 | Ready for test | Local source package preparation and verification | Package only guarded files from an explicit Git commit; require complete locale assets, verify ZIP bytes against Git, smoke-test a temporary extraction, check local doc links, generate SHA256SUMS and local metadata; no overwrite, network, device access or publication. Development change; absent from the published 3.3.0-dev.2 asset. |
+| KM-018 | P1 | Ready for test | Local source package preparation and verification | Package only guarded files from an explicit Git commit; require complete locale assets, verify ZIP bytes against Git, smoke-test a temporary extraction, check local doc links, generate SHA256SUMS and local metadata; no overwrite, network, device access or publication. Included in the published 3.3.0-dev.6 source package; human acceptance remains pending. |
 
 ## Completed baseline (verified in current code)
 
@@ -67,9 +76,11 @@ These four tickets await human testing/sign-off. See ACCEPTANCE.md. KM-013 is im
 
 ## Development and validation status
 
+The latest published testing package is [3.3.0-dev.6](https://github.com/gh-slee/kobo-koreader-migrate/releases/tag/v3.3.0-dev.6), released on 2026-10-19 from `96efe762cc1263cf3afa1500f6d98012dfe82ee8`. Its baseline passed 184 synthetic tests, all six merged-main jobs and package checks. A subsequent packaged-build KOREADER transfer and basic operation have scoped confirmation; FULL writes and wider manual acceptance remain pending. The 1.0.0-rc.1 source is a subsequent version-metadata/documentation transition and needs its own exact-candidate validation. The following entries describe historical baselines.
+
 The [3.3.0-dev.2 experimental pre-release](https://github.com/gh-slee/kobo-koreader-migrate/releases/tag/v3.3.0-dev.2) was published on 2026-10-18 from commit `721e2cad01c7c2811baeb9bd3fff424bba87f275`. Its [main CI](https://github.com/gh-slee/kobo-koreader-migrate/actions/runs/39155468946) passed all six macOS/Ubuntu Python 3.9/3.12/3.14 jobs; the release baseline also passed 123 local tests, self-test, locale and privacy checks. The fixes close read-only statistics connections before safe eject and tolerate already-removed descendants during runtime replacement/recovery. Verified target recovery and saved-source KOREADER transfer completed on connected hardware, with basic KOReader operation confirmed. Broader hardware acceptance and FULL book migration remain pending. KM-011/KM-005/KM-001/KM-003/KM-013 remain Ready for test; this scoped success does not sign off entire tickets. Use ACCEPTANCE.md for verification. A public roadmap describes product work, not authority to access devices or publish changes.
 
-The merged PR #5 follow-up added KM-018 local source-package tooling and reconciles release status documentation; these changes are not in the published ZIP. The helper never uploads, creates tags or runs device operations. Local follow-up validation passed 138 tests (15 for packaging), self-test, locale and worktree/history privacy checks. The helper was merged in PR #5 and merged-main CI 39165980479 passed all six jobs. The existing release CI result is not evidence for later commits.
+The merged PR #5 follow-up added KM-018 local source-package tooling and reconciles release status documentation; these changes were not in the earlier 3.3.0-dev.2 ZIP and are included in 3.3.0-dev.6. The helper never uploads, creates tags or runs device operations. Local follow-up validation passed 138 tests (15 for packaging), self-test, locale and worktree/history privacy checks. The helper was merged in PR #5 and merged-main CI 39165980479 passed all six jobs. The existing release CI result is not evidence for later commits.
 
 Target restoration needs a modern target-snapshot.json and target-changes.json plus verified archive pairs. A FULL source snapshot can serve FULL/KOREADER, not LIBRARY; central metadata belongs to the runtime archive. See README.md for compatibility and recovery details.
 

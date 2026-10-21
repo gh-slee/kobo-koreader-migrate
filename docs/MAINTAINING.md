@@ -44,13 +44,25 @@ Use the exact repository identity shown by origin. The helper checks the destina
 
 Before a release, verify the intended commit, version/changelog, complete source distribution and required human acceptance. Include locales/ even for English; do not advertise a single downloaded Python file as a complete installation.
 
-The complete development implementation is on main following the merge of PR #1. The README clone command and CI badge target main. Keep installation instructions and badge scope aligned with the actual default/release branch when release policy changes. Do not advertise nonexistent binaries, package-manager packages or hardware certification.
+The README clone command and CI badge target main. Download instructions must distinguish the currently published testing package from unpublished candidate source. Keep installation instructions and badge scope aligned with the actual default/release branch when release policy changes. Do not advertise nonexistent binaries, package-manager packages or hardware certification.
 
 Confirm that user/developer links work in a clone and an extracted source archive. Keep public instructions generic, and keep personal preferences, credentials and session histories local. Existing public Git history is not erased by reorganizing current files. Release publication, merge and remote deletion are separate authorized actions; the helper does not perform them.
 
+## Versioning and first stable release
+
+The first stable public baseline is planned as **1.0.0**, preceded by **1.0.0-rc.1** and further candidates when fixes are needed. This is an explicit one-time numbering reset from the earlier 3.x development series, continuing the same implementation. It is not a backwards-compatibility break or a claim that 1.x numerically supersedes 3.x. Existing published tags, release bodies and assets must remain unchanged.
+
+SemVer compares 1.0.0 below 3.3.0-dev.6. Do not select the current release by greatest tag or assume automatic Latest selection handles this reset. Public notes must explain the transition, link the intended release explicitly and distinguish the latest *published* package from unpublished source. The CLI does not auto-update. Creating tags/releases or selecting GitHub Latest still requires exact-scope publication approval; prereleases stay marked prerelease/not Latest, and the approved stable release must be explicitly selected as Latest.
+
+The reset changes the runtime VERSION and resulting version metadata, not CLI tokens/options, confirmation defaults, mode scope, exit semantics, schema versions or the run-directory layout. Version strings in old run/manifest records are provenance, not a numerical minimum-version check. Supported valid 3.x snapshots must remain readable subject to the existing schema/identity/path/integrity checks. Do not rewrite old records, regenerate their manifests or delete snapshots to match the new number. Cross-version synthetic tests cover saved-source reuse and exact TARGET restore.
+
+For 1.0.0, the public compatibility surface includes documented CLI flags/modes, exit meanings and supported versioned run/snapshot/manifest schemas. Console wording/progress formatting is human presentation, not a parsing API. Supported-host limits remain macOS/Python 3.9+ for device operations; Linux CI validates fixtures only. Do not claim every device/build/plugin is compatible: physical roles and SOURCE build compatibility still require operator confirmation. Any later incompatible contract change requires a major-version decision; compatible features use minor versions, fixes use patches. This policy begins with the new 1.x sequence; historical numbering remains documented rather than retroactively changed. See [SemVer](https://semver.org/).
+
+Before stable publication, complete the [first-stable gates](../ACCEPTANCE.md#first-stable-release-gates), fix blocking issues, freeze an exact candidate and run the normal checks plus package prepare/verify. Obtain human sign-off for the documented scope; queued future features are not prerequisites. Then prepare final version/changelog/notes and revalidate the exact stable package. Review exact commit/assets/public metadata/privacy and obtain approval before publishing. No date, tag or RC label substitutes for those steps.
+
 ## Local package preparation and verification
 
-The published [3.3.0-dev.2 pre-release](https://github.com/gh-slee/kobo-koreader-migrate/releases/tag/v3.3.0-dev.2) was prepared and independently verified before this helper existed. The helper is a development follow-up; it does not modify that release or its assets.
+The helper is included in the published [3.3.0-dev.6 testing package](https://github.com/gh-slee/kobo-koreader-migrate/releases/tag/v3.3.0-dev.6) and current candidate source. The older 3.3.0-dev.2 pre-release predates the helper. Preparing a new candidate never modifies either published release or its assets.
 
 Use Python 3.9+ and Git in a reviewed clone containing `scripts/prepare_release.py`. No GitHub CLI, network, Kobo, third-party Python package or AI service is needed. Commit reviewed public changes first if they should be included. The explicit ref selects Git objects: modified, untracked and ignored working files are never packaged. Selecting an older commit deliberately excludes later changes. Only execute extracted smoke checks from code you have reviewed; the publication guard is not a sandbox for arbitrary code.
 

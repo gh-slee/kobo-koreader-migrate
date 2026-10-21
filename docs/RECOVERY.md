@@ -63,6 +63,12 @@ Progress output includes phase timestamps, file counts, bytes, large-file transf
 
 Project and device locks use OS-backed ownership. A leftover lock **filename** does not mean another worker is running: locks release when the process exits. Do not delete a live lock file to bypass ownership. Prior unfinished `running` records are reconciled conservatively at the next exclusive project startup. Older v3.0.x workers do not honour these locks; stop them before running newer versions.
 
+## Version numbering and existing backups
+
+The first-stable 1.x sequence is a numbering reset from earlier 3.x development builds. Tool version strings in logs/JSON are provenance; snapshot/manifest schema versions and integrity checks determine supported reuse, not whether a tool version sorts above another. Existing valid supported 3.x snapshots remain usable through the same saved-source/restore commands. Modern snapshots still require their complete archive/manifest/record pairs; a version reset cannot repair incomplete or corrupt backups.
+
+Do not rename run IDs, edit existing version metadata or recreate old manifests to match 1.x. Keep using the output root containing those runs; a new checkout's default output directory does not automatically discover another checkout's backups. Existing source references/dependencies and cleanup protection continue to apply. See [version policy](MAINTAINING.md#versioning-and-first-stable-release).
+
 ## Saved source migration and target restoration
 
 List existing runs first:
