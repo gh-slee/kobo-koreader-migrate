@@ -1,8 +1,9 @@
-<h1 align="center">📚 Kobo KOReader Migration</h1>
+<h1 align="center">📚 KOReader Bridge</h1>
 
 <p align="center">
-  <strong>Your books. Your reading progress. Your next Kobo.</strong><br/>
-  An independent, MIT-licensed open-source Python CLI for migrating KOReader, supported ebooks, reading data and fonts between Kobo devices on macOS.<br/>
+  <strong>Bring your reading setup to your next device.</strong><br/>
+  An independent, MIT-licensed open-source Python CLI for migrating KOReader, supported ebooks, reading data and fonts.<br/>
+  Currently supports Kobo → Kobo migration on macOS.<br/>
   Keep the original folder paths, preview changes and verify copied files.
 </p>
 
@@ -18,6 +19,7 @@
 <p align="center">
   <a href="#quick-start">Quick start</a> ·
   <a href="#choose-a-mode">Modes</a> ·
+  <a href="#device-support">Device support</a> ·
   <a href="#tech-stack">Tech stack</a> ·
   <a href="#language-support">Languages</a> ·
   <a href="#contributing">Contribute</a> ·
@@ -37,6 +39,20 @@
 | 🛟 **Backups and recovery** | Capture SOURCE, back up TARGET, verify copied bytes and attempt rollback on caught failures. Reuse saved SOURCE archives or restore a recorded TARGET snapshot. |
 | 🧭 **Visible progress** | Phase timestamps, file/byte counts, transfer/hash speed, ETA and archive heartbeats show what the tool is doing. |
 | 🔒 **Offline operation** | Python standard library plus macOS tools. No runtime downloads, telemetry, AI keys or LLM service. Private artifacts stay in local run folders. |
+
+## Device support
+
+**Kobo → Kobo is the only currently supported device migration direction.** KOReader Bridge is the new project name; support for additional KOReader devices is future work. The name does not imply compatibility with every device that runs KOReader.
+
+| Device migration | Status | Host and limits |
+| --- | --- | --- |
+| Kobo → Kobo | Implemented; broader manual acceptance pending | macOS, Python 3.9+. Confirm device roles and SOURCE build compatibility; no claim of universal Kobo model/plugin certification. |
+| Routes involving Kindle | Planned research; unsupported | No Kindle detection, adapter or validated transfer policy is implemented. |
+| Other KOReader device families | Future scope; unsupported | Platform selection, compatibility rules and validation are still to be defined. |
+
+Additional device support is outside the first `1.0.0` milestone. Each new platform needs its own migration policy and tests before appearing as supported. See the [device-support roadmap](TRACKER.md#device-support-roadmap).
+
+The CLI filename remains `kobo-koreader-migrate.py`, and existing release archives retain their original names. Continue using the commands below with the renamed project.
 
 ## Quick start
 
@@ -174,13 +190,13 @@ English (`en`), Traditional Chinese (`zh-Hant`) and Simplified Chinese (`zh-Hans
 
 ## Project status and roadmap
 
-**[1.0.0-rc.1](https://github.com/gh-slee/kobo-koreader-migrate/releases/tag/v1.0.0-rc.1) was published on 2026-10-21 as a pre-release, not GitHub Latest.** Its tag resolves to `aaedb78f2b2233ffe91ad42ae8ea9fb312860052`; both uploaded assets were downloaded and verified against the reviewed bytes. This `1.0.0-rc.2` source snapshot updates version metadata and documentation, with no migration behavior change.
+**[1.0.0-rc.1](https://github.com/gh-slee/kobo-koreader-migrate/releases/tag/v1.0.0-rc.1) was published on 2026-10-21 as a pre-release, not GitHub Latest.** Its tag resolves to `aaedb78f2b2233ffe91ad42ae8ea9fb312860052`; both uploaded assets were downloaded and verified against the reviewed bytes. This `1.0.0-rc.2` source snapshot includes documentation updates and the KOReader Bridge project name; migration behavior is unchanged.
 
 A connected-device KOREADER transfer from the earlier [3.3.0-dev.6 package](https://github.com/gh-slee/kobo-koreader-migrate/releases/tag/v3.3.0-dev.6) passed full manifest verification, preserved TARGET identity and safely ejected; startup and opening an existing TARGET book were confirmed. A FULL preview safely refused insufficient TARGET space. These observations do not sign off FULL writes, all recovery/cleanup workflows, every plugin/hardware control or complete human translation review. The [stable-release gates](ACCEPTANCE.md#first-stable-release-gates) remain open.
 
 CI covers synthetic fixtures on macOS/Linux and a real macOS `ditto` round trip on temporary directories. It does not certify every device or replace the remaining manual acceptance checklists. The badge tracks push CI on main; review-branch checks are available on the corresponding PR. Detailed fixes and validation belong in CHANGELOG.md and docs/DEVELOPMENT.md.
 
-Interrupted-transfer resume, exact library mirroring, content-assisted discovery, portable hardware settings and additional interface languages remain planned work. [Current status and criteria](TRACKER.md) · [Automated evidence](docs/DEVELOPMENT.md#validation-and-release-status).
+Interrupted-transfer resume, exact library mirroring, content-assisted discovery, portable hardware settings, additional interface languages and non-Kobo device support remain planned work. [Current status and criteria](TRACKER.md) · [Automated evidence](docs/DEVELOPMENT.md#validation-and-release-status).
 
 ## Versioning
 

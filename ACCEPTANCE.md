@@ -4,6 +4,15 @@ This source snapshot is **1.0.0-rc.2**, a documentation candidate following the 
 
 Run commands from the repository root, or pass `--backup-dir` consistently if using a separate private output root. Stop any older migration worker first. Use disposable test books and retain all recovery snapshots until acceptance is complete.
 
+## KOReader Bridge name and scope review (KM-019)
+
+Status: Ready for human review. This is documentation work; no device connection or migration is needed.
+
+- README identifies the project as KOReader Bridge and states that only Kobo → Kobo migration on macOS is currently implemented. General Kobo build compatibility and remaining first-stable acceptance limits are still explicit.
+- Kindle and other device families are labelled future/unsupported. Non-Kobo tickets do not block the existing Kobo `1.0.0` milestone or count as implemented support.
+- Existing CLI commands, filename, locale catalogs, schemas, output paths and published archive names remain unchanged. Download links still point to real existing assets.
+- The proposed GitHub repository rename is tracked separately under KM-020. Current badges, clone commands and release links continue using the actual repository until that operation is approved and completed. Renaming review is not physical-device sign-off.
+
 ## First stable release gates
 
 Target sequence: published `1.0.0-rc.1`, further candidates such as this `1.0.0-rc.2` source snapshot, then `1.0.0` after sign-off. Consult the release page for published assets rather than inferring publication from a source version. Version labels do not complete acceptance. These gates cover the existing scope, not the entire future backlog.

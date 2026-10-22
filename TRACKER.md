@@ -1,8 +1,14 @@
-# Development tracker
+# KOReader Bridge development tracker
 
 Last reconciled: **2026-10-21**. Source snapshot version: **1.0.0-rc.2** (documentation candidate). [1.0.0-rc.1](https://github.com/gh-slee/kobo-koreader-migrate/releases/tag/v1.0.0-rc.1) was published on 2026-10-21 as a pre-release, not Latest. Check the release list for later published assets. Broader physical/manual acceptance remains pending. See [first-stable release gates](ACCEPTANCE.md#first-stable-release-gates) and the [version policy](docs/MAINTAINING.md#versioning-and-first-stable-release).
 
 Status vocabulary: `Queued`, `In progress`, `Ready for test`, `Blocked`, `Done`, `Deferred`. KM-011, KM-005, KM-001 and KM-003 are implemented and ready for user testing; ticket-wide human sign-off remains pending despite scoped KOREADER success. Entries represent planned work, not permission to operate physical devices or delete backups.
+
+## Project identity and supported scope
+
+Public project name: **KOReader Bridge**, continuing the existing Kobo migration tool. The current device scope is **Kobo → Kobo on macOS with Python 3.9+**. Kindle and other KOReader device families are future work, not supported migration targets. Linux CI remains fixture validation only.
+
+Keep existing CLI names/tokens, schemas, run paths, backup compatibility and published release assets stable during the documentation rebrand. The proposed repository slug is `koreader-bridge`; GitHub repository rename and link/remote changes are tracked separately in KM-020. A project-name decision does not authorize that remote operation or a push.
 
 ## Mandatory runtime requirement (all tickets)
 
@@ -28,6 +34,16 @@ Scope is the existing four modes, migration/backup/recovery safeguards and three
 - Human language, broader mode/recovery/maintenance and device-control acceptance remain pending. Do not mark entire existing tickets Done from the scoped result.
 - RC1 publication and both downloaded assets have been verified. RC2 updates source documentation and version metadata; its publication is a separate reviewed action. Neither candidate completes stable gates. Published RC1 and historical 3.x tags/assets remain unchanged; real recovery backups remain retained.
 
+## Device-support roadmap
+
+The broader name describes the project direction, not delivered multi-device support. Non-Kobo work is queued after the Kobo first-stable milestone and requires its own implementation scope.
+
+1. **KM-021 — Feasibility and support matrix:** research candidate device families, including Kindle, then choose the first platform and explicit migration directions. Record access/installation prerequisites, supported versions, host transport, runtime locations, identities, metadata and evidence gaps.
+2. **KM-022 — Portable data and platform safeguards:** define what can move between device families, what must remain on TARGET and which combinations must be refused. Do not assume copying a complete Kobo runtime is safe on another family. Preserve existing exact Kobo FULL/KOREADER semantics; new policies must be explicit. Coordinate with KM-007/008/009 for metadata/hardware/settings handling.
+3. **KM-023 — First non-Kobo adapter:** platform and supported directions remain to be selected after KM-021/022. Implement ordinary offline code, synthetic fixtures and controlled hardware acceptance, including capacity, backup, identity, path, rollback and restore behavior. Update user docs/support matrix only after the implemented scope is validated.
+
+No Kindle support, platform priority, delivery date or complete cross-platform migration guarantee is implied by these tickets. Add other device families through separately scoped tickets. Existing Kobo migration must remain available and its pending acceptance must not be marked complete by this roadmap.
+
 ## Backlog
 
 | ID | Priority | Status | Feature | Acceptance criteria / key constraints |
@@ -50,6 +66,11 @@ Scope is the existing four modes, migration/backup/recovery safeguards and three
 | KM-016 | P1 | Ready for test | Locale validation and multilingual regression | Schema/duplicate-key/coverage/placeholder/control-character checks, exact publication allowlist extensions and CI; equivalent migration/device outcomes in all three locales. |
 | KM-017 | P2 | Queued | Translation contribution and expansion guide | Document CLI selection, packaging, aliases, fallback, supported plural rules and acceptance; new languages require reviewed registry/catalog changes and privacy checks. |
 | KM-018 | P1 | Ready for test | Local source package preparation and verification | Package only guarded files from an explicit Git commit; require complete locale assets, verify ZIP bytes against Git, smoke-test a temporary extraction, check local doc links, generate SHA256SUMS and local metadata; no overwrite, network, device access or publication. Included in the published 3.3.0-dev.6 source package; human acceptance remains pending. |
+| KM-019 | P2 | Ready for test | KOReader Bridge identity and Kobo-only scope | README name/tagline, explicit device support matrix, future-device roadmap and acceptance checks are documented. Review links and public wording; CLI/runtime/schema/archive names and current behavior stay unchanged. No non-Kobo compatibility claim. |
+| KM-020 | P2 | Queued | GitHub repository rename and link transition | Proposed `gh-slee/koreader-bridge`; verify availability/admin access, review exact remote scope, then rename existing repository after approval. Preserve repository identity/history/issues/PRs/tags/releases/assets; update origin, clone commands, badges, current links, maintainer tooling/defaults and private local context; verify redirects/CI/downloads. Do not recreate the old slug or rewrite old release assets. See docs/MAINTAINING.md. |
+| KM-021 | P2 | Queued | Non-Kobo feasibility and support matrix | Research Kindle and other candidate families; select a first platform and supported routes only after documenting prerequisites, versions, access/transport, runtime/metadata/hardware differences and available test hardware. No implementation or compatibility claim from research alone. |
+| KM-022 | P2 | Queued | Cross-device migration policy and safeguards | Define portable versus platform-specific content, compatibility/refusal rules and adapter boundaries after KM-021. Preserve Kobo FULL/KOREADER behavior and all offline/identity/path/space/backup/rollback protections. Coordinate with KM-007/008/009; do not execute device Lua/plugins. |
+| KM-023 | P2 | Queued | First non-Kobo device adapter (platform TBD) | Depends on KM-021/022 and a separately authorized implementation scope. Add explicit route selection and platform-specific offline capture/apply/restore, synthetic failure/compatibility regressions and controlled hardware acceptance; document exact tested scope and unsupported routes before advertising support. |
 
 ## Completed baseline (verified in current code)
 

@@ -2,6 +2,9 @@
 
 ## 1.0.0-rc.2 — documentation candidate
 
+- Adopt KOReader Bridge as the public project name and explicitly limit current device support to Kobo → Kobo on macOS. Track non-Kobo feasibility, portable migration policy and a future adapter separately from the first-stable Kobo milestone.
+- Track the proposed GitHub repository rename separately. Preserve current repository links until that operation is approved/completed; CLI commands, version, backup schemas and existing release assets remain unchanged by the rebrand.
+
 - Correct release status throughout the source distribution: RC1 was published on 2026-10-21. Pin working download/verification commands to the published RC1 assets and distinguish a source snapshot from an uploaded release.
 - Record exact RC1 CI/package/download verification without treating it as evidence for a later commit or as human/hardware sign-off. Keep all first-stable acceptance gates open where still pending.
 - Advance VERSION for a distinct candidate package. Migration behavior, schemas, locale catalogs, confirmation defaults and safety checks are unchanged. Existing RC1 and 3.x tags/assets remain intact; no replacement upload is intended.
