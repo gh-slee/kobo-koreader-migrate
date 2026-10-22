@@ -62,7 +62,7 @@ Before stable publication, complete the [first-stable gates](../ACCEPTANCE.md#fi
 
 ## Local package preparation and verification
 
-The helper is included in the published [1.0.0-rc.1 package](https://github.com/gh-slee/kobo-koreader-migrate/releases/tag/v1.0.0-rc.1), the earlier 3.3.0-dev.6 package and this source snapshot. The older 3.3.0-dev.2 pre-release predates the helper. Preparing a new candidate never modifies a published release or its assets.
+The helper is included in the published [1.0.0-rc.1 package](https://github.com/gh-slee/koreader-bridge/releases/tag/v1.0.0-rc.1), the earlier 3.3.0-dev.6 package and this source snapshot. The older 3.3.0-dev.2 pre-release predates the helper. Preparing a new candidate never modifies a published release or its assets.
 
 Use Python 3.9+ and Git in a reviewed clone containing `scripts/prepare_release.py`. No GitHub CLI, network, Kobo, third-party Python package or AI service is needed. Commit reviewed public changes first if they should be included. The explicit ref selects Git objects: modified, untracked and ignored working files are never packaged. Selecting an older commit deliberately excludes later changes. Only execute extracted smoke checks from code you have reviewed; the publication guard is not a sandbox for arbitrary code.
 
@@ -93,27 +93,21 @@ Release documents are immutable source snapshots. State the snapshot version wit
 Local builds may share a runtime version while carrying different source commits. Before another public release, assign a new version/tag and review its final commit and assets; do not reuse or replace the published pre-release tag/assets. No preparation result grants permission to publish.
 
 
-## KOReader Bridge repository rename (KM-020)
+## Repository identity and rename (KM-020)
 
-The public project name is KOReader Bridge. The repository currently remains `gh-slee/kobo-koreader-migrate`; `gh-slee/koreader-bridge` is the proposed new slug. This documented plan does not rename or publish anything. The documentation rebrand does not change the CLI filename, existing release archives, version or backup schemas.
+The public project is **KOReader Bridge**, and the canonical repository is **`gh-slee/koreader-bridge`**. The existing `gh-slee/kobo-koreader-migrate` repository was renamed in place; no replacement repository or private source/data upload was used. The CLI filename `kobo-koreader-migrate.py`, version, backup schemas and already-published archive names remain unchanged. Local checkout/output folders do not need to be moved.
 
-Before renaming, verify the desired slug is available to the repository owner and the acting account has admin access. Review the exact old/new repository identity and metadata changes, retain a baseline of repository ID/history, open PRs/issues, tags, releases and asset hashes, and obtain approval for the remote rename. Renaming the existing repository preserves its continuity; do not create a replacement repository and repush private local files.
+Post-rename verification confirmed the same repository ID and all branch/tag refs, preserved 11 issue/PR identities and all three existing releases, and downloaded all six assets to compare SHA-256 with the pre-rename baseline. Release bodies/flags and asset names/sizes/digests remained unchanged. Both old and new Git URLs resolve to the baseline refs; the old API route resolves to the same repository. The existing exact-main CI still passes all six jobs. This is continuity evidence, not new source CI or human/device acceptance.
 
-With appropriate approval, use GitHub **Settings → General → Repository name → Rename**, or the equivalent CLI command:
-
-```bash
-gh repo rename koreader-bridge --repo gh-slee/kobo-koreader-migrate
-```
-
-Then explicitly set and verify the canonical origin in each clone:
+New clones use the canonical README command. For an existing clone, explicitly set and verify origin:
 
 ```bash
 git remote set-url origin https://github.com/gh-slee/koreader-bridge.git
 git remote -v
 ```
 
-Use `gh-slee/koreader-bridge` with the existing publication helper after the actual rename. Update the repository About description, current README clone/directory commands, CI badges, issue/contributor links and current release/document links through a reviewed PR. Audit workflows, GitHub CLI defaults, integrations and local maintainer context for the old identity. Keep historical release archives and their original filenames/hashes unchanged; local checkout/output folders do not need to be moved.
+Use `--repository gh-slee/koreader-bridge` with `scripts/publish.py`. The active maintainer clone also uses this origin and GitHub CLI default. Audit other clones, CLI defaults and integrations separately. Update current clone/directory commands, CI badges, issue/contributor links and release/document links through reviewed source changes; do not rewrite historical Git commits or replace published assets. Repository About metadata is separate from source documents and should be reviewed when changed.
 
-Verify the repository ID and commit history, PRs/issues, tags/releases/assets, downloads, old-URL redirects, canonical remote and exact-commit CI afterward. Repository redirects cover web and ordinary Git operations, but GitHub Pages URLs and references to hosted actions/reusable workflows require separate attention if used. Never recreate the old repository slug, because that can remove the redirects. Current CI consumes external checkout/setup actions and does not expose a reusable workflow or custom action from this repository.
+GitHub redirects cover web and ordinary Git operations. Do not recreate the old repository slug, because that can remove redirects. GitHub Pages URLs and references to hosted actions/reusable workflows require separate attention if used; this repository currently has no Pages site, consumes external checkout/setup actions and does not expose its own action or reusable workflow.
 
-See [GitHub repository rename documentation](https://docs.github.com/en/repositories/creating-and-managing-repositories/renaming-a-repository) and the [GitHub CLI rename reference](https://cli.github.com/manual/gh_repo_rename). A rename does not grant permission for a source push, release, device operation or backup cleanup; apply the corresponding reviewed scope for each action.
+For any future rename, first review the exact old/new identity, verify availability/admin access, retain repository/ref/issue/PR/release/asset baselines and obtain approval. Rename the existing repository, update remotes/current links and verify continuity, downloads and exact-commit CI afterward. Keep private records and backups local. See [GitHub repository rename documentation](https://docs.github.com/en/repositories/creating-and-managing-repositories/renaming-a-repository) and the [GitHub CLI rename reference](https://cli.github.com/manual/gh_repo_rename). Renaming does not grant permission for a source push, release, device operation or backup cleanup.

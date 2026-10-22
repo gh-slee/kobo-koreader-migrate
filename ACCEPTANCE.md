@@ -1,6 +1,6 @@
 # Manual acceptance and sign-off
 
-This source snapshot is **1.0.0-rc.2**, a documentation candidate following the published [1.0.0-rc.1](https://github.com/gh-slee/kobo-koreader-migrate/releases/tag/v1.0.0-rc.1). The implementation continues the [3.3.0-dev.6 experimental package](https://github.com/gh-slee/kobo-koreader-migrate/releases/tag/v3.3.0-dev.6), published on 2026-10-19. A KOREADER transfer from that package passed full manifest verification, TARGET identity preservation and safe eject; startup and opening an existing TARGET book were explicitly confirmed. FULL preview safely refused insufficient space before writes. These are scoped results, not ticket-wide sign-off or stable acceptance. Earlier recovery evidence remains historical. Private device reports/backups stay local. See the [numbering policy](docs/MAINTAINING.md#versioning-and-first-stable-release).
+This source snapshot is **1.0.0-rc.2**, a documentation candidate following the published [1.0.0-rc.1](https://github.com/gh-slee/koreader-bridge/releases/tag/v1.0.0-rc.1). The implementation continues the [3.3.0-dev.6 experimental package](https://github.com/gh-slee/koreader-bridge/releases/tag/v3.3.0-dev.6), published on 2026-10-19. A KOREADER transfer from that package passed full manifest verification, TARGET identity preservation and safe eject; startup and opening an existing TARGET book were explicitly confirmed. FULL preview safely refused insufficient space before writes. These are scoped results, not ticket-wide sign-off or stable acceptance. Earlier recovery evidence remains historical. Private device reports/backups stay local. See the [numbering policy](docs/MAINTAINING.md#versioning-and-first-stable-release).
 
 Run commands from the repository root, or pass `--backup-dir` consistently if using a separate private output root. Stop any older migration worker first. Use disposable test books and retain all recovery snapshots until acceptance is complete.
 
@@ -11,7 +11,7 @@ Status: Ready for human review. This is documentation work; no device connection
 - README identifies the project as KOReader Bridge and states that only Kobo → Kobo migration on macOS is currently implemented. General Kobo build compatibility and remaining first-stable acceptance limits are still explicit.
 - Kindle and other device families are labelled future/unsupported. Non-Kobo tickets do not block the existing Kobo `1.0.0` milestone or count as implemented support.
 - Existing CLI commands, filename, locale catalogs, schemas, output paths and published archive names remain unchanged. Download links still point to real existing assets.
-- The proposed GitHub repository rename is tracked separately under KM-020. Current badges, clone commands and release links continue using the actual repository until that operation is approved and completed. Renaming review is not physical-device sign-off.
+- The existing GitHub repository is now `gh-slee/koreader-bridge` (KM-020). Current badges, clone commands and release links use this canonical identity; historical CLI/archive names remain intact. Verify the link-update PR and CI after publication. Rename continuity checks are complete, but are not physical-device sign-off.
 
 ## First stable release gates
 

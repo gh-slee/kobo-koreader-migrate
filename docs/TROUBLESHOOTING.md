@@ -28,6 +28,6 @@ Exit codes: `0` means success, completed audit/preview or ordinary cancellation;
 
 ## Reporting a problem
 
-Use [GitHub Issues](https://github.com/gh-slee/kobo-koreader-migrate/issues) for reproducible bugs and feature requests. Include the tool/macOS/Python versions, mode, expected result and a minimal synthetic reproduction or redacted error message. Never upload actual books, device backups, serials, raw settings, databases or unredacted logs/reports.
+Use [GitHub Issues](https://github.com/gh-slee/koreader-bridge/issues) for reproducible bugs and feature requests. Include the tool/macOS/Python versions, mode, expected result and a minimal synthetic reproduction or redacted error message. Never upload actual books, device backups, serials, raw settings, databases or unredacted logs/reports.
 
-For sensitive security findings, follow [SECURITY.md](../SECURITY.md) instead of disclosing private data in a public issue. The repository is maintained by its [project contributors](https://github.com/gh-slee/kobo-koreader-migrate/graphs/contributors); contribution instructions are in [CONTRIBUTING.md](../CONTRIBUTING.md).
+For sensitive security findings, follow [SECURITY.md](../SECURITY.md) instead of disclosing private data in a public issue. The repository is maintained by its [project contributors](https://github.com/gh-slee/koreader-bridge/graphs/contributors); contribution instructions are in [CONTRIBUTING.md](../CONTRIBUTING.md).
