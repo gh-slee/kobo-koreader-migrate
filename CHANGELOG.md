@@ -2,6 +2,9 @@
 
 ## 1.0.0-rc.2 — documentation candidate
 
+- Adopt KOReader Bridge as the public project name and explicitly limit current device support to Kobo → Kobo on macOS. Track non-Kobo feasibility, portable migration policy and a future adapter separately from the first-stable Kobo milestone.
+- Rename the existing GitHub repository to `gh-slee/koreader-bridge` and update current document links, CI badges and clone commands. Verify the same repository identity, refs, issues/PRs and published release/asset bytes. CLI commands, version, backup schemas and published archives remain unchanged by the rebrand.
+
 - Correct release status throughout the source distribution: RC1 was published on 2026-10-21. Pin working download/verification commands to the published RC1 assets and distinguish a source snapshot from an uploaded release.
 - Record exact RC1 CI/package/download verification without treating it as evidence for a later commit or as human/hardware sign-off. Keep all first-stable acceptance gates open where still pending.
 - Advance VERSION for a distinct candidate package. Migration behavior, schemas, locale catalogs, confirmation defaults and safety checks are unchanged. Existing RC1 and 3.x tags/assets remain intact; no replacement upload is intended.
@@ -61,7 +64,7 @@
 - Tolerate already-removed descendants during KOReader tree replacement, rollback and restore on older supported Python versions. Keep missing-root, permission and symlink errors visible. This handles disappearing macOS AppleDouble entries without suppressing other deletion errors.
 - Add synthetic removal-race, permission, missing-root and symlink regressions.
 - Add retained-connection regressions for successful and invalid-database diagnostics, verifying deterministic closure and unchanged fixture bytes.
-- Validation: 123 local tests, self-test, locale validation and publication checks passed. Connected-device source capture, verified target recovery and saved-source KOREADER transfer completed with full manifest verification; basic KOReader operation was subsequently confirmed. The exact release commit passed all six [main CI jobs](https://github.com/gh-slee/kobo-koreader-migrate/actions/runs/39155468946). The [experimental pre-release](https://github.com/gh-slee/kobo-koreader-migrate/releases/tag/v3.3.0-dev.2) is published; broader hardware acceptance and FULL book migration remain pending.
+- Validation: 123 local tests, self-test, locale validation and publication checks passed. Connected-device source capture, verified target recovery and saved-source KOREADER transfer completed with full manifest verification; basic KOReader operation was subsequently confirmed. The exact release commit passed all six [main CI jobs](https://github.com/gh-slee/koreader-bridge/actions/runs/39155468946). The [experimental pre-release](https://github.com/gh-slee/koreader-bridge/releases/tag/v3.3.0-dev.2) is published; broader hardware acceptance and FULL book migration remain pending.
 
 ## Publication guard follow-up — 2026-10-15 — subsequently merged
 

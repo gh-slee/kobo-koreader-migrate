@@ -1,13 +1,14 @@
-<h1 align="center">📚 Kobo KOReader Migration</h1>
+<h1 align="center">📚 KOReader Bridge</h1>
 
 <p align="center">
-  <strong>Your books. Your reading progress. Your next Kobo.</strong><br/>
-  An independent, MIT-licensed open-source Python CLI for migrating KOReader, supported ebooks, reading data and fonts between Kobo devices on macOS.<br/>
+  <strong>Bring your reading setup to your next device.</strong><br/>
+  An independent, MIT-licensed open-source Python CLI for migrating KOReader, supported ebooks, reading data and fonts.<br/>
+  Currently supports Kobo → Kobo migration on macOS.<br/>
   Keep the original folder paths, preview changes and verify copied files.
 </p>
 
 <p align="center">
-  <a href="https://github.com/gh-slee/kobo-koreader-migrate/actions/workflows/tests.yml?query=branch%3Amain"><img alt="Main branch CI status" src="https://github.com/gh-slee/kobo-koreader-migrate/actions/workflows/tests.yml/badge.svg?branch=main&amp;event=push"/></a>
+  <a href="https://github.com/gh-slee/koreader-bridge/actions/workflows/tests.yml?query=branch%3Amain"><img alt="Main branch CI status" src="https://github.com/gh-slee/koreader-bridge/actions/workflows/tests.yml/badge.svg?branch=main&amp;event=push"/></a>
   <a href="#tech-stack"><img alt="Python 3.9 or newer" src="https://img.shields.io/badge/Python-3.9%2B-3776AB?style=flat-square&amp;logo=python&amp;logoColor=white"/></a>
   <a href="#requirements"><img alt="Device migration requires macOS" src="https://img.shields.io/badge/macOS-USB_migration-111827?style=flat-square&amp;logo=apple&amp;logoColor=white"/></a>
   <a href="#tech-stack"><img alt="Runtime dependencies: Python standard library" src="https://img.shields.io/badge/dependencies-standard_library-0F766E?style=flat-square"/></a>
@@ -18,14 +19,15 @@
 <p align="center">
   <a href="#quick-start">Quick start</a> ·
   <a href="#choose-a-mode">Modes</a> ·
+  <a href="#device-support">Device support</a> ·
   <a href="#tech-stack">Tech stack</a> ·
   <a href="#language-support">Languages</a> ·
   <a href="#contributing">Contribute</a> ·
-  <a href="https://github.com/gh-slee/kobo-koreader-migrate/issues">Report a bug</a>
+  <a href="https://github.com/gh-slee/koreader-bridge/issues">Report a bug</a>
 </p>
 
 > [!IMPORTANT]
-> **This source snapshot is `1.0.0-rc.2`, a release candidate, not a stable release.** [1.0.0-rc.1](https://github.com/gh-slee/kobo-koreader-migrate/releases/tag/v1.0.0-rc.1) was published on 2026-10-21. Download the pinned package below, or consult the [release list](https://github.com/gh-slee/kobo-koreader-migrate/releases) for later published candidates; a source version alone does not mean its assets have been published. KOREADER file verification, startup and basic reading have scoped device confirmation; broader acceptance remains pending. Device migration requires **macOS**. See the [version transition](#versioning) and [stable-release gates](ACCEPTANCE.md#first-stable-release-gates).
+> **This source snapshot is `1.0.0-rc.2`, a release candidate, not a stable release.** [1.0.0-rc.1](https://github.com/gh-slee/koreader-bridge/releases/tag/v1.0.0-rc.1) was published on 2026-10-21. Download the pinned package below, or consult the [release list](https://github.com/gh-slee/koreader-bridge/releases) for later published candidates; a source version alone does not mean its assets have been published. KOREADER file verification, startup and basic reading have scoped device confirmation; broader acceptance remains pending. Device migration requires **macOS**. See the [version transition](#versioning) and [stable-release gates](ACCEPTANCE.md#first-stable-release-gates).
 
 ## Why use it?
 
@@ -38,9 +40,23 @@
 | 🧭 **Visible progress** | Phase timestamps, file/byte counts, transfer/hash speed, ETA and archive heartbeats show what the tool is doing. |
 | 🔒 **Offline operation** | Python standard library plus macOS tools. No runtime downloads, telemetry, AI keys or LLM service. Private artifacts stay in local run folders. |
 
+## Device support
+
+**Kobo → Kobo is the only currently supported device migration direction.** KOReader Bridge is the new project name; support for additional KOReader devices is future work. The name does not imply compatibility with every device that runs KOReader.
+
+| Device migration | Status | Host and limits |
+| --- | --- | --- |
+| Kobo → Kobo | Implemented; broader manual acceptance pending | macOS, Python 3.9+. Confirm device roles and SOURCE build compatibility; no claim of universal Kobo model/plugin certification. |
+| Routes involving Kindle | Planned research; unsupported | No Kindle detection, adapter or validated transfer policy is implemented. |
+| Other KOReader device families | Future scope; unsupported | Platform selection, compatibility rules and validation are still to be defined. |
+
+Additional device support is outside the first `1.0.0` milestone. Each new platform needs its own migration policy and tests before appearing as supported. See the [device-support roadmap](TRACKER.md#device-support-roadmap).
+
+The CLI filename remains `kobo-koreader-migrate.py`, and existing release archives retain their original names. Continue using the commands below with the renamed project.
+
 ## Quick start
 
-The version-pinned [1.0.0-rc.1 pre-release](https://github.com/gh-slee/kobo-koreader-migrate/releases/tag/v1.0.0-rc.1) is available for controlled testing. These download commands deliberately select that published package; a clone or another source archive may contain a different version. Start with the offline checks and a dry run.
+The version-pinned [1.0.0-rc.1 pre-release](https://github.com/gh-slee/koreader-bridge/releases/tag/v1.0.0-rc.1) is available for controlled testing. These download commands deliberately select that published package; a clone or another source archive may contain a different version. Start with the offline checks and a dry run.
 
 ### 1. Get the project
 
@@ -58,8 +74,8 @@ python3 kobo-koreader-migrate.py --self-test
 Alternatively, clone the development source on `main`; use `--version` to identify the checked-out build:
 
 ```bash
-git clone https://github.com/gh-slee/kobo-koreader-migrate.git
-cd kobo-koreader-migrate
+git clone https://github.com/gh-slee/koreader-bridge.git
+cd koreader-bridge
 python3 --version
 python3 kobo-koreader-migrate.py --version
 python3 scripts/check_locales.py
@@ -174,13 +190,13 @@ English (`en`), Traditional Chinese (`zh-Hant`) and Simplified Chinese (`zh-Hans
 
 ## Project status and roadmap
 
-**[1.0.0-rc.1](https://github.com/gh-slee/kobo-koreader-migrate/releases/tag/v1.0.0-rc.1) was published on 2026-10-21 as a pre-release, not GitHub Latest.** Its tag resolves to `aaedb78f2b2233ffe91ad42ae8ea9fb312860052`; both uploaded assets were downloaded and verified against the reviewed bytes. This `1.0.0-rc.2` source snapshot updates version metadata and documentation, with no migration behavior change.
+**[1.0.0-rc.1](https://github.com/gh-slee/koreader-bridge/releases/tag/v1.0.0-rc.1) was published on 2026-10-21 as a pre-release, not GitHub Latest.** Its tag resolves to `aaedb78f2b2233ffe91ad42ae8ea9fb312860052`; both uploaded assets were downloaded and verified against the reviewed bytes. This `1.0.0-rc.2` source snapshot includes documentation updates and the KOReader Bridge project name; migration behavior is unchanged.
 
-A connected-device KOREADER transfer from the earlier [3.3.0-dev.6 package](https://github.com/gh-slee/kobo-koreader-migrate/releases/tag/v3.3.0-dev.6) passed full manifest verification, preserved TARGET identity and safely ejected; startup and opening an existing TARGET book were confirmed. A FULL preview safely refused insufficient TARGET space. These observations do not sign off FULL writes, all recovery/cleanup workflows, every plugin/hardware control or complete human translation review. The [stable-release gates](ACCEPTANCE.md#first-stable-release-gates) remain open.
+A connected-device KOREADER transfer from the earlier [3.3.0-dev.6 package](https://github.com/gh-slee/koreader-bridge/releases/tag/v3.3.0-dev.6) passed full manifest verification, preserved TARGET identity and safely ejected; startup and opening an existing TARGET book were confirmed. A FULL preview safely refused insufficient TARGET space. These observations do not sign off FULL writes, all recovery/cleanup workflows, every plugin/hardware control or complete human translation review. The [stable-release gates](ACCEPTANCE.md#first-stable-release-gates) remain open.
 
 CI covers synthetic fixtures on macOS/Linux and a real macOS `ditto` round trip on temporary directories. It does not certify every device or replace the remaining manual acceptance checklists. The badge tracks push CI on main; review-branch checks are available on the corresponding PR. Detailed fixes and validation belong in CHANGELOG.md and docs/DEVELOPMENT.md.
 
-Interrupted-transfer resume, exact library mirroring, content-assisted discovery, portable hardware settings and additional interface languages remain planned work. [Current status and criteria](TRACKER.md) · [Automated evidence](docs/DEVELOPMENT.md#validation-and-release-status).
+Interrupted-transfer resume, exact library mirroring, content-assisted discovery, portable hardware settings, additional interface languages and non-Kobo device support remain planned work. [Current status and criteria](TRACKER.md) · [Automated evidence](docs/DEVELOPMENT.md#validation-and-release-status).
 
 ## Versioning
 
@@ -194,10 +210,10 @@ The reset changes version metadata, not CLI flags, migration behavior, backup sc
 
 Focused fixes, documentation improvements, synthetic regressions and locale-preview feedback are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md); coding agents use the shared [AGENTS.md](AGENTS.md) open format. AI-assisted contributions remain the contributor's responsibility, and all runtime features must remain standalone offline code.
 
-Report reproducible bugs and feature requests through [GitHub Issues](https://github.com/gh-slee/kobo-koreader-migrate/issues). Follow [SECURITY.md](SECURITY.md) for sensitive findings; never attach books, raw backups or unredacted device data.
+Report reproducible bugs and feature requests through [GitHub Issues](https://github.com/gh-slee/koreader-bridge/issues). Follow [SECURITY.md](SECURITY.md) for sensitive findings; never attach books, raw backups or unredacted device data.
 
 ## Acknowledgments and license
 
-Built for readers using [KOReader](https://github.com/koreader/koreader) on Kobo devices. Thanks to the KOReader community and this project's [contributors](https://github.com/gh-slee/kobo-koreader-migrate/graphs/contributors).
+Built for readers using [KOReader](https://github.com/koreader/koreader) on Kobo devices. Thanks to the KOReader community and this project's [contributors](https://github.com/gh-slee/koreader-bridge/graphs/contributors).
 
 This tool is under the [MIT License](LICENSE). Device software, plugins, fonts and books retain their own licences. This is an independent community tool, not an official Kobo or KOReader project.
