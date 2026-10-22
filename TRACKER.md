@@ -1,6 +1,6 @@
 # Development tracker
 
-Last reconciled: **2026-10-20**. Candidate source version: **1.0.0-rc.1** (unpublished; first-stable numbering reset). Latest published experimental pre-release: **3.3.0-dev.6**. Broader physical/manual acceptance remains pending. See [first-stable release gates](ACCEPTANCE.md#first-stable-release-gates) and the [version policy](docs/MAINTAINING.md#versioning-and-first-stable-release).
+Last reconciled: **2026-10-21**. Source snapshot version: **1.0.0-rc.2** (documentation candidate). [1.0.0-rc.1](https://github.com/gh-slee/kobo-koreader-migrate/releases/tag/v1.0.0-rc.1) was published on 2026-10-21 as a pre-release, not Latest. Check the release list for later published assets. Broader physical/manual acceptance remains pending. See [first-stable release gates](ACCEPTANCE.md#first-stable-release-gates) and the [version policy](docs/MAINTAINING.md#versioning-and-first-stable-release).
 
 Status vocabulary: `Queued`, `In progress`, `Ready for test`, `Blocked`, `Done`, `Deferred`. KM-011, KM-005, KM-001 and KM-003 are implemented and ready for user testing; ticket-wide human sign-off remains pending despite scoped KOREADER success. Entries represent planned work, not permission to operate physical devices or delete backups.
 
@@ -26,7 +26,7 @@ Scope is the existing four modes, migration/backup/recovery safeguards and three
 - The 3.3.0-dev.6 package passed a connected-device KOREADER transfer, full file verification, identity preservation and safe eject; the operator confirmed startup and opening an existing TARGET book. This is scoped acceptance only.
 - FULL preview safely refused insufficient space. A successful physical FULL transfer is still pending; use a capacity-sufficient, controlled test setup rather than deleting real data to force a pass.
 - Human language, broader mode/recovery/maintenance and device-control acceptance remain pending. Do not mark entire existing tickets Done from the scoped result.
-- 1.0.0-rc.1 is an unpublished candidate, not an approval to publish or a claim that the stable gates passed. Higher-numbered historical tags/assets and real recovery backups remain retained.
+- RC1 publication and both downloaded assets have been verified. RC2 updates source documentation and version metadata; its publication is a separate reviewed action. Neither candidate completes stable gates. Published RC1 and historical 3.x tags/assets remain unchanged; real recovery backups remain retained.
 
 ## Backlog
 
@@ -76,7 +76,7 @@ Scope is the existing four modes, migration/backup/recovery safeguards and three
 
 ## Development and validation status
 
-The latest published testing package is [3.3.0-dev.6](https://github.com/gh-slee/kobo-koreader-migrate/releases/tag/v3.3.0-dev.6), released on 2026-10-19 from `96efe762cc1263cf3afa1500f6d98012dfe82ee8`. Its baseline passed 184 synthetic tests, all six merged-main jobs and package checks. A subsequent packaged-build KOREADER transfer and basic operation have scoped confirmation; FULL writes and wider manual acceptance remain pending. The 1.0.0-rc.1 source is a subsequent version-metadata/documentation transition and needs its own exact-candidate validation. The following entries describe historical baselines.
+[1.0.0-rc.1](https://github.com/gh-slee/kobo-koreader-migrate/releases/tag/v1.0.0-rc.1) was published on 2026-10-21 from `aaedb78f2b2233ffe91ad42ae8ea9fb312860052`. Its baseline passed 185 synthetic tests, all six exact merged-main CI jobs and independent 35-file package checks. Both published assets were downloaded and matched the reviewed bytes; the release is a non-draft pre-release, not Latest. The RC2 documentation candidate needs its own exact-commit checks before publication. FULL writes and wider manual acceptance remain pending. The following entries describe historical baselines, including scoped device evidence from 3.3.0-dev.6.
 
 The [3.3.0-dev.2 experimental pre-release](https://github.com/gh-slee/kobo-koreader-migrate/releases/tag/v3.3.0-dev.2) was published on 2026-10-18 from commit `721e2cad01c7c2811baeb9bd3fff424bba87f275`. Its [main CI](https://github.com/gh-slee/kobo-koreader-migrate/actions/runs/39155468946) passed all six macOS/Ubuntu Python 3.9/3.12/3.14 jobs; the release baseline also passed 123 local tests, self-test, locale and privacy checks. The fixes close read-only statistics connections before safe eject and tolerate already-removed descendants during runtime replacement/recovery. Verified target recovery and saved-source KOREADER transfer completed on connected hardware, with basic KOReader operation confirmed. Broader hardware acceptance and FULL book migration remain pending. KM-011/KM-005/KM-001/KM-003/KM-013 remain Ready for test; this scoped success does not sign off entire tickets. Use ACCEPTANCE.md for verification. A public roadmap describes product work, not authority to access devices or publish changes.
 

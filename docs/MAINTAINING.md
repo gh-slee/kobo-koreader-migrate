@@ -62,7 +62,7 @@ Before stable publication, complete the [first-stable gates](../ACCEPTANCE.md#fi
 
 ## Local package preparation and verification
 
-The helper is included in the published [3.3.0-dev.6 testing package](https://github.com/gh-slee/kobo-koreader-migrate/releases/tag/v3.3.0-dev.6) and current candidate source. The older 3.3.0-dev.2 pre-release predates the helper. Preparing a new candidate never modifies either published release or its assets.
+The helper is included in the published [1.0.0-rc.1 package](https://github.com/gh-slee/kobo-koreader-migrate/releases/tag/v1.0.0-rc.1), the earlier 3.3.0-dev.6 package and this source snapshot. The older 3.3.0-dev.2 pre-release predates the helper. Preparing a new candidate never modifies a published release or its assets.
 
 Use Python 3.9+ and Git in a reviewed clone containing `scripts/prepare_release.py`. No GitHub CLI, network, Kobo, third-party Python package or AI service is needed. Commit reviewed public changes first if they should be included. The explicit ref selects Git objects: modified, untracked and ignored working files are never packaged. Selecting an older commit deliberately excludes later changes. Only execute extracted smoke checks from code you have reviewed; the publication guard is not a sandbox for arbitrary code.
 
@@ -87,5 +87,7 @@ python3 scripts/prepare_release.py verify DIRECTORY --ref COMMIT
 Verification re-reads Git, checks the ZIP and checksum/record, rejects missing/extra/duplicate members and reruns the extracted checks. It does not trust a replaced checksum or preparation record as proof of provenance. It requires the local Git objects; it is not the standalone Kobo-backup verifier planned as KM-010. For a downloaded release, `shasum -a 256 -c SHA256SUMS` only detects a mismatch with the accompanying checksum, not publisher authenticity.
 
 CI runs preparation for its checked-out commit on all supported fixture hosts and Python versions. It does not upload packages or publish releases. Human publication review must still cover release notes, public metadata, exact commit/assets and remaining acceptance limitations. The helper does not generate or publish release notes, create tags, push branches or access the network/devices. Upload only the reviewed ZIP and checksum; keep PREPARATION.json local. A published pre-release invites controlled testing and is distinct from stable-release acceptance.
+
+Release documents are immutable source snapshots. State the snapshot version without predicting its publication state; record publication facts only for releases that already exist, and pin example download commands to those actual assets. Link the release list for later packages. Before publication, check that command filenames and extraction directories exist in the linked release, and explain which version the examples install. Keep exact-commit validation evidence separate from newer source and from human/hardware acceptance. This avoids shipping a candidate whose own documents become false as soon as it is published.
 
 Local builds may share a runtime version while carrying different source commits. Before another public release, assign a new version/tag and review its final commit and assets; do not reuse or replace the published pre-release tag/assets. No preparation result grants permission to publish.

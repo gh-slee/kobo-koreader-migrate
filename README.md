@@ -25,7 +25,7 @@
 </p>
 
 > [!IMPORTANT]
-> **Current source targets `1.0.0-rc.1`, an unpublished release candidate, not a stable release.** The latest published testing package is [3.3.0-dev.6](https://github.com/gh-slee/kobo-koreader-migrate/releases/tag/v3.3.0-dev.6). KOREADER file verification, startup and basic reading have scoped device confirmation; broader acceptance remains pending. Device migration requires **macOS**. See the [version transition](#versioning) and [stable-release gates](ACCEPTANCE.md#first-stable-release-gates).
+> **This source snapshot is `1.0.0-rc.2`, a release candidate, not a stable release.** [1.0.0-rc.1](https://github.com/gh-slee/kobo-koreader-migrate/releases/tag/v1.0.0-rc.1) was published on 2026-10-21. Download the pinned package below, or consult the [release list](https://github.com/gh-slee/kobo-koreader-migrate/releases) for later published candidates; a source version alone does not mean its assets have been published. KOREADER file verification, startup and basic reading have scoped device confirmation; broader acceptance remains pending. Device migration requires **macOS**. See the [version transition](#versioning) and [stable-release gates](ACCEPTANCE.md#first-stable-release-gates).
 
 ## Why use it?
 
@@ -40,26 +40,28 @@
 
 ## Quick start
 
-The version-pinned [3.3.0-dev.6 pre-release](https://github.com/gh-slee/kobo-koreader-migrate/releases/tag/v3.3.0-dev.6) is available for controlled testing. The current development source is on [`main`](https://github.com/gh-slee/kobo-koreader-migrate/tree/main). Start with the offline checks and a dry run.
+The version-pinned [1.0.0-rc.1 pre-release](https://github.com/gh-slee/kobo-koreader-migrate/releases/tag/v1.0.0-rc.1) is available for controlled testing. These download commands deliberately select that published package; a clone or another source archive may contain a different version. Start with the offline checks and a dry run.
 
 ### 1. Get the project
 
-For the version-pinned package, download `kobo-koreader-migrate-3.3.0-dev.6.zip` and `SHA256SUMS` from the pre-release page into the same folder:
+For the version-pinned package, download `kobo-koreader-migrate-1.0.0-rc.1.zip` and `SHA256SUMS` from the linked pre-release page into the same folder:
 
 ```bash
 shasum -a 256 -c SHA256SUMS
-unzip kobo-koreader-migrate-3.3.0-dev.6.zip
-cd kobo-koreader-migrate-3.3.0-dev.6
+unzip kobo-koreader-migrate-1.0.0-rc.1.zip
+cd kobo-koreader-migrate-1.0.0-rc.1
+python3 kobo-koreader-migrate.py --version
 python3 scripts/check_locales.py
 python3 kobo-koreader-migrate.py --self-test
 ```
 
-Alternatively, clone the current development source:
+Alternatively, clone the development source on `main`; use `--version` to identify the checked-out build:
 
 ```bash
 git clone https://github.com/gh-slee/kobo-koreader-migrate.git
 cd kobo-koreader-migrate
 python3 --version
+python3 kobo-koreader-migrate.py --version
 python3 scripts/check_locales.py
 python3 kobo-koreader-migrate.py --self-test
 ```
@@ -147,7 +149,7 @@ SOURCE is ejected before TARGET is requested. Writes require final confirmation;
 
 ## Language support
 
-English (`en`), Traditional Chinese (`zh-Hant`) and Simplified Chinese (`zh-Hans`) are registered. **The published 3.3.0-dev.6 package and current candidate source catalog the tool-owned runtime text**, with 371 entries per locale across migration, recovery, cleanup, safety errors, per-file progress, warnings and custom argument checks. Diagnostic logs and machine values stay English. External diagnostics, Python-generated parser/traceback text and safe startup errors when locale assets cannot load retain their original text. Keep `locales/` beside the script, even for English.
+English (`en`), Traditional Chinese (`zh-Hant`) and Simplified Chinese (`zh-Hans`) are registered. **The published 1.0.0-rc.1 package and this source snapshot catalog the tool-owned runtime text**, with 371 entries per locale across migration, recovery, cleanup, safety errors, per-file progress, warnings and custom argument checks. Diagnostic logs and machine values stay English. External diagnostics, Python-generated parser/traceback text and safe startup errors when locale assets cannot load retain their original text. Keep `locales/` beside the script, even for English.
 
 [Language selection and fallback](docs/USAGE.md#language-support). Final human wording review and end-to-end acceptance remain pending. Machine values such as statuses/modes and exact DELETE confirmations do not change with language; filenames and user data are preserved.
 
@@ -172,7 +174,9 @@ English (`en`), Traditional Chinese (`zh-Hant`) and Simplified Chinese (`zh-Hans
 
 ## Project status and roadmap
 
-**[3.3.0-dev.6](https://github.com/gh-slee/kobo-koreader-migrate/releases/tag/v3.3.0-dev.6) was published on 2026-10-19 as an experimental pre-release.** A subsequent connected-device KOREADER transfer from that package passed full manifest verification, preserved TARGET identity and safely ejected; startup and opening an existing TARGET book were confirmed. A FULL preview safely refused insufficient TARGET space. These observations do not sign off FULL writes, all recovery/cleanup workflows, every plugin/hardware control or complete human translation review. The unpublished `1.0.0-rc.1` source begins the first-stable numbering sequence; the [release gates](ACCEPTANCE.md#first-stable-release-gates) remain open.
+**[1.0.0-rc.1](https://github.com/gh-slee/kobo-koreader-migrate/releases/tag/v1.0.0-rc.1) was published on 2026-10-21 as a pre-release, not GitHub Latest.** Its tag resolves to `aaedb78f2b2233ffe91ad42ae8ea9fb312860052`; both uploaded assets were downloaded and verified against the reviewed bytes. This `1.0.0-rc.2` source snapshot updates version metadata and documentation, with no migration behavior change.
+
+A connected-device KOREADER transfer from the earlier [3.3.0-dev.6 package](https://github.com/gh-slee/kobo-koreader-migrate/releases/tag/v3.3.0-dev.6) passed full manifest verification, preserved TARGET identity and safely ejected; startup and opening an existing TARGET book were confirmed. A FULL preview safely refused insufficient TARGET space. These observations do not sign off FULL writes, all recovery/cleanup workflows, every plugin/hardware control or complete human translation review. The [stable-release gates](ACCEPTANCE.md#first-stable-release-gates) remain open.
 
 CI covers synthetic fixtures on macOS/Linux and a real macOS `ditto` round trip on temporary directories. It does not certify every device or replace the remaining manual acceptance checklists. The badge tracks push CI on main; review-branch checks are available on the corresponding PR. Detailed fixes and validation belong in CHANGELOG.md and docs/DEVELOPMENT.md.
 
@@ -180,7 +184,7 @@ Interrupted-transfer resume, exact library mirroring, content-assisted discovery
 
 ## Versioning
 
-The first stable release is planned as **`v1.0.0`**, preceded by `v1.0.0-rc.1` and further candidates if needed. This is a one-time numbering reset from the earlier `3.x` development series; it continues the existing tool rather than introducing a separate product. The candidate is not yet published and stable acceptance is not complete.
+The first stable release is planned as **`v1.0.0`**, preceded by `v1.0.0-rc.1` and further candidates if needed. This is a one-time numbering reset from the earlier `3.x` development series; it continues the existing tool rather than introducing a separate product. RC1 has been published; later source snapshots and published downloads are separate. Stable acceptance is not complete.
 
 Existing `v3.3.0-dev.*` tags and assets remain available unchanged. Version comparators sort `1.0.0` below the old `3.x` versions, so use the explicitly linked release and its notes rather than the numerically greatest tag. The eventual stable release will be explicitly selected as GitHub Latest when publication is approved. The CLI has no automatic updater.
 

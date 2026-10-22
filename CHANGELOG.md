@@ -1,12 +1,18 @@
 # Changelog
 
-## 1.0.0-rc.1 — unreleased — first-stable numbering transition
+## 1.0.0-rc.2 — documentation candidate
 
-- Begin the first stable release sequence at 1.0.0-rc.1, continuing the 3.3.0-dev.6 implementation. This is a one-time numbering reset; 1.x sorts below historical 3.x versions. Existing tags/assets remain unchanged; the candidate is not published.
+- Correct release status throughout the source distribution: RC1 was published on 2026-10-21. Pin working download/verification commands to the published RC1 assets and distinguish a source snapshot from an uploaded release.
+- Record exact RC1 CI/package/download verification without treating it as evidence for a later commit or as human/hardware sign-off. Keep all first-stable acceptance gates open where still pending.
+- Advance VERSION for a distinct candidate package. Migration behavior, schemas, locale catalogs, confirmation defaults and safety checks are unchanged. Existing RC1 and 3.x tags/assets remain intact; no replacement upload is intended.
+
+## 1.0.0-rc.1 — 2026-10-21 — published release candidate
+
+- Begin the first stable release sequence at 1.0.0-rc.1, continuing the 3.3.0-dev.6 implementation. This is a one-time numbering reset; 1.x sorts below historical 3.x versions. Existing historical tags/assets remain unchanged. RC1 is a published pre-release, not GitHub Latest.
 - Keep CLI behavior, schema versions, offline operation, backups, identity and migration safeguards unchanged. Add a synthetic cross-version saved-source/restore regression using higher-numbered 3.x metadata.
 - Reconcile current package links and localization status, document version/backup compatibility and consolidate explicit first-stable acceptance gates. Record only generic scoped device evidence; private reports and real backups remain local.
-- Local candidate validation: 185 synthetic tests (including the cross-version regression and actual macOS ditto fixture), self-test, 3x371 locale checks, index/worktree/history privacy, 84 documentation file links, 30 anchors and 30 shell examples passed. Hosted CI and final release acceptance remain pending.
-- Stable publication still requires remaining acceptance, exact-candidate checks and separate approval. No new device operation or remote publication is part of this change.
+- Local candidate validation: 185 synthetic tests (including the cross-version regression and actual macOS ditto fixture), self-test, 3x371 locale checks, index/worktree/history privacy, 84 documentation file links, 30 anchors and 30 shell examples passed. All six exact merged-main CI jobs passed for `aaedb78f2b2233ffe91ad42ae8ea9fb312860052`. The 35-file package matched that commit and both published assets were downloaded and verified. Stable acceptance remains pending.
+- Stable publication still requires remaining acceptance, exact-candidate checks and separate approval. RC1 publication does not authorize another device operation or release.
 
 ## 3.3.0-dev.6 — 2026-10-19 — published experimental pre-release
 
