@@ -25,7 +25,9 @@ REQUIRED = {
     'scripts/check_locales.py', 'docs/USAGE.md', 'docs/RECOVERY.md',
     'docs/TROUBLESHOOTING.md', 'docs/DEVELOPMENT.md', 'docs/MAINTAINING.md',
 }
-SMOKE_CHECKS = (
+BRIDGE_ENTRY = 'koreader-bridge.py'
+LEGACY_ENTRY = 'kobo-koreader-migrate.py'
+LEGACY_SMOKE_CHECKS = (
     ('locales', ('scripts/check_locales.py',)),
     ('version', ('kobo-koreader-migrate.py', '--version')),
     ('help', ('kobo-koreader-migrate.py', '--help')),
@@ -33,6 +35,9 @@ SMOKE_CHECKS = (
     ('Traditional Chinese preview', ('kobo-koreader-migrate.py', '--locale', 'zh-Hant', '--preview-ui')),
     ('self-test', ('kobo-koreader-migrate.py', '--self-test')),
 )
+SMOKE_CHECKS = tuple((label, tuple(BRIDGE_ENTRY if arg == LEGACY_ENTRY else arg for arg in args))
+                     for label, args in LEGACY_SMOKE_CHECKS) + tuple(
+    ('legacy ' + label, args) for label, args in LEGACY_SMOKE_CHECKS if label != 'locales')
 
 
 def git(root: Path, *args: str) -> bytes:
@@ -72,6 +77,11 @@ def snapshot(root: Path, ref: str) -> tuple[str, str, dict]:
                 and isinstance(node.value, ast.Constant) and isinstance(node.value.value, str)]
     if len(versions) != 1 or not re.fullmatch(r'[0-9]+\.[0-9]+\.[0-9]+(?:-[A-Za-z0-9]+(?:[.-][A-Za-z0-9]+)*)?', versions[0]):
         raise ValueError('Source must declare one safe literal VERSION string.')
+    branded = any(isinstance(node, ast.Assign) and any(isinstance(t, ast.Name) and t.id == 'PROJECT_NAME'
+                  for t in node.targets) and isinstance(node.value, ast.Constant)
+                  and node.value.value == 'KOReader Bridge' for node in tree.body)
+    if branded and BRIDGE_ENTRY not in files:
+        raise ValueError('Source is missing required KOReader Bridge CLI entry.')
     return commit, versions[0], files
 
 
@@ -79,13 +89,13 @@ def digest(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
-def names(version: str) -> tuple[str, str]:
-    prefix = 'kobo-koreader-migrate-' + version
+def names(version: str, bridge: bool = False) -> tuple[str, str]:
+    prefix = ('koreader-bridge-' if bridge else 'kobo-koreader-migrate-') + version
     return prefix, prefix + '.zip'
 
 
 def write_archive(path: Path, version: str, files: dict) -> None:
-    prefix, _ = names(version)
+    prefix, _ = names(version, BRIDGE_ENTRY in files)
     with zipfile.ZipFile(path, 'x', compression=zipfile.ZIP_DEFLATED) as archive:
         for relative, (mode, data) in sorted(files.items()):
             info = zipfile.ZipInfo(prefix + '/' + relative, date_time=(1980, 1, 1, 0, 0, 0))
@@ -97,7 +107,7 @@ def write_archive(path: Path, version: str, files: dict) -> None:
 
 def check_archive(path: Path, version: str, files: dict, extracted: Path) -> None:
     """Compare every member to Git before writing any extracted file."""
-    prefix, _ = names(version)
+    prefix, _ = names(version, BRIDGE_ENTRY in files)
     expected = {prefix + '/' + name: (name, mode, data) for name, (mode, data) in files.items()}
     with zipfile.ZipFile(path) as archive:
         entries = archive.infolist()
@@ -141,18 +151,19 @@ def run_smoke_checks(root: Path, version: str) -> list[str]:
     """Run only offline entry points in the fully checked, disposable extraction."""
     env = dict(os.environ, KOBO_MIGRATE_LOCALE='en', PYTHONDONTWRITEBYTECODE='1', PYTHONIOENCODING='utf-8')
     passed = []
-    for label, arguments in SMOKE_CHECKS:
+    checks = SMOKE_CHECKS if (root / BRIDGE_ENTRY).is_file() else LEGACY_SMOKE_CHECKS
+    for label, arguments in checks:
         print('  Offline check: ' + label, flush=True)
         result = subprocess.run([sys.executable, *arguments], cwd=root, env=env,
                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=90)
-        if result.returncode or (label == 'version' and result.stdout.decode('utf-8').split()[-1:] != [version]):
+        if result.returncode or (label.endswith('version') and result.stdout.decode('utf-8').split()[-1:] != [version]):
             raise ValueError('Extracted offline check failed: ' + label + '. Output was withheld.')
         passed.append(label)
     return passed
 
 
 def validate_package(directory: Path, commit: str, version: str, files: dict) -> dict:
-    _, asset = names(version)
+    _, asset = names(version, BRIDGE_ENTRY in files)
     if directory.is_symlink() or not directory.is_dir():
         raise ValueError('Package directory must be an existing regular directory.')
     for name in (asset, 'SHA256SUMS', 'PREPARATION.json'):
@@ -180,7 +191,7 @@ def validate_package(directory: Path, commit: str, version: str, files: dict) ->
     with tempfile.TemporaryDirectory(prefix='kobo-release-verify-') as temporary:
         extraction = Path(temporary)
         check_archive(archive, version, files, extraction)
-        package = extraction / names(version)[0]
+        package = extraction / names(version, BRIDGE_ENTRY in files)[0]
         links = check_links(package)
         checks = run_smoke_checks(package, version)
     return {'source_commit': commit, 'version': version, 'asset': asset, 'sha256': sha,
@@ -192,7 +203,7 @@ def prepare(root: Path, ref: str, output_dir: Path) -> Path:
     destination = output_dir / (version + '-' + commit[:12])
     if destination.exists() or destination.is_symlink():
         raise ValueError('Output already exists; verify it or select a different output directory. Nothing was overwritten.')
-    _, asset = names(version)
+    _, asset = names(version, BRIDGE_ENTRY in files)
     with tempfile.TemporaryDirectory(prefix='kobo-release-prepare-') as temporary:
         staging = Path(temporary)
         write_archive(staging / asset, version, files)

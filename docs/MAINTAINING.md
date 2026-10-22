@@ -71,11 +71,13 @@ python3 scripts/check_publication.py --history
 python3 scripts/prepare_release.py prepare --ref HEAD
 ```
 
+Source declaring the KOReader Bridge project name must include the canonical entry; its adjacent engine remains required. Historical refs without that declaration are still supported. Verification derives prefix and available entry points from the selected Git tree, not the numerically greatest version or working files. Existing package records/ZIPs are never renamed.
+
 The preparation command:
 
 1. Resolves the exact local commit and reads its guarded tracked files, rejecting symlinks, submodules, unsafe content and missing required runtime/locale/documentation assets. It reads VERSION as a literal without importing source code.
-2. Builds a ZIP containing a single `kobo-koreader-migrate-VERSION/` directory, preserving ordinary/executable modes. Timestamps and entry order are fixed; byte-for-byte reproducibility across different compression-library versions is not promised.
-3. Compares every ZIP member against Git before extracting it into a disposable directory. It checks local Markdown/HTML file links and runs locale validation, version/help/list-locales, Traditional Chinese preview and self-test. No full unit suite or hardware test is implied; run the normal development checks separately.
+2. Builds a ZIP containing a single `koreader-bridge-VERSION/` directory for source containing the canonical entry, preserving ordinary/executable modes. Historical source without it retains the `kobo-koreader-migrate-VERSION/` prefix. Timestamps and entry order are fixed; byte-for-byte reproducibility across different compression-library versions is not promised.
+3. Compares every ZIP member against Git before extracting it into a disposable directory. It checks local Markdown/HTML file links and runs locale validation plus version/help/list-locales, Traditional Chinese preview and self-test through both entries (11 checks). Historical source uses its original legacy entry (six checks). No full unit suite or hardware test is implied; run the normal development checks separately.
 4. Creates `.local/releases/VERSION-COMMIT/` only after verification succeeds. It contains the ZIP, `SHA256SUMS` and local-only `PREPARATION.json` with the exact source commit and per-file hashes/modes/sizes. It never reads run/backup contents. Existing destinations are refused, including older preparation records; no overwrite or cleanup is attempted. Use `--output-dir` for another ignored/private parent if desired.
 
 Reverify later using the printed directory and an independently chosen expected commit/ref (replace DIRECTORY and COMMIT):
@@ -95,7 +97,7 @@ Local builds may share a runtime version while carrying different source commits
 
 ## Repository identity and rename (KM-020)
 
-The public project is **KOReader Bridge**, and the canonical repository is **`gh-slee/koreader-bridge`**. The existing `gh-slee/kobo-koreader-migrate` repository was renamed in place; no replacement repository or private source/data upload was used. The CLI filename `kobo-koreader-migrate.py`, version, backup schemas and already-published archive names remain unchanged. Local checkout/output folders do not need to be moved.
+The public project is **KOReader Bridge**, and the canonical repository is **`gh-slee/koreader-bridge`**. The existing `gh-slee/kobo-koreader-migrate` repository was renamed in place; no replacement repository or private source/data upload was used. The legacy CLI filename `kobo-koreader-migrate.py`, version, backup schemas and already-published archive names remain unchanged. Current source adds `koreader-bridge.py` as its canonical entry. Local checkout/output folders do not need to be moved.
 
 Post-rename verification confirmed the same repository ID and all branch/tag refs, preserved 11 issue/PR identities and all three existing releases, and downloaded all six assets to compare SHA-256 with the pre-rename baseline. Release bodies/flags and asset names/sizes/digests remained unchanged. Both old and new Git URLs resolve to the baseline refs; the old API route resolves to the same repository. The existing exact-main CI still passes all six jobs. This is continuity evidence, not new source CI or human/device acceptance.
 

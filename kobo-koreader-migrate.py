@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-KOReader Kobo Migration Tool v3.3.0-dev.4
+KOReader Bridge — shared engine and legacy-compatible CLI entry.
 macOS, standard library only.
 
 Supported workflow:
@@ -48,6 +48,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, Iterable, List, Optional, Tuple
 
+PROJECT_NAME = "KOReader Bridge"
 VERSION = "1.0.0-rc.2"
 DEFAULT_BACKUP_DIR = Path(__file__).resolve().parent
 VOLUME_ROOT = Path("/Volumes")
@@ -1378,7 +1379,7 @@ def build_manifest(
     manifest = {
         "strict_source": strict_source,
         "schema_version": 1,
-        "tool": f"KOReader Kobo Migration Tool {VERSION}",
+        "tool": f"{PROJECT_NAME} {VERSION}",
         "created_at": iso_now(),
         "source": {
             "detected_model": source_info.detected_model,
@@ -3132,14 +3133,19 @@ def migrate_target(args, backup_dir, run_id, log_path, mode, dry_run, full, book
     return 0
 
 
-if __name__ == "__main__":
+def cli() -> int:
+    """Shared process boundary; fallback diagnostics stay English before UI setup."""
     try:
-        raise SystemExit(main())
+        return main()
     except KeyboardInterrupt as exc:
         if not getattr(exc, "ui_reported", False):
             print("\nCancelled by user.")
-        raise SystemExit(130)
+        return 130
     except MigrationError as exc:
         if not getattr(exc, "ui_reported", False):
             print(f"\nERROR: {exc}", file=sys.stderr)
-        raise SystemExit(1)
+        return 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(cli())

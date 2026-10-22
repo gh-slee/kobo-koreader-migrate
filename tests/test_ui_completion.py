@@ -37,8 +37,10 @@ class CompletionTests(base.MigrationTestCase):
                     and node.func.value.id == 'parser' and node.func.attr == 'error':
                 self.assertEqual(ast.unparse(node.args[0].func),'bundle.render',node.lineno)
         # Only blank/decorative print calls are allowed inside runtime functions.
-        # The module wrapper keeps minimal English output when no UI can be used.
+        # cli() is the shared process boundary with deliberate English fallbacks.
         for function in (node for node in tree.body if isinstance(node,(ast.FunctionDef,ast.AsyncFunctionDef))):
+            if function.name == 'cli':
+                continue
             for node in ast.walk(function):
                 if isinstance(node,ast.Call) and isinstance(node.func,ast.Name) and node.func.id == 'print' and node.args:
                     self.assertEqual(ast.unparse(node.args[0]), "'-' * 60", node.lineno)

@@ -1,6 +1,6 @@
 # KOReader Bridge development tracker
 
-Last reconciled: **2026-10-21**. Source snapshot version: **1.0.0-rc.2** (documentation candidate). [1.0.0-rc.1](https://github.com/gh-slee/koreader-bridge/releases/tag/v1.0.0-rc.1) was published on 2026-10-21 as a pre-release, not Latest. Check the release list for later published assets. Broader physical/manual acceptance remains pending. See [first-stable release gates](ACCEPTANCE.md#first-stable-release-gates) and the [version policy](docs/MAINTAINING.md#versioning-and-first-stable-release).
+Last reconciled: **2026-10-22**. Source snapshot version: **1.0.0-rc.2** (unpublished source with canonical CLI and branding follow-up). [1.0.0-rc.1](https://github.com/gh-slee/koreader-bridge/releases/tag/v1.0.0-rc.1) was published on 2026-10-21 as a pre-release, not Latest. Check the release list for later published assets. Broader physical/manual acceptance remains pending. See [first-stable release gates](ACCEPTANCE.md#first-stable-release-gates) and the [version policy](docs/MAINTAINING.md#versioning-and-first-stable-release).
 
 Status vocabulary: `Queued`, `In progress`, `Ready for test`, `Blocked`, `Done`, `Deferred`. KM-011, KM-005, KM-001 and KM-003 are implemented and ready for user testing; ticket-wide human sign-off remains pending despite scoped KOREADER success. Entries represent planned work, not permission to operate physical devices or delete backups.
 
@@ -8,7 +8,7 @@ Status vocabulary: `Queued`, `In progress`, `Ready for test`, `Blocked`, `Done`,
 
 Public project name: **KOReader Bridge**, continuing the existing Kobo migration tool. The current device scope is **Kobo → Kobo on macOS with Python 3.9+**. Kindle and other KOReader device families are future work, not supported migration targets. Linux CI remains fixture validation only.
 
-Keep existing CLI names/tokens, schemas, run paths, backup compatibility and published release assets stable during the documentation rebrand. The canonical repository is `gh-slee/koreader-bridge`, renamed from `gh-slee/kobo-koreader-migrate`. Repository identity, Git refs, issues/PRs and all three published releases were preserved; six downloaded asset hashes matched the pre-rename baseline. Local origin and GitHub CLI default now use the canonical repository. Current-document link review and publication remain tracked in KM-020.
+Use `koreader-bridge.py` as the canonical entry while retaining `kobo-koreader-migrate.py` as the shared engine and compatible CLI. Preserve existing CLI tokens, schemas, run paths, lock identities, backup compatibility and published release assets. The canonical repository is `gh-slee/koreader-bridge`, renamed from `gh-slee/kobo-koreader-migrate`. Repository identity, Git refs, issues/PRs and all three published releases were preserved; six downloaded asset hashes matched the pre-rename baseline. Local origin and GitHub CLI default now use the canonical repository. Current-document link review and publication remain tracked in KM-020.
 
 ## Mandatory runtime requirement (all tickets)
 
@@ -66,11 +66,12 @@ No Kindle support, platform priority, delivery date or complete cross-platform m
 | KM-016 | P1 | Ready for test | Locale validation and multilingual regression | Schema/duplicate-key/coverage/placeholder/control-character checks, exact publication allowlist extensions and CI; equivalent migration/device outcomes in all three locales. |
 | KM-017 | P2 | Queued | Translation contribution and expansion guide | Document CLI selection, packaging, aliases, fallback, supported plural rules and acceptance; new languages require reviewed registry/catalog changes and privacy checks. |
 | KM-018 | P1 | Ready for test | Local source package preparation and verification | Package only guarded files from an explicit Git commit; require complete locale assets, verify ZIP bytes against Git, smoke-test a temporary extraction, check local doc links, generate SHA256SUMS and local metadata; no overwrite, network, device access or publication. Included in the published 3.3.0-dev.6 source package; human acceptance remains pending. |
-| KM-019 | P2 | Ready for test | KOReader Bridge identity and Kobo-only scope | README name/tagline, explicit device support matrix, future-device roadmap and acceptance checks are documented. Review links and public wording; CLI/runtime/schema/archive names and current behavior stay unchanged. No non-Kobo compatibility claim. |
-| KM-020 | P2 | In progress | GitHub repository rename and link transition | Existing repository renamed to `gh-slee/koreader-bridge`; same repository ID, all branch/tag refs, 11 issue/PR identities, three releases and six downloaded asset hashes verified. Old Git/API redirects and existing exact-main CI passed; local origin/gh default updated. Current badges/clone/document links are updated locally; reviewed PR, exact-head CI and final link review remain. Do not recreate the old slug or rewrite published assets. See docs/MAINTAINING.md. |
+| KM-019 | P2 | Ready for test | KOReader Bridge identity and Kobo-only scope | README name/tagline, explicit device support matrix, future-device roadmap and acceptance checks are documented. Review links and public wording; Retain existing commands/schemas/published archives; canonical CLI/runtime-brand follow-up is tracked in KM-024. No non-Kobo compatibility claim. |
+| KM-020 | P2 | Ready for test | GitHub repository rename and link transition | Existing repository renamed to `gh-slee/koreader-bridge`; same repository ID, all branch/tag refs, 11 issue/PR identities, three releases and six downloaded asset hashes verified. Old Git/API redirects and existing exact-main CI passed; local origin/gh default updated. Canonical link updates merged in PR #12; six exact merged-main CI jobs passed. Final human link review remains. Do not recreate the old slug or rewrite published assets. See docs/MAINTAINING.md. |
 | KM-021 | P2 | Queued | Non-Kobo feasibility and support matrix | Research Kindle and other candidate families; select a first platform and supported routes only after documenting prerequisites, versions, access/transport, runtime/metadata/hardware differences and available test hardware. No implementation or compatibility claim from research alone. |
 | KM-022 | P2 | Queued | Cross-device migration policy and safeguards | Define portable versus platform-specific content, compatibility/refusal rules and adapter boundaries after KM-021. Preserve Kobo FULL/KOREADER behavior and all offline/identity/path/space/backup/rollback protections. Coordinate with KM-007/008/009; do not execute device Lua/plugins. |
 | KM-023 | P2 | Queued | First non-Kobo device adapter (platform TBD) | Depends on KM-021/022 and a separately authorized implementation scope. Add explicit route selection and platform-specific offline capture/apply/restore, synthetic failure/compatibility regressions and controlled hardware acceptance; document exact tested scope and unsupported routes before advertising support. |
+| KM-024 | P2 | Ready for test | Canonical CLI and runtime branding | Add koreader-bridge.py while retaining the shared legacy entry; align three-locale help/banner/preview and new manifest labels; preserve schemas, output root and locks. Coordinate docs/CI/checkers/publication allowlist and current/historical packaging. Verify equivalent offline CLI, cross-entry FULL/restore, shared locks, old manifests/packages and unchanged existing assets. Human wording acceptance remains pending. |
 
 ## Completed baseline (verified in current code)
 
@@ -150,11 +151,11 @@ SOURCE and TARGET must remain visibly identifiable in translated text, e.g. a tr
 Locale selection/help/list commands now work in 3.3.0-dev.1. Migration commands accept the preference; shared presentation and core workflow/recovery are partially localized in 3.3.0-dev.5 while unconverted low-level/per-file/maintenance text remains English:
 
 ```bash
-python3 kobo-koreader-migrate.py --locale en --help
-python3 kobo-koreader-migrate.py --locale zh-Hant --mode full --dry-run
-python3 kobo-koreader-migrate.py --locale zh-Hans --list-runs
-python3 kobo-koreader-migrate.py --list-locales
-python3 kobo-koreader-migrate.py --locale zh-Hant --preview-ui
+python3 koreader-bridge.py --locale en --help
+python3 koreader-bridge.py --locale zh-Hant --mode full --dry-run
+python3 koreader-bridge.py --locale zh-Hans --list-runs
+python3 koreader-bridge.py --list-locales
+python3 koreader-bridge.py --locale zh-Hant --preview-ui
 ```
 
 Resolution order: explicit --locale; KOBO_MIGRATE_LOCALE environment preference; terminal language environment (LANGUAGE, LC_ALL, LC_MESSAGES, LANG); English fallback. Respect ordered LANGUAGE preferences. Do not execute macOS settings commands or read a Kobo's copied language setting to infer the operator's preference.
