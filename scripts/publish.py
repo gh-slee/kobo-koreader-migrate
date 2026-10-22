@@ -50,7 +50,7 @@ def main() -> int:
         run(sys.executable, 'scripts/check_publication.py', '--history')
         run(sys.executable, 'scripts/check_locales.py')
         run(sys.executable, '-m', 'unittest', 'discover', '-s', 'tests', '-p', 'test_*.py')
-        run(sys.executable, 'kobo-koreader-migrate.py', '--self-test')
+        run(sys.executable, 'koreader-bridge.py', '--self-test')
         run('gh', 'auth', 'status')
         # No force flag, branch deletion, merge or release creation.
         run('git', 'push', '--set-upstream', 'origin', branch)

@@ -10,8 +10,18 @@ Status: Ready for human review. This is documentation work; no device connection
 
 - README identifies the project as KOReader Bridge and states that only Kobo → Kobo migration on macOS is currently implemented. General Kobo build compatibility and remaining first-stable acceptance limits are still explicit.
 - Kindle and other device families are labelled future/unsupported. Non-Kobo tickets do not block the existing Kobo `1.0.0` milestone or count as implemented support.
-- Existing CLI commands, filename, locale catalogs, schemas, output paths and published archive names remain unchanged. Download links still point to real existing assets.
+- Existing CLI options, schemas, output paths, locks and published archive names remain compatible. Current source adds a canonical entry and updates three catalog presentation labels; the original entry remains available. Download links still point to existing assets, and pinned old-package commands retain the old name.
 - The existing GitHub repository is now `gh-slee/koreader-bridge` (KM-020). Current badges, clone commands and release links use this canonical identity; historical CLI/archive names remain intact. Verify the link-update PR and CI after publication. Rename continuity checks are complete, but are not physical-device sign-off.
+
+## Canonical and legacy CLI compatibility (KM-024)
+
+Status: Ready for test; no new physical acceptance is implied. Use a disposable checkout and synthetic runs.
+
+- From a different working directory, run version/help/list-locales/preview through both names. Program-name differences and help wrapping are expected; locale content, options and exit semantics should match.
+- Verify both entries see the same script-relative synthetic runs and refuse a held project/device lock. Keep the same output and lock identities; never rename real backups or stale lock files as a test.
+- Rehearse a synthetic FULL transfer through each entry and an exact TARGET restore through the opposite entry. Check SOURCE remains unchanged, original TARGET bytes return and captured archives remain intact.
+- Verify an old-branded manifest and a historical package from its original Git ref. New packages must include both scripts/locales and pass all 11 extracted checks; old source retains its original prefix and six checks.
+- Review all three updated banners/help/preview titles and new manifest display label. Schema keys, legacy metadata, published assets and copyright attribution remain intact. These checks do not complete the remaining physical/translation/stable gates.
 
 ## First stable release gates
 
@@ -32,11 +42,11 @@ Never unplug a real reader or corrupt/delete its recovery data to induce a failu
 ## Offline checks (no Kobo connected)
 
 ```bash
-python3 kobo-koreader-migrate.py --version
+python3 koreader-bridge.py --version
 python3 -m unittest discover -s tests -p 'test_*.py'
-python3 kobo-koreader-migrate.py --self-test
-python3 kobo-koreader-migrate.py --list-runs
-python3 kobo-koreader-migrate.py --cleanup
+python3 koreader-bridge.py --self-test
+python3 koreader-bridge.py --list-runs
+python3 koreader-bridge.py --cleanup
 python3 scripts/check_publication.py --worktree
 ```
 
@@ -62,8 +72,8 @@ Current scoped evidence: connected-device KOREADER transfer and verified target 
 Prepare a disposable library with one new book, one different matching-path book, one identical book and one TARGET-only book, with matching `.sdr` sidecars.
 
 ```bash
-python3 kobo-koreader-migrate.py --mode full --dry-run
-python3 kobo-koreader-migrate.py --mode library --books --no-fonts --conflict keep-target --dry-run
+python3 koreader-bridge.py --mode full --dry-run
+python3 koreader-bridge.py --mode library --books --no-fonts --conflict keep-target --dry-run
 ```
 
 Check `difference.txt`/JSON categories and book/sidecar groups. Preview must not modify either Kobo or create ZIPs. TARGET-only books are retained. Keep-target must protect the different book's reading metadata.
@@ -82,8 +92,8 @@ Check `difference.txt`/JSON categories and book/sidecar groups. Preview must not
 Use a successfully captured disposable test batch. Replace RUN_ID with its actual ID.
 
 ```bash
-python3 kobo-koreader-migrate.py --from-run RUN_ID --dry-run
-python3 kobo-koreader-migrate.py --restore-run RUN_ID --dry-run
+python3 koreader-bridge.py --from-run RUN_ID --dry-run
+python3 koreader-bridge.py --restore-run RUN_ID --dry-run
 ```
 
 Saved-source preview must need only TARGET and record a dependency on the source batch. Exact restore must require the original target and display the planned restorations/removals. A different fingerprint or missing/corrupt archive/manifest must refuse writes. Do not corrupt your only real recovery copy to test this; use fixture copies.
@@ -115,10 +125,10 @@ Record version, tested macOS/Python versions, hardware model pair, modes tested,
 Status: Ready for human test. This section describes the original locale foundation; completed owned-runtime localization is included in 3.3.0-dev.6 and the candidate source. No Kobo is needed for these foundation checks. Keep locales/ beside the script.
 
 ```bash
-python3 kobo-koreader-migrate.py --list-locales
-python3 kobo-koreader-migrate.py --locale en --preview-ui
-python3 kobo-koreader-migrate.py --locale zh-Hant --preview-ui
-python3 kobo-koreader-migrate.py --locale zh-Hans --help
+python3 koreader-bridge.py --list-locales
+python3 koreader-bridge.py --locale en --preview-ui
+python3 koreader-bridge.py --locale zh-Hant --preview-ui
+python3 koreader-bridge.py --locale zh-Hans --help
 python3 scripts/check_locales.py
 ```
 

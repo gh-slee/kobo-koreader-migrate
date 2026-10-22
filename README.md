@@ -52,7 +52,7 @@
 
 Additional device support is outside the first `1.0.0` milestone. Each new platform needs its own migration policy and tests before appearing as supported. See the [device-support roadmap](TRACKER.md#device-support-roadmap).
 
-The CLI filename remains `kobo-koreader-migrate.py`, and existing release archives retain their original names. Continue using the commands below with the renamed project.
+Current source uses **`koreader-bridge.py`**. Keep the adjacent `kobo-koreader-migrate.py` shared engine and the complete `locales/` directory; the old script remains a compatible command. Both entries use the same run root, locks and migration safeguards. Published RC1/3.x packages predate the new entry, so their pinned commands below still use the old filename. New source packages use `koreader-bridge-VERSION.zip`; historical packages retain their original names and bytes.
 
 ## Quick start
 
@@ -77,19 +77,19 @@ Alternatively, clone the development source on `main`; use `--version` to identi
 git clone https://github.com/gh-slee/koreader-bridge.git
 cd koreader-bridge
 python3 --version
-python3 kobo-koreader-migrate.py --version
+python3 koreader-bridge.py --version
 python3 scripts/check_locales.py
-python3 kobo-koreader-migrate.py --self-test
+python3 koreader-bridge.py --self-test
 ```
 
-Python 3.9+ is required. No `pip install` is needed. You can also select `main` on GitHub and choose **Code > Download ZIP**. Keep the complete `locales/` directory beside `kobo-koreader-migrate.py`; copying the script alone is not a complete installation, even for English.
+Python 3.9+ is required. No `pip install` is needed. You can also select `main` on GitHub and choose **Code > Download ZIP**. For current source, keep both Python entry/engine files and the complete `locales/` directory together; copying a single script is not a complete installation, even for English. In older published packages, use `kobo-koreader-migrate.py` with their original contents.
 
 ### 2. Explore without a Kobo
 
 ```bash
-python3 kobo-koreader-migrate.py --help
-python3 kobo-koreader-migrate.py --list-locales
-python3 kobo-koreader-migrate.py --locale zh-Hant --preview-ui
+python3 koreader-bridge.py --help
+python3 koreader-bridge.py --list-locales
+python3 koreader-bridge.py --locale zh-Hant --preview-ui
 ```
 
 These help/list/preview commands do not inspect devices or existing run data and do not create migration logs/backups. The UI preview is a static sample, separate from device inspection with `--dry-run`.
@@ -99,13 +99,13 @@ These help/list/preview commands do not inspect devices or existing run data and
 Disconnect both Kobos first. Quit KOReader normally before connecting either device, then follow the SOURCE/TARGET prompts one device at a time:
 
 ```bash
-python3 kobo-koreader-migrate.py --mode full --dry-run
+python3 koreader-bridge.py --mode full --dry-run
 ```
 
 A dry run reads both devices and creates local reports/locks, but changes no Kobo files and creates no ZIP backups. Review the plan. When ready to migrate, rerun without `--dry-run`; the tool recalculates the plan and asks for final confirmation:
 
 ```bash
-python3 kobo-koreader-migrate.py --mode full
+python3 koreader-bridge.py --mode full
 ```
 
 > [!NOTE]
@@ -216,4 +216,4 @@ Report reproducible bugs and feature requests through [GitHub Issues](https://gi
 
 Built for readers using [KOReader](https://github.com/koreader/koreader) on Kobo devices. Thanks to the KOReader community and this project's [contributors](https://github.com/gh-slee/koreader-bridge/graphs/contributors).
 
-This tool is under the [MIT License](LICENSE). Device software, plugins, fonts and books retain their own licences. This is an independent community tool, not an official Kobo or KOReader project.
+This tool is under the [MIT License](LICENSE). The existing copyright notice retains the contributor name from the project's earlier name, Kobo KOReader Migration. Device software, plugins, fonts and books retain their own licences. This is an independent community tool, not an official Kobo or KOReader project.

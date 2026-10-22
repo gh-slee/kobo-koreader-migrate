@@ -1,5 +1,7 @@
 # User guide
 
+Commands in this guide target current source via `koreader-bridge.py`. Keep the adjacent `kobo-koreader-migrate.py` engine and `locales/` together. The old script remains a compatible command; published RC1/3.x packages only provide that older entry. CLI flags, backup schemas, default output root and locks are shared.
+
 [Home](../README.md) · [Usage](USAGE.md) · [Recovery](RECOVERY.md) · [Troubleshooting](TROUBLESHOOTING.md) · [Development](DEVELOPMENT.md) · [Maintaining](MAINTAINING.md)
 
 Complete operating instructions for the experimental macOS CLI. Start with the README quick start; review the mode and data behavior before approving device writes.
@@ -34,19 +36,19 @@ Running without `--mode` opens an interactive menu; FULL is its default.
 
 ```bash
 # Everything supported, including books and reading state.
-python3 kobo-koreader-migrate.py --mode full
+python3 koreader-bridge.py --mode full
 
 # Entire KOReader directory only.
-python3 kobo-koreader-migrate.py --mode koreader
+python3 koreader-bridge.py --mode koreader
 
 # Books + reading data, retaining TARGET's installed KOReader.
-python3 kobo-koreader-migrate.py --mode library --books --no-fonts
+python3 koreader-bridge.py --mode library --books --no-fonts
 
 # Only custom root fonts.
-python3 kobo-koreader-migrate.py --mode library --no-books --fonts
+python3 koreader-bridge.py --mode library --no-books --fonts
 
 # Detailed read-only inspection and planning.
-python3 kobo-koreader-migrate.py --mode audit --books --fonts
+python3 koreader-bridge.py --mode audit --books --fonts
 ```
 
 FULL always includes supported books and reading data. `--no-books`, `--no-reading-data`, directory scopes and `keep-target` conflicts are rejected in FULL. Use KOREADER or LIBRARY for selective work.
@@ -82,7 +84,7 @@ Connect **one Kobo at a time**. SOURCE is ejected before TARGET is requested; th
 Model flags provide labels in advance but do not bypass confirmations:
 
 ```bash
-python3 kobo-koreader-migrate.py --mode full \
+python3 koreader-bridge.py --mode full \
   --source-model "Kobo Clara BW" --target-model "Kobo Libra Colour" --dry-run
 ```
 
@@ -103,9 +105,9 @@ Diagnostic logs, machine-schema values, fingerprints, category/status/operation 
 These commands need no Kobo and do not create runs/logs/backups or inspect existing run data:
 
 ```bash
-python3 kobo-koreader-migrate.py --list-locales
-python3 kobo-koreader-migrate.py --locale zh-Hant --help
-python3 kobo-koreader-migrate.py --locale zh-Hans --preview-ui
+python3 koreader-bridge.py --list-locales
+python3 koreader-bridge.py --locale zh-Hant --help
+python3 koreader-bridge.py --locale zh-Hans --preview-ui
 python3 scripts/check_locales.py
 ```
 
@@ -150,7 +152,7 @@ Hidden/system folders are excluded from ordinary book scanning. Symlinks are ski
 Use explicit extensions for other formats, and review the dry run:
 
 ```bash
-python3 kobo-koreader-migrate.py --mode library --books --no-fonts \
+python3 koreader-bridge.py --mode library --books --no-fonts \
   --extra-extension png --extra-extension zip --dry-run
 ```
 
@@ -179,7 +181,7 @@ Custom root fonts live at `fonts/` relative to the Kobo root, for example `fonts
 Use SOURCE-relative directories, without a leading slash:
 
 ```bash
-python3 kobo-koreader-migrate.py --mode library --books --no-fonts \
+python3 koreader-bridge.py --mode library --books --no-fonts \
   --include-dir Books --include-dir Comics --exclude-dir Books/Temporary --dry-run
 ```
 
@@ -195,7 +197,7 @@ Payload files are compared by size and SHA-256. Identical files are skipped. Dif
 | `keep-target` | Keep different existing TARGET files; still copy missing files. Protect associated reading metadata. LIBRARY/AUDIT only. |
 
 ```bash
-python3 kobo-koreader-migrate.py --mode library --books --no-fonts \
+python3 koreader-bridge.py --mode library --books --no-fonts \
   --conflict keep-target --dry-run
 ```
 

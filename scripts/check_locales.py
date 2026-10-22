@@ -9,10 +9,11 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def main() -> int:
-    spec = importlib.util.spec_from_file_location('migration_locale_check', ROOT / 'kobo-koreader-migrate.py')
+    spec = importlib.util.spec_from_file_location('migration_locale_check', ROOT / 'koreader-bridge.py')
     module = importlib.util.module_from_spec(spec)
     sys.modules[spec.name] = module
     spec.loader.exec_module(module)
+    module = module.load_engine()
     try:
         registry = module.load_locale_registry(ROOT / 'locales')
         english = module.load_locale_catalog(ROOT / 'locales', 'en', registry)

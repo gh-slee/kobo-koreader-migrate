@@ -8,7 +8,7 @@ import sys
 from pathlib import Path, PurePosixPath
 
 ROOT = Path(__file__).resolve().parents[1]
-EXACT = {'kobo-koreader-migrate.py', 'README.md', 'LICENSE', 'AGENTS.md',
+EXACT = {'koreader-bridge.py', 'kobo-koreader-migrate.py', 'README.md', 'LICENSE', 'AGENTS.md',
          'TRACKER.md', 'ACCEPTANCE.md', 'CHANGELOG.md', 'CONTRIBUTING.md',
          'SECURITY.md', '.gitignore', '.githooks/pre-push',
          '.cursor/rules/project-context.mdc', '.github/workflows/tests.yml',

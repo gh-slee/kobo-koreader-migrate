@@ -1,5 +1,7 @@
 # Contributing
 
+Current source uses `koreader-bridge.py`; the adjacent `kobo-koreader-migrate.py` remains the shared engine and compatible CLI. Keep both and the locale assets in distributions. Test both entry names when changing startup, locking or packaging.
+
 Start with README.md for usage and AGENTS.md for shared development guidance. Use TRACKER.md when planning features and ACCEPTANCE.md for manual verification. Public code, comments and canonical developer documentation use English; owned user-facing translations belong in reviewed locale catalogs.
 
 ## Runtime requirements
@@ -21,7 +23,7 @@ Preserve the existing mode semantics and data protections described in AGENTS.md
 ```bash
 python3 scripts/check_locales.py
 python3 -m unittest discover -s tests -p 'test_*.py'
-python3 kobo-koreader-migrate.py --self-test
+python3 koreader-bridge.py --self-test
 python3 scripts/check_publication.py --worktree --history
 git diff --cached
 ```

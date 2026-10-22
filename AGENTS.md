@@ -18,7 +18,7 @@ This is the shared project guidance for coding agents. Human usage belongs in RE
 - Device model logs are hints, not hardware proof. Require readable fingerprints and reject the same device in both roles.
 - Never evaluate device Lua or execute copied plugins. Keep path, ZIP, symlink, integrity, lock and rollback protections intact.
 - Keep normal cancellation distinct from migration and recovery errors. Do not selectively preserve hardware settings or merge reading metadata without an implemented, tested policy.
-- Keep the stable filename kobo-koreader-migrate.py; record versions in code/logs/JSON. Generated data stays in runs/<run-id>/ under the selected project root.
+- Use koreader-bridge.py as the canonical CLI; retain kobo-koreader-migrate.py as the shared engine and compatible legacy entry. Keep both files and locales together. Both entries must share run roots, locks, safety decisions and exit handling. Record versions in code/logs/JSON; generated data stays in runs/<run-id>/ under the selected project root.
 - Runtime UI after locale loading uses explicit catalog IDs for owned errors/prompts/progress/warnings/cleanup reasons and custom parser checks. Keep exception args, saved warning/reason strings, machine tokens and diagnostic logs English. Preserve structured children through diagnostic_detail/join_diagnostics; never infer IDs from rendered text. Raw external diagnostics, Python parser/traceback text and locale-bootstrap failures are deliberate original-text boundaries. Human wording/hardware acceptance remains pending.
 
 ## Verify changes
@@ -28,10 +28,11 @@ For runtime, catalog, test or publication-guard changes, run the relevant checks
 ```bash
 python3 scripts/check_locales.py
 python3 -m unittest discover -s tests -p 'test_*.py'
-python3 kobo-koreader-migrate.py --self-test
+python3 koreader-bridge.py --self-test
 python3 scripts/check_publication.py --worktree --history
 ```
 
+- Exercise both CLI names and cross-entry saved-run/restore compatibility when changing startup or packaging. Preserve historical package verification, archive bytes and lock identities.
 - Use disposable temporary fixtures. Tests have no authorization to access physical Kobos or delete real recovery data. Run the macOS ditto fixture when changing archive/restore behavior.
 - Match validation to the change. For documentation-only work, check links, CLI examples and privacy; do not repeat unrelated runtime tests without a reason.
 - Report observed evidence and remaining limits. Fixture/CI success is not physical-device validation. Keep acceptance tickets Ready for test until human sign-off.

@@ -37,8 +37,8 @@ Not every operation creates every artifact. A dry run creates reports but no ZIP
 Choose a different output root on the Mac:
 
 ```bash
-python3 kobo-koreader-migrate.py --backup-dir ~/KoboMigration --mode full --dry-run
-python3 kobo-koreader-migrate.py --backup-dir ~/KoboMigration --list-runs
+python3 koreader-bridge.py --backup-dir ~/KoboMigration --mode full --dry-run
+python3 koreader-bridge.py --backup-dir ~/KoboMigration --list-runs
 ```
 
 The resulting batches are `~/KoboMigration/runs/<run-id>/`. Backups under `/Volumes` or inside a Kobo mount are refused. Management commands must use the same output root to find those runs.
@@ -74,14 +74,14 @@ Do not rename run IDs, edit existing version metadata or recreate old manifests 
 List existing runs first:
 
 ```bash
-python3 kobo-koreader-migrate.py --list-runs
+python3 koreader-bridge.py --list-runs
 ```
 
 ### Reuse a saved SOURCE
 
 ```bash
-python3 kobo-koreader-migrate.py --from-run RUN_ID --dry-run
-python3 kobo-koreader-migrate.py --from-run RUN_ID
+python3 koreader-bridge.py --from-run RUN_ID --dry-run
+python3 koreader-bridge.py --from-run RUN_ID
 ```
 
 Replace `RUN_ID` with an ID listed under this project's `runs/`. Only TARGET is connected. The tool verifies archive SHA-256, manifests, member paths and contents. It references the original SOURCE archives and records dependencies instead of duplicating large ZIPs.
@@ -99,8 +99,8 @@ Saved run selection is limited to this project's run directories; an absolute pa
 ### Restore the original TARGET state
 
 ```bash
-python3 kobo-koreader-migrate.py --restore-run RUN_ID --dry-run
-python3 kobo-koreader-migrate.py --restore-run RUN_ID
+python3 koreader-bridge.py --restore-run RUN_ID --dry-run
+python3 koreader-bridge.py --restore-run RUN_ID
 ```
 
 This uses a previous run's **TARGET pre-migration snapshot**, not its SOURCE snapshot. It restores the recorded originals and removes files that the recorded migration created. Unrelated library files are retained. If the run replaced KOReader, restoration replaces the full KOReader tree with its prior backup.
@@ -115,19 +115,19 @@ These commands do not require a connected Kobo:
 
 ```bash
 # Inventory only.
-python3 kobo-koreader-migrate.py --list-runs
+python3 koreader-bridge.py --list-runs
 
 # Preview only. This does not delete anything.
-python3 kobo-koreader-migrate.py --cleanup
+python3 koreader-bridge.py --cleanup
 
 # Preview with a larger recent-success retention count.
-python3 kobo-koreader-migrate.py --cleanup --keep-successful 5
+python3 koreader-bridge.py --cleanup --keep-successful 5
 ```
 
 The default retention count is two; the minimum is one. Cleanup protects recent successful batches, referenced dependencies, the newest known successful recovery point per target, and all non-success/legacy/unknown batches. It deletes only whole eligible batches explicitly selected by ID:
 
 ```bash
-python3 kobo-koreader-migrate.py --cleanup --delete-run RUN_ID
+python3 koreader-bridge.py --cleanup --delete-run RUN_ID
 ```
 
 You must type the exact `DELETE ...` text shown by the tool. Multiple `--delete-run` flags select multiple eligible batches. The tool locks and rechecks eligibility and rejects symlink-containing batches. Adding `--dry-run` suppresses deletion even when IDs are supplied. There is no scheduled deletion, individual-ZIP pruning or automatic removal of failed runs. Keep recovery batches until physical testing is complete.

@@ -22,5 +22,6 @@ jobs:
       - run: python scripts/check_publication.py --history
       - run: python scripts/check_locales.py
       - run: python -m unittest discover -s tests -p 'test_*.py'
-      - run: python kobo-koreader-migrate.py --self-test
+      - run: python koreader-bridge.py --self-test
+      - run: python kobo-koreader-migrate.py --version
       - run: python scripts/prepare_release.py prepare --ref HEAD

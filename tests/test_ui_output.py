@@ -174,8 +174,12 @@ class LocalizedWorkflowTests(base.MigrationTestCase):
                     self.assertEqual(difference['ui_locale'], tag)
                     self.assertEqual(set(difference['files']), {'new', 'overwrite', 'identical', 'keep_target', 'metadata_skipped', 'target_only'})
                     log = next(run.glob('*.log')).read_text()
-                    self.assertIn('KOReader Kobo Migration Tool', log)
-                    for key in ('run.banner', 'difference.title', 'prompt.source'):
+                    banner_fields = {'version': m.VERSION, 'run_id': run.name}
+                    self.assertEqual(log.splitlines()[0],
+                                     m.load_locale_bundle('en', {}).render('run.banner', **banner_fields))
+                    if tag != 'en':
+                        self.assertNotIn(m.load_locale_bundle(tag, {}).render('run.banner', **banner_fields), log)
+                    for key in ('difference.title', 'prompt.source'):
                         if tag != 'en':
                             self.assertNotIn(m.load_locale_bundle(tag, {}).messages[key].split('{')[0], log)
                     report = (run / 'difference.txt').read_text()

@@ -4,6 +4,8 @@
 
 Implementation and verification reference for contributors. Read CONTRIBUTING.md for the review workflow and AGENTS.md for shared agent rules.
 
+The canonical entry loads the existing engine through an explicit adjacent-file import, preserving argv and cwd. Both entries call the shared cli() exception/exit boundary, resolve the same script-relative run root and use identical project/device locks. Locale validation also loads that engine through the canonical entry. AST/source-coverage tests intentionally inspect the shared engine; its cli() fallback is the explicit English process boundary. Historical records and lock/output prefixes are not renamed.
+
 ## Tech stack
 
 The runtime is a Python CLI, with no third-party Python packages, hosted backend or model service.
@@ -23,7 +25,8 @@ Reading metadata and plugins are transferred as files. Lua is not an execution d
 ## Project layout
 
 ```text
-kobo-koreader-migrate.py   CLI and migration/management implementation
+koreader-bridge.py        canonical CLI; loads the adjacent shared engine
+kobo-koreader-migrate.py   shared migration/management engine and compatible legacy CLI
 locales/                 registry and reviewed UTF-8 catalogs
 scripts/                 locale/privacy checks, source-package preparation and PR helper
 tests/                   synthetic migration, management, locale and privacy regressions
@@ -45,7 +48,7 @@ Run from the repository root, without a Kobo:
 ```bash
 python3 scripts/check_locales.py
 python3 -m unittest discover -s tests -p 'test_*.py'
-python3 kobo-koreader-migrate.py --self-test
+python3 koreader-bridge.py --self-test
 python3 scripts/check_publication.py --worktree --history
 ```
 
@@ -57,7 +60,7 @@ Run scripts/check_locales.py after any catalog/registry change. The published 3.
 
 ## Validation and release status
 
-This source snapshot is **1.0.0-rc.2**, a documentation candidate continuing the published [1.0.0-rc.1](https://github.com/gh-slee/koreader-bridge/releases/tag/v1.0.0-rc.1). Only VERSION and documentation change from RC1; no migration policy, schema or locale change is intended. See the [version/compatibility policy](MAINTAINING.md#versioning-and-first-stable-release) and [first-stable gates](../ACCEPTANCE.md#first-stable-release-gates). Old 3.x source/target snapshots are exercised by a cross-version synthetic regression; private real backups are never test inputs.
+This source snapshot is **1.0.0-rc.2**, a documentation candidate continuing the published [1.0.0-rc.1](https://github.com/gh-slee/koreader-bridge/releases/tag/v1.0.0-rc.1). Current source also adds the KOReader Bridge canonical entry and presentation labels; migration policy, schema fields and safety decisions remain unchanged. Both CLI names share the same implementation. These changes require their own exact-commit validation; prior RC1 evidence does not certify them. See the [version/compatibility policy](MAINTAINING.md#versioning-and-first-stable-release) and [first-stable gates](../ACCEPTANCE.md#first-stable-release-gates). Old 3.x source/target snapshots are exercised by a cross-version synthetic regression; private real backups are never test inputs.
 
 RC1 was published on 2026-10-21 from `aaedb78f2b2233ffe91ad42ae8ea9fb312860052`. Its baseline passed 185 tests (including the macOS ditto fixture), self-test, 3x371 locales, privacy/history and documentation checks. All six [exact merged-main CI jobs](https://github.com/gh-slee/koreader-bridge/actions/runs/39527788861) passed. Its independently extracted 35-file package matched Git, and the two uploaded assets were downloaded and verified against the reviewed local bytes. This evidence applies to RC1; later source commits require their own validation and hosted CI. Synthetic checks did not use physical devices or real backups.
 
