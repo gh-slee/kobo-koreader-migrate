@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.0.0 — stable compatibility baseline
+
+- Establish the 1.x compatibility baseline for documented CLI flags/modes, exit meanings and versioned run/snapshot/manifest schemas. Retain FULL, KOREADER, LIBRARY, AUDIT, dry-run, the canonical and compatible legacy entries, offline operation and existing migration safeguards.
+- Update version metadata and current package instructions to koreader-bridge-1.0.0.zip; keep historical tags, assets and supported older backups unchanged. No migration algorithm, confirmation default, identity, path, lock, capacity or rollback policy changes.
+- Record scoped Libra 2 → Clara 2E KOREADER hardware evidence and confirmed ordinary use/progress persistence. Keep successful FULL/LIBRARY physical copying and remaining complete language/maintenance review explicitly incomplete. Stable publication accepts a documented compatibility scope, not universal hardware/plugin certification.
+- Separate final exact-commit tests/package/privacy/CI and publication approval from broader acceptance follow-up. Publication facts and official downloads belong to the release list; this source heading does not claim an uploaded release exists.
+
 ## 1.0.0-rc.2 — source candidate
 
 - Reconcile acceptance documentation with scoped Libra 2 → Clara 2E KOREADER hardware success and the f98d3a6437ae baseline's 194-test evidence, six main CI jobs, 37-file/11-check local package and 42 three-locale synthetic rehearsals. Record partial wording/result review while retaining physical FULL/LIBRARY, practical controls/progress, complete language and final publication gates. This documentation follow-up does not change the runtime or version.
