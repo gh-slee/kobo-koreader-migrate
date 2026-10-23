@@ -13,7 +13,7 @@
   <a href="#requirements"><img alt="Device migration requires macOS" src="https://img.shields.io/badge/macOS-USB_migration-111827?style=flat-square&amp;logo=apple&amp;logoColor=white"/></a>
   <a href="#tech-stack"><img alt="Runtime dependencies: Python standard library" src="https://img.shields.io/badge/dependencies-standard_library-0F766E?style=flat-square"/></a>
   <a href="LICENSE"><img alt="MIT license" src="https://img.shields.io/badge/license-MIT-2563EB?style=flat-square"/></a>
-  <a href="#project-status-and-roadmap"><img alt="Experimental development build" src="https://img.shields.io/badge/status-experimental-D97706?style=flat-square"/></a>
+  <a href="#project-status-and-roadmap"><img alt="Kobo migration scope" src="https://img.shields.io/badge/scope-Kobo_on_macOS-0F766E?style=flat-square"/></a>
 </p>
 
 <p align="center">
@@ -27,7 +27,7 @@
 </p>
 
 > [!IMPORTANT]
-> **This source snapshot is `1.0.0-rc.2`, a release candidate, not a stable release.** [1.0.0-rc.1](https://github.com/gh-slee/koreader-bridge/releases/tag/v1.0.0-rc.1) was published on 2026-10-21. Download the pinned package below, or consult the [release list](https://github.com/gh-slee/koreader-bridge/releases) for later published candidates; a source version alone does not mean its assets have been published. KOREADER file verification, startup and basic reading have scoped device confirmation; broader acceptance remains pending. Device migration requires **macOS**. See the [version transition](#versioning) and [stable-release gates](ACCEPTANCE.md#first-stable-release-gates).
+> **This source snapshot is version `1.0.0`.** Device migration supports Kobo → Kobo on macOS. KOREADER has scoped Libra 2 → Clara 2E hardware confirmation, including normal use and progress persistence. FULL/LIBRARY remain available with automated coverage; successful physical copying for those modes and broader manual review remain incomplete. See the [validation record](ACCEPTANCE.md#validation-record-2026-10-22) and [release scope](ACCEPTANCE.md#first-stable-release-gates). A version in source is not proof of publication: use the [release list](https://github.com/gh-slee/koreader-bridge/releases) for published assets.
 
 ## Why use it?
 
@@ -52,23 +52,23 @@
 
 Additional device support is outside the first `1.0.0` milestone. Each new platform needs its own migration policy and tests before appearing as supported. See the [device-support roadmap](TRACKER.md#device-support-roadmap).
 
-Current source uses **`koreader-bridge.py`**. Keep the adjacent `kobo-koreader-migrate.py` shared engine and the complete `locales/` directory; the old script remains a compatible command. Both entries use the same run root, locks and migration safeguards. Published RC1/3.x packages predate the new entry, so their pinned commands below still use the old filename. New source packages use `koreader-bridge-VERSION.zip`; historical packages retain their original names and bytes.
+Current source uses **`koreader-bridge.py`**. Keep the adjacent `kobo-koreader-migrate.py` shared engine and the complete `locales/` directory; the old script remains a compatible command. Both entries use the same run root, locks and migration safeguards. Published RC1/3.x packages predate the new entry; use their original legacy commands and contents. The quick start below uses the current canonical entry. New source packages use `koreader-bridge-VERSION.zip`; historical packages retain their original names and bytes.
 
 ## Quick start
 
-The version-pinned [1.0.0-rc.1 pre-release](https://github.com/gh-slee/koreader-bridge/releases/tag/v1.0.0-rc.1) is available for controlled testing. These download commands deliberately select that published package; a clone or another source archive may contain a different version. Start with the offline checks and a dry run.
+Use a published package from the [release list](https://github.com/gh-slee/koreader-bridge/releases), or clone the source. The commands below target version `1.0.0`; confirm that release and its named assets are listed before downloading. Start with offline checks and a dry run. Existing RC1/3.x packages retain their original filenames and instructions.
 
 ### 1. Get the project
 
-For the version-pinned package, download `kobo-koreader-migrate-1.0.0-rc.1.zip` and `SHA256SUMS` from the linked pre-release page into the same folder:
+When `v1.0.0` is listed, download `koreader-bridge-1.0.0.zip` and `SHA256SUMS` from that release into the same folder:
 
 ```bash
 shasum -a 256 -c SHA256SUMS
-unzip kobo-koreader-migrate-1.0.0-rc.1.zip
-cd kobo-koreader-migrate-1.0.0-rc.1
-python3 kobo-koreader-migrate.py --version
+unzip koreader-bridge-1.0.0.zip
+cd koreader-bridge-1.0.0
+python3 koreader-bridge.py --version
 python3 scripts/check_locales.py
-python3 kobo-koreader-migrate.py --self-test
+python3 koreader-bridge.py --self-test
 ```
 
 Alternatively, clone the development source on `main`; use `--version` to identify the checked-out build:
@@ -96,16 +96,16 @@ These help/list/preview commands do not inspect devices or existing run data and
 
 ### 3. Preview a migration
 
-Disconnect both Kobos first. Quit KOReader normally before connecting either device, then follow the SOURCE/TARGET prompts one device at a time:
+The introductory commands use KOREADER, the mode with scoped hardware confirmation. For all modes and their validation limits, see the mode table below. Disconnect both Kobos first. Quit KOReader normally before connecting either device, then follow the SOURCE/TARGET prompts one device at a time:
 
 ```bash
-python3 koreader-bridge.py --mode full --dry-run
+python3 koreader-bridge.py --mode koreader --dry-run
 ```
 
 A dry run reads both devices and creates local reports/locks, but changes no Kobo files and creates no ZIP backups. Review the plan. When ready to migrate, rerun without `--dry-run`; the tool recalculates the plan and asks for final confirmation:
 
 ```bash
-python3 koreader-bridge.py --mode full
+python3 koreader-bridge.py --mode koreader
 ```
 
 > [!NOTE]
@@ -190,17 +190,17 @@ English (`en`), Traditional Chinese (`zh-Hant`) and Simplified Chinese (`zh-Hans
 
 ## Project status and roadmap
 
-**[1.0.0-rc.1](https://github.com/gh-slee/koreader-bridge/releases/tag/v1.0.0-rc.1) was published on 2026-10-21 as a pre-release, not GitHub Latest.** Its tag resolves to `aaedb78f2b2233ffe91ad42ae8ea9fb312860052`; both uploaded assets were downloaded and verified against the reviewed bytes. This `1.0.0-rc.2` source snapshot includes documentation updates and the KOReader Bridge project name; migration behavior is unchanged.
+Version `1.0.0` establishes the documented CLI/schema compatibility baseline while retaining all four modes and the compatible legacy entry. Publication status and official assets are recorded on the [release list](https://github.com/gh-slee/koreader-bridge/releases). The earlier [RC1 pre-release](https://github.com/gh-slee/koreader-bridge/releases/tag/v1.0.0-rc.1) and historical 3.x releases remain unchanged.
 
 Validation distinguishes device results from synthetic tests:
 
 | Evidence | Confirmed scope | Remaining limits |
 | --- | --- | --- |
-| KOREADER on hardware | Kobo Libra 2 → Kobo Clara 2E using the 3.3.0-dev.6 package: whole-runtime transfer, full manifest verification, TARGET identity preservation and safe eject. The operator confirmed startup and opening an existing TARGET book. | Relevant controls, settings, plugins and reading-progress persistence still need manual checks; this does not certify every Kobo model. |
+| KOREADER on hardware | Kobo Libra 2 → Kobo Clara 2E using the 3.3.0-dev.6 package: whole-runtime transfer, full manifest verification, TARGET identity preservation and safe eject. The operator confirmed startup, opening an existing TARGET book, usual functions and progress persistence after reopening. | Confirmation covers the tested use; other models, builds and plugin combinations need their own checks. |
 | Current runtime baseline | The merged CLI baseline passed 194 unit tests and six main CI jobs. A separate local rehearsal passed 42 synthetic cases across English, Traditional Chinese and Simplified Chinese; the exact-baseline source package passed 11 extracted checks with both entries. | Synthetic mount selection and safe eject were mocked. File-transfer checks do not verify reader rendering or hardware behavior. |
 | FULL and LIBRARY | Synthetic transfer/recovery coverage; a physical FULL preview safely refused insufficient TARGET space before writes. | Successful physical copying with adequate capacity remains pending. |
 
-See the [dated evidence and sources](ACCEPTANCE.md#validation-record-2026-10-22) and [remaining practical checks](ACCEPTANCE.md#remaining-practical-checks). Existing KOREADER device evidence remains valid for its tested build and scope. Broader recovery/cleanup acceptance, complete human translation review and the [stable-release gates](ACCEPTANCE.md#first-stable-release-gates) remain open.
+See the [dated evidence and sources](ACCEPTANCE.md#validation-record-2026-10-22) and [remaining practical checks](ACCEPTANCE.md#remaining-practical-checks). Existing KOREADER device evidence remains valid for its tested build and scope. Broader recovery/cleanup acceptance and complete human translation review remain follow-up work. The [release criteria](ACCEPTANCE.md#first-stable-release-gates) require exact-artifact checks and explicit acceptance of these disclosed limits.
 
 CI covers synthetic fixtures on macOS/Linux and a real macOS `ditto` round trip on temporary directories. It does not certify every device or replace the remaining manual acceptance checklists. The badge tracks push CI on main; review-branch checks are available on the corresponding PR. Detailed fixes and validation belong in CHANGELOG.md and docs/DEVELOPMENT.md.
 
@@ -208,7 +208,7 @@ Interrupted-transfer resume, exact library mirroring, content-assisted discovery
 
 ## Versioning
 
-The first stable release is planned as **`v1.0.0`**, preceded by `v1.0.0-rc.1` and further candidates if needed. This is a one-time numbering reset from the earlier `3.x` development series; it continues the existing tool rather than introducing a separate product. RC1 has been published; later source snapshots and published downloads are separate. Stable acceptance is not complete.
+The first stable compatibility baseline is **`v1.0.0`**, following the published `v1.0.0-rc.1` and internal source candidates. This is a one-time numbering reset from the earlier `3.x` development series, continuing the existing tool. The baseline preserves all modes and documents the remaining validation limits; a stable version is not universal hardware or plugin certification.
 
 Existing `v3.3.0-dev.*` tags and assets remain available unchanged. Version comparators sort `1.0.0` below the old `3.x` versions, so use the explicitly linked release and its notes rather than the numerically greatest tag. The eventual stable release will be explicitly selected as GitHub Latest when publication is approved. The CLI has no automatic updater.
 

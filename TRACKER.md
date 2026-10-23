@@ -1,6 +1,6 @@
 # KOReader Bridge development tracker
 
-Last reconciled: **2026-10-22**. Source snapshot version: **1.0.0-rc.2** (unpublished source with canonical CLI and branding follow-up). [1.0.0-rc.1](https://github.com/gh-slee/koreader-bridge/releases/tag/v1.0.0-rc.1) was published on 2026-10-21 as a pre-release, not Latest. Check the release list for later published assets. Broader physical/manual acceptance remains pending. See [first-stable release gates](ACCEPTANCE.md#first-stable-release-gates) and the [version policy](docs/MAINTAINING.md#versioning-and-first-stable-release).
+Last reconciled: **2026-10-22**. Source snapshot version: **1.0.0** (first stable compatibility baseline; consult the release list for published assets). [1.0.0-rc.1](https://github.com/gh-slee/koreader-bridge/releases/tag/v1.0.0-rc.1) was published on 2026-10-21 as a pre-release, not Latest. Check the release list for later published assets. Broader physical/manual acceptance remains pending. See [first-stable release gates](ACCEPTANCE.md#first-stable-release-gates) and the [version policy](docs/MAINTAINING.md#versioning-and-first-stable-release).
 
 Status vocabulary: `Queued`, `In progress`, `Ready for test`, `Blocked`, `Done`, `Deferred`. KM-011, KM-005, KM-001 and KM-003 are implemented and ready for user testing; ticket-wide human sign-off remains pending despite scoped KOREADER success. Entries represent planned work, not permission to operate physical devices or delete backups.
 
@@ -29,11 +29,11 @@ These four tickets await human testing/sign-off. See ACCEPTANCE.md. KM-013 is im
 
 Scope is the existing four modes, migration/backup/recovery safeguards and three locales. Do not add queued resume, mirroring, hardware-policy, discovery, GUI or platform-expansion work just to complete this milestone. Gates are maintained in [ACCEPTANCE.md](ACCEPTANCE.md#first-stable-release-gates).
 
-- The 3.3.0-dev.6 package passed an actual Libra 2 → Clara 2E KOREADER transfer, full file verification, identity preservation and safe eject; the operator confirmed startup and opening an existing TARGET book. Keep that scoped result; controls/settings/plugins and progress persistence still need practical checks.
-- FULL preview safely refused insufficient space. A successful physical FULL transfer is still pending; use a capacity-sufficient, controlled test setup rather than deleting real data to force a pass.
+- The 3.3.0-dev.6 package passed an actual Libra 2 → Clara 2E KOREADER transfer, full file verification, identity preservation and safe eject; the operator confirmed startup and opening an existing TARGET book. Usual functions and progress persistence after reopening were subsequently confirmed. Keep scope limited to those observations; additional model/plugin combinations remain unverified.
+- FULL preview safely refused insufficient space. Successful physical FULL/LIBRARY copying is still pending and tracked as acceptance follow-up; use a capacity-sufficient, controlled setup when available rather than deleting real data to force a pass.
 - The f98d3a6437ae CLI baseline passed 42 local synthetic rehearsals (14 per locale), separately from its 194-test unit evidence, six main CI jobs and 37-file/11-check local package. Transport was mocked; existing device data and backups were not accessed. These results do not replace physical FULL/LIBRARY acceptance.
-- Four Traditional Chinese behavior summaries and historical RC1 offline results have been reviewed; remaining language, mode/recovery/maintenance and device-control acceptance stays open. No ticket-wide status is promoted to Done.
-- RC1 publication and both downloaded assets have been verified. RC2 updates source documentation and version metadata; its publication is a separate reviewed action. Neither candidate completes stable gates. Published RC1 and historical 3.x tags/assets remain unchanged; real recovery backups remain retained.
+- Four Traditional Chinese behavior summaries and historical RC1 offline results have been reviewed; remaining language, mode/recovery/maintenance and wider device-control acceptance stays open as documented follow-up. No ticket-wide status is promoted to Done.
+- Version 1.0.0 retains all modes and the public compatibility baseline with explicit validation limits. Successful FULL/LIBRARY physical copying and broader language/maintenance review remain follow-up, not completed tests or a requirement to buy new hardware. Exact final tests, package checks, remote CI and source/release approval remain publication requirements. Existing RC1/3.x assets and real recovery backups remain unchanged.
 
 ## Device-support roadmap
 
