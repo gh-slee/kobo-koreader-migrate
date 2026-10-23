@@ -23,18 +23,54 @@ Status: Ready for test; no new physical acceptance is implied. Use a disposable 
 - Verify an old-branded manifest and a historical package from its original Git ref. New packages must include both scripts/locales and pass all 11 extracted checks; old source retains its original prefix and six checks.
 - Review all three updated banners/help/preview titles and new manifest display label. Schema keys, legacy metadata, published assets and copyright attribution remain intact. These checks do not complete the remaining physical/translation/stable gates.
 
+## Validation record: 2026-10-22
+
+Keep these evidence sets separate; a later documentation commit does not rerun or extend them.
+
+| Evidence set | Source and method | Observed result |
+| --- | --- | --- |
+| Connected-device KOREADER | Published 3.3.0-dev.6 package; Kobo Libra 2 SOURCE → Kobo Clara 2E TARGET; both readers reported KOReader v2026.07.2. | Whole-runtime replacement, full manifest verification, TARGET identity preservation and safe eject passed. The operator confirmed KOReader startup and opening an existing TARGET book. This was actual hardware testing and remains valid within that scope. |
+| Physical FULL preview | The same build and device direction; read-only planning. | Insufficient TARGET capacity was refused before writes. This verifies a refusal, not a successful FULL migration. |
+| Unit tests and CI | CLI baseline [f98d3a6437ae](https://github.com/gh-slee/koreader-bridge/commit/f98d3a6437ae4dd571c8b73184a5a5115456f693); its Git tree matches the feature commit that passed 194 tests and both entry self-tests. [Exact merged-main CI](https://github.com/gh-slee/koreader-bridge/actions/runs/39836316408) passed six macOS/Ubuntu Python 3.9/3.12/3.14 jobs. | Automated compatibility and safety evidence, including cross-entry transfer/restore. Ubuntu fixtures do not imply Linux device support. |
+| Current local package | Source ZIP from exact f98d3a6437ae; guarded Git content, independently checked against that commit. | 37 files and 11 extracted offline checks passed, including canonical and legacy entries. This local candidate was not published. A final release commit needs its own package checks. |
+| Current local rehearsal | The same f98d3a6437ae package; canonical entry with an injected shared engine, synthetic devices and scripted prompt answers. Real macOS ditto and migration/archive/restore code; mocked USB selection/eject and denied socket access. | 42 cases passed: 14 each in en, zh-Hant and zh-Hans. Four cross-locale comparisons matched category counts, bytes, paths and book/sidecar actions. No real device or existing recovery backup was accessed. |
+
+The current 42-case rehearsal covers:
+
+| Cases per locale | Checks |
+| --- | --- |
+| FULL preview and transfer (2) | Preview leaves fixture devices unchanged; transfer preserves SOURCE, paths, EPUB/CBZ and Unicode files, adjacent/central metadata, root font bytes, TARGET identity and unrelated library content. |
+| Saved-source preview and transfer (2) | Only the synthetic TARGET is selected; dependencies and original archives are retained. |
+| Exact-restore preview and restore (2) | Preview makes no changes; restored TARGET byte hashes match its original tree and pre-restore undo backups remain. |
+| LIBRARY overwrite and keep-target (2) | Matching book/sidecar/font policy is applied; installed TARGET runtime and identity remain intact. |
+| Final default-No (1) | An empty final response cancels without TARGET modification; captured recovery archives remain. |
+| Busy and released locks (2) | A busy owner refuses before device selection; a released lock's persistent filename does not block a new owner. |
+| Cleanup preview, wrong confirmation and explicit fixture deletion (3) | Preview/wrong text delete nothing; exact confirmation deletes only the selected eligible disposable batch and retains protected batches. |
+
+Font fixtures check bytes, not font rendering. Synthetic fixtures and mocked transport cannot validate firmware, controls, plugins or reading behavior. These 42 cases are separate from the 194-test unit suite. The historical RC1 rehearsal also passed 42 cases at its own commit; it is not the source of the current-baseline result.
+
+Human review has accepted the four Traditional Chinese behavior summaries for FULL, KOREADER, exact restore and cleanup, and the presented historical RC1 offline results. That review does not sign off all three 371-entry catalogs, operator-performed tests of the current rehearsal, complete feature tickets or stable publication. Raw reports, device identifiers, book names and recovery archives remain private.
+
+## Remaining practical checks
+
+- On the previously tested KOREADER TARGET, manually check the controls, settings and plugins needed for ordinary use. Open an existing book, turn pages, exit and reopen it to check progress persistence. Record only the behavior actually observed; no new migration is required for these usage checks.
+- For physical FULL/LIBRARY acceptance, identify a capacity-sufficient, controlled TARGET whose affected data may be replaced. First inspect roles, build compatibility, capacity and planned differences without writes. Agree on the exact write/restore scope before migration.
+- Check actual books, annotations/progress and relevant fonts on the device after copying, alongside file/identity verification and safe eject. KOREADER alone does not copy external library sidecars.
+- Retain verified recovery and undo backups. Use disposable fixtures for induced failures and cleanup deletion; do not erase real library data merely to force a capacity pass.
+- Finish the remaining language/recovery/maintenance review and validate the final release commit and package. Keep unresolved gates below explicit; neither existing device success nor a new candidate label closes them automatically.
+
 ## First stable release gates
 
 Target sequence: published `1.0.0-rc.1`, further candidates such as this `1.0.0-rc.2` source snapshot, then `1.0.0` after sign-off. Consult the release page for published assets rather than inferring publication from a source version. Version labels do not complete acceptance. These gates cover the existing scope, not the entire future backlog.
 
 | Gate | Required evidence | Current state |
 | --- | --- | --- |
-| FULL and LIBRARY | Controlled end-to-end copying with adequate capacity; original paths, books, adjacent/central reading data, fonts, identical/overwrite handling and retained TARGET-only content checked. | Pending physical acceptance; synthetic coverage and FULL low-space refusal observed. |
-| KOREADER | Whole runtime replacement, identity preservation, file hashes, safe eject and basic operation. Review the relevant controls/plugins and confirm candidate equivalence before stable sign-off. | Scoped transfer/startup/book-opening confirmed for published 3.3.0-dev.6; wider checks pending. |
-| Saved-source and restoration | Human rehearsal of previews and a controlled exact restore with before/after evidence and retained undo backups; old supported snapshots remain usable. | Synthetic and historical scoped recovery evidence exists; final combined sign-off pending. |
-| Locks, cancellation and cleanup | Busy/stale ownership, default-No, durable states, eligibility/protection and exact typed confirmation. Use disposable fixtures for deletion and induced faults. | Automated coverage exists; human acceptance pending. |
-| Languages | Review all three catalogs, particularly destructive scope, negation, default-No and exact input tokens; verify localized console versus English diagnostics. | 371 entries per locale and automated/editorial checks complete; human wording sign-off pending. |
-| Candidate and distribution | Exact candidate commit passes supported CI, locales, tests, self-test, privacy/history, documentation and independently extracted package checks. Downloaded published bytes must match reviewed assets. | RC1 passed 185 tests, six exact-main CI jobs, Git-matched 35-file package checks and downloaded-asset verification. Later candidate commits need their own validation; RC1 evidence does not certify RC2 or complete stable sign-off. |
+| FULL and LIBRARY | Controlled end-to-end copying with adequate capacity; original paths, books, adjacent/central reading data, fonts, identical/overwrite handling and retained TARGET-only content checked. | Current-baseline synthetic transfers passed; successful physical FULL/LIBRARY copying with adequate capacity remains pending. FULL low-space refusal was observed. |
+| KOREADER | Whole runtime replacement, identity preservation, file hashes, safe eject and basic operation. Review the relevant controls/plugins and confirm candidate equivalence before stable sign-off. | Libra 2 → Clara 2E transfer/startup/book-opening confirmed for published 3.3.0-dev.6; scoped hardware evidence retained. Relevant controls/plugins and progress-persistence checks remain pending. |
+| Saved-source and restoration | Human rehearsal of previews and a controlled exact restore with before/after evidence and retained undo backups; old supported snapshots remain usable. | Current-baseline synthetic saved-source and exact-restore cases passed; historical scoped recovery evidence retained. Final practical review remains pending. |
+| Locks, cancellation and cleanup | Busy/stale ownership, default-No, durable states, eligibility/protection and exact typed confirmation. Use disposable fixtures for deletion and induced faults. | Current-baseline synthetic cases passed; reviewed historical RC1 offline results accepted. Complete maintenance/manual sign-off remains pending. |
+| Languages | Review all three catalogs, particularly destructive scope, negation, default-No and exact input tokens; verify localized console versus English diagnostics. | 371 entries per locale and automated/editorial checks complete. Four Traditional Chinese behavior summaries accepted; complete three-catalog wording review remains pending. |
+| Candidate and distribution | Exact candidate commit passes supported CI, locales, tests, self-test, privacy/history, documentation and independently extracted package checks. Downloaded published bytes must match reviewed assets. | See the dated record: f98d3a6437ae runtime baseline has 194-test evidence, six exact-main CI jobs, a 37-file package with 11 extracted checks and 42 local synthetic rehearsals. RC1 published-download verification remains historical. Final release commit/package/download checks and stable sign-off remain required. |
 | Public contract and release | Confirm support/compatibility limits, final changelog/package instructions, reviewed release scope and explicit publication approval. | Policy documented; stable publication pending. |
 
 Never unplug a real reader or corrupt/delete its recovery data to induce a failure. Use synthetic disposable data for rollback/fault/deletion scenarios. A FULL capacity refusal is safety evidence, not FULL migration acceptance. Do not require all Kobo models/plugins to be tested: state the actual supported/tested scope and remaining limits precisely. Retain real backups until their recovery value is no longer needed and separate deletion is authorized.

@@ -192,7 +192,15 @@ English (`en`), Traditional Chinese (`zh-Hant`) and Simplified Chinese (`zh-Hans
 
 **[1.0.0-rc.1](https://github.com/gh-slee/koreader-bridge/releases/tag/v1.0.0-rc.1) was published on 2026-10-21 as a pre-release, not GitHub Latest.** Its tag resolves to `aaedb78f2b2233ffe91ad42ae8ea9fb312860052`; both uploaded assets were downloaded and verified against the reviewed bytes. This `1.0.0-rc.2` source snapshot includes documentation updates and the KOReader Bridge project name; migration behavior is unchanged.
 
-A connected-device KOREADER transfer from the earlier [3.3.0-dev.6 package](https://github.com/gh-slee/koreader-bridge/releases/tag/v3.3.0-dev.6) passed full manifest verification, preserved TARGET identity and safely ejected; startup and opening an existing TARGET book were confirmed. A FULL preview safely refused insufficient TARGET space. These observations do not sign off FULL writes, all recovery/cleanup workflows, every plugin/hardware control or complete human translation review. The [stable-release gates](ACCEPTANCE.md#first-stable-release-gates) remain open.
+Validation distinguishes device results from synthetic tests:
+
+| Evidence | Confirmed scope | Remaining limits |
+| --- | --- | --- |
+| KOREADER on hardware | Kobo Libra 2 → Kobo Clara 2E using the 3.3.0-dev.6 package: whole-runtime transfer, full manifest verification, TARGET identity preservation and safe eject. The operator confirmed startup and opening an existing TARGET book. | Relevant controls, settings, plugins and reading-progress persistence still need manual checks; this does not certify every Kobo model. |
+| Current runtime baseline | The merged CLI baseline passed 194 unit tests and six main CI jobs. A separate local rehearsal passed 42 synthetic cases across English, Traditional Chinese and Simplified Chinese; the exact-baseline source package passed 11 extracted checks with both entries. | Synthetic mount selection and safe eject were mocked. File-transfer checks do not verify reader rendering or hardware behavior. |
+| FULL and LIBRARY | Synthetic transfer/recovery coverage; a physical FULL preview safely refused insufficient TARGET space before writes. | Successful physical copying with adequate capacity remains pending. |
+
+See the [dated evidence and sources](ACCEPTANCE.md#validation-record-2026-10-22) and [remaining practical checks](ACCEPTANCE.md#remaining-practical-checks). Existing KOREADER device evidence remains valid for its tested build and scope. Broader recovery/cleanup acceptance, complete human translation review and the [stable-release gates](ACCEPTANCE.md#first-stable-release-gates) remain open.
 
 CI covers synthetic fixtures on macOS/Linux and a real macOS `ditto` round trip on temporary directories. It does not certify every device or replace the remaining manual acceptance checklists. The badge tracks push CI on main; review-branch checks are available on the corresponding PR. Detailed fixes and validation belong in CHANGELOG.md and docs/DEVELOPMENT.md.
 

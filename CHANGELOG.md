@@ -2,6 +2,8 @@
 
 ## 1.0.0-rc.2 — source candidate
 
+- Reconcile acceptance documentation with scoped Libra 2 → Clara 2E KOREADER hardware success and the f98d3a6437ae baseline's 194-test evidence, six main CI jobs, 37-file/11-check local package and 42 three-locale synthetic rehearsals. Record partial wording/result review while retaining physical FULL/LIBRARY, practical controls/progress, complete language and final publication gates. This documentation follow-up does not change the runtime or version.
+
 - Adopt KOReader Bridge as the public project name and explicitly limit current device support to Kobo → Kobo on macOS. Track non-Kobo feasibility, portable migration policy and a future adapter separately from the first-stable Kobo milestone.
 - Rename the existing GitHub repository to `gh-slee/koreader-bridge` and update current document links, CI badges and clone commands. Verify the same repository identity, refs, issues/PRs and published release/asset bytes. CLI commands, version, backup schemas and published archives remain unchanged by the rebrand.
 
